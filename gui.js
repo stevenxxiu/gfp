@@ -134,6 +134,7 @@ let searchGui={
 			case 'GoogleTabledResults':
 				return searchGui.r.res;
 			case 'imagebox':
+			case 'imagebox_bigimages':
 				return searchGui.r.imageCtn;
 			case 'videobox':
 				return searchGui.r.videoCtn;
