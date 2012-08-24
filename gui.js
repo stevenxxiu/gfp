@@ -140,16 +140,16 @@ let searchGui={
 			case 'newsbox':
 				return searchGui.r.newsCtn;
 		}
-		if(node.childElementCount.childElementCount>2)
+		if(node.firstElementChild.childElementCount>2)
 			return searchGui.r.text;
-		else if(node.firstElementChild.childElementCount>1)
+		else if(node.firstElementChild.childElementCount>=1)
 			return searchGui.r.video;
 		return null;
 	},
 	
 	addStyles: function(){
 		GM_addStyle(
-			'.filterAdd{color: #1122CC !important; font-size: 90%; text-decoration: none;} .filterAdd:hover{text-decoration: underline;}'+
+			'.filterAdd{color: #1122CC !important; font-size="90%"; text-decoration: none;} .filterAdd:hover{text-decoration: underline;}'+
 			'.showTitle{color: #999999 !important; font-size="90%";}'+
 			'.showLink{color: #999999 !important; font-size="90%"; text-decoration: none;}}'
 		);
