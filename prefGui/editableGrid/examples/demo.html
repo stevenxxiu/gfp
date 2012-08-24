@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<!-- 
+/*
+ * demo.html
+ * 
+ * Copyright 2010 Webismymind SPRL
+ *
+ * This file is part of EditableGrid.
+ * 
+ * EditableGrid is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or 
+ * any later version.
+ * 
+ * EditableGrid is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with EditableGrid. If not, see http://www.gnu.org/licenses.
+ * 
+ */
+-->
+ 
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>EditableGrid Demo - Loading Grid From XML</title>
+		
+		<!-- include javascript and css files for the EditableGrid library -->
+		<script src="../editablegrid-1.0.11.js"></script>
+		<link rel="stylesheet" href="../editablegrid-1.0.11.css" type="text/css" media="screen">
+
+		<!-- include javascript and css files for the EditableGrid extensions -->
+		<script src="../extensions/jquery/jquery-1.4.2.min.js" ></script>
+		<script src="../extensions/autocomplete/jquery.autocomplete.min.js" ></script>
+		<script src="../extensions/autocomplete/autocomplete.js" ></script>
+		<link rel="stylesheet" href="../extensions/autocomplete/jquery.autocomplete.css" type="text/css" media="screen">
+
+		<!-- include javascript and css files for this demo -->
+		<script src="demo.js" ></script> <!-- just replace demo.js with demo_simple.js to test out the simplified version -->
+		<link rel="stylesheet" type="text/css" href="demo.css" media="screen"/>
+		<script type="text/javascript">window.onload = onloadXML</script>	
+	</head>
+	
+	<body>
+		<h1>EditableGrid Demo - Loading Grid From XML</h1>
+		<div id="message"></div>
+		<div id="tablecontent"></div>
+		<div id="edition"></div>		
+	</body>
+
+</html>

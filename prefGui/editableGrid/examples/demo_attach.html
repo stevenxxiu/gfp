@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<!-- 
+/*
+ * demo_attach.html
+ * 
+ * Copyright 2010 Webismymind SPRL
+ *
+ * This file is part of EditableGrid.
+ * 
+ * EditableGrid is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or 
+ * any later version.
+ * 
+ * EditableGrid is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with EditableGrid. If not, see http://www.gnu.org/licenses.
+ * 
+ */
+-->
+ 
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>EditableGrid Demo - Attaching to an HTML table</title>
+		
+		<!-- include javascript and css files for the EditableGrid library -->
+		<script src="../editablegrid-1.0.11.js"></script>
+		<link rel="stylesheet" href="../editablegrid-1.0.11.css" type="text/css" media="screen">
+
+		<!-- include javascript and css files for the EditableGrid extensions -->
+		<script src="../extensions/jquery/jquery-1.4.2.min.js" ></script>
+		<script src="../extensions/autocomplete_variant/jquery.autocomplete.min.js" ></script>
+		<script src="../extensions/autocomplete_variant/autocomplete.js" ></script>
+		<link rel="stylesheet" href="../extensions/autocomplete_variant/jquery.autocomplete.css" type="text/css" media="screen">
+
+		<!-- include javascript and css files for this demo -->
+		<script src="demo.js" ></script>
+		<link rel="stylesheet" type="text/css" href="demo.css" media="screen"/>
+		<script type="text/javascript">window.onload = onloadHTML</script>	
+	</head>
+	
+	<body>
+		<h1>EditableGrid Demo - Attaching to an HTML table</h1>
+		<div id="message"></div>
+		
+		<!-- In real life this HTML table would have been generated with eg. a PHP server-side script -->
+		<!--  The first row of your table will serve as table header, you don't have to put it in a <THEAD> but it's better of course -->
+		<table id="htmlgrid" class="testgrid">
+			<tr>
+				<th>NAME</th>
+				<th>FIRSTNAME</th>
+				<th>AGE</th>
+				<th>HEIGHT</th>
+				<th>CONTINENT</th>
+				<th>COUNTRY</th>
+				<th>EMAIL</th>
+				<th>FREELANCE</th>
+				<th></th>
+			</tr>
+			<tr id="R1">
+				<td>Duke</td>
+				<td>Patience</td>
+				<td>33</td>
+				<td>1.842</td>
+				<td>eu</td>
+				<td>uk</td>
+				<td>patience.duke@gmail.com</td>
+				<td></td>
+				<td></td>
+				</tr>
+			<tr id="R2">
+				<td>Rogers</td>
+				<td>Denise</td>
+				<td>59</td>
+				<td>1.627</td>
+				<td>am</td>
+				<td>us</td>
+				<td>rogers.d@gmail.com</td>
+				<td></td>
+				<td></td>
+				</tr>
+			<tr id="R3">
+				<td>Dujardin</td>
+				<td>Antoine</td>
+				<td>21</td>
+				<td>1.73</td>
+				<td>eu</td>
+				<td>fr</td>
+				<td>felix.compton@yahoo.fr</td>
+				<td>true</td>
+				<td></td>
+				</tr>
+			<tr id="R4">
+				<td>Conway</td>
+				<td>Coby</td>
+				<td>47</td>
+				<td>1.96</td>
+				<td>af</td>
+				<td>za</td>
+				<td>coby@conwayinc.com</td>
+				<td>true</td>
+				<td></td>
+			</tr>
+			<tr id="R5">
+				<td>Shannon</td>
+				<td>Rana</td>
+				<td>24</td>
+				<td>1.56</td>
+				<td>eu</td>
+				<td>nl</td>
+				<td>ranna.shannon@hotmail.com</td>
+				<td>false</td>
+				<td></td>
+			</tr>
+			<tr id="R6">
+				<td>Benton</td>
+				<td>Jasmine</td>
+				<td>61</td>
+				<td>1.71</td>
+				<td>am</td>
+				<td>ca</td>
+				<td>jasmine.benton@yahoo.com</td>
+				<td>false</td>
+				<td></td>
+			</tr>
+			<tr id="R7">
+				<td>Belletoise</td>
+				<td>André</td>
+				<td>31</td>
+				<td>1.84</td>
+				<td>eu</td>
+				<td>be</td>
+				<td>belletoise@kiloutou.be</td>
+				<td>true</td>
+				<td></td>
+			</tr>
+			<tr id="R8">
+				<td>Santa-Maria</td>
+				<td>Martin</td>
+				<td>37</td>
+				<td>1.80</td>
+				<td>am</td>
+				<td>br</td>
+				<td>martin.sm@gmail.com</td>
+				<td>false</td>
+				<td></td>
+			</tr>
+			<tr id="R9">
+				<td>Dieumerci</td>
+				<td>Amédé</td>
+				<td>37</td>
+				<td>1.81</td>
+				<td>af</td>
+				<td>ng</td>
+				<td>dieumerci@gmail.com</td>
+				<td>true</td>
+				<td></td>
+			</tr>
+			<tr id="R10">
+				<td>Morin</td>
+				<td>Wanthus</td>
+				<td>46</td>
+				<td>1.77</td>
+				<td>af</td>
+				<td>zw</td>
+				<td>morin.x@yahoo.com</td>
+				<td>false</td>
+				<td></td>
+			</tr>
+		</table>
+		
+		<div id="edition"></div>		
+	</body>
+	
+</html>
