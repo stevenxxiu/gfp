@@ -69,8 +69,8 @@ let searchGui={
 		video: {
 			getResults: function() null,
 			getLinkArea: function(node) node.querySelector('cite'),
-			getUrl: function(node) node.querySelector('a.l').href,
-			getTitle: function(node) node.querySelector('a.l').textContent,
+			getUrl: function(node) node.querySelector('h3.r>a').href,
+			getTitle: function(node) node.querySelector('h3.r').textContent,
 			getSummary: function(node) node.querySelector('span.st').textContent,
 		},
 		imageCtn: {
@@ -143,8 +143,13 @@ let searchGui={
 		}
 		if(node.firstElementChild.childElementCount>2)
 			return searchGui.r.text;
-		else if(node.firstElementChild.childElementCount>=1)
-			return searchGui.r.video;
+		else if(node.firstElementChild.childElementCount>=1){
+			if(node.querySelector('a.fl')){
+				return null;
+			}else{
+				return searchGui.r.video;
+			}
+		}
 		return null;
 	},
 	
