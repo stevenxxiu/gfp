@@ -4,13 +4,14 @@ merges the abp matcher module and google search filter plus
 '''
 
 import base64
+import json
 import os
 import re
 from PyQt4 import QtGui
 
 prefPath='./prefGui/'
 
-class js:
+class JS:
 	def str2descriptor(s):
 		return '\n\n/**\n'+s+'\n*/\n'
 
@@ -35,22 +36,22 @@ class js:
 		return startToken+newline+newline.join(metadata)+newline+endToken+contents[end+len(endToken):]
 	
 	def mergeJS():
-		base=js.updateUserscriptsMetadata(open('base.js','r').read())
+		base=JS.updateUserscriptsMetadata(open('base.js','r').read())
 		contents=[
 			base,
 			#
-			js.str2descriptor('adblock plus matching classes'),
+			JS.str2descriptor('adblock plus matching classes'),
 			open('../matchFilter(abp)/FilterClasses.js','r').read(),
 			open('../matchFilter(abp)/Matcher.js','r').read(),
 			#
-			js.str2descriptor('google search filter plus'),
+			JS.str2descriptor('google search filter plus'),
 			open('gfpFilter.js','r').read(),
 			open('gfpMatcher.js','r').read(),
 			open('gui.js','r').read(),
 			open('ext.js','r').read(),
 			open('init.js','r').read(),
 			#
-			js.str2descriptor('editable grid'),
+			JS.str2descriptor('editable grid'),
 			open(prefPath+'editableGrid/src/editablegrid.js','r').read(),
 			open(prefPath+'editableGrid/src/editablegrid_charts.js','r').read(),
 			open(prefPath+'editableGrid/src/editablegrid_editors.js','r').read(),
@@ -58,7 +59,7 @@ class js:
 			open(prefPath+'editableGrid/src/editablegrid_utils.js','r').read(),
 			open(prefPath+'editableGrid/src/editablegrid_validators.js','r').read(),
 			#
-			js.str2descriptor('pref'),
+			JS.str2descriptor('pref'),
 			open(prefPath+'prefGui.js','r').read(),
 			#
 			open('initAfter.js','r').read(),
@@ -70,13 +71,13 @@ class js:
 		
 		return jsContent
 
-class htmlTmp:
+class HtmlTmp:
 	'''
 	temp vars for html
 	'''
 	pass
 
-class html:
+class Html:
 	def __init__(self,htmlContent,jsContent):
 		self.htmlContent=htmlContent
 		self.jsContent=jsContent
@@ -203,8 +204,8 @@ class html:
 		generates pref.loadHTML()
 		'''
 		#encode contents
-		http='<><![CDATA['+self.htmlContent+']]></>.toString()'
-		return 'pref.loadHTML=function(){let node=document.createElement("div");node.innerHTML='+http+';document.body.appendChild(node);};'
+		htmlContent=json.dumps(self.htmlContent)
+		return 'pref.loadHTML=function(){let node=document.createElement("div");node.innerHTML='+htmlContent+';document.body.appendChild(node);};'
 	
 	def getFinalJs(self):
 		#get everything between body tags
@@ -216,8 +217,8 @@ class html:
 
 
 def merge():
-	jsContent=js.mergeJS()
-	currHTML=html(open(prefPath+'prefGui.html','r').read(),jsContent)
+	jsContent=JS.mergeJS()
+	currHTML=Html(open(prefPath+'prefGui.html','r').read(),jsContent)
 	contents=currHTML.getFinalJs()
 	gmPath='C:/Users/Steven/AppData/Roaming/Mozilla/Firefox/Profiles/xd56ivw8.default/gm_scripts/google_search_filter_plu/google_search_filter_plu.user.js'
 	if not os.access(gmPath,os.F_OK):
