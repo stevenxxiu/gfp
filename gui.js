@@ -144,10 +144,10 @@ let searchGui={
 		if(node.firstElementChild.childElementCount>2)
 			return searchGui.r.text;
 		else if(node.firstElementChild.childElementCount>=1){
-			if(node.querySelector('a.fl')){
-				return null;
-			}else{
+			if(node.querySelector('div.th')){
 				return searchGui.r.video;
+			}else{
+				return null;
 			}
 		}
 		return null;
