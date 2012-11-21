@@ -52,13 +52,11 @@ let ext={
 			//wait when ajax loads search results
 			let cse=document.getElementById('cse');
 			
-			let resultsListener=function(e){
-				cse.removeEventListener('DOMNodeInserted',resultsListener,false);
-				
+			let resultsCallback=function(e){
 				searchGui.getResults=function() document.querySelector('.gsc-results');
 				searchGui.r={
 					res: {
-						getResults: function(node) node.querySelectorAll('.gs-result'),
+						getResults: function(node) node.querySelectorAll('.gsc-table-result'),
 						getLinkArea: function() null,
 						getUrl: function() null,
 						getTitle: function() null,
@@ -75,7 +73,7 @@ let ext={
 				searchGui.getResultType=function(node,filterClass){
 					if(node.classList.contains('gsc-results')){
 						return searchGui.r.res;
-					}else if(node.classList.contains('gs-result')){
+					}else if(node.classList.contains('gsc-table-result')){
 						return searchGui.r.text;
 					}
 				}
@@ -95,17 +93,27 @@ let ext={
 				
 				//there are no previous results, filter directly
 				searchGui.filterResults();
+				
+				GM_addStyle('.gs-visibleUrl{display: inline !important}');
 			};
 			//hook draw
-			//	CustomSearchControl.draw isn't defined yet here
 			CustomSearchControl=unsafeWindow.google.search.CustomSearchControl;
+			let o_draw=CustomSearchControl.prototype.draw;
 			CustomSearchControl.prototype.draw=function(){
 				//privileged code
-				this.constructor.prototype.draw.apply(this,arguments);
-				window.dispatchEvent(new CustomEvent('results'));
+				o_draw.apply(this,arguments);
+				//wait until a result is inserted
+				let cse=document.querySelector('#cse');
+				let observer=new MutationObserver(function(mutations){
+					if(cse.querySelector('.gsc-table-result')!=null){
+						observer.disconnect();
+						window.dispatchEvent(new CustomEvent('results'));
+					}
+				});
+				observer.observe(cse,config={subtree: true, childList: true});
 			}
-			//resultsListener needs privileged functions
-			window.addEventListener('results',resultsListener,false);
+			//resultsCallback needs privileged functions
+			window.addEventListener('results',resultsCallback,false);
 		},
 	},
 	
