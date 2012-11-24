@@ -94,7 +94,7 @@ let ext={
 				//there are no previous results, filter directly
 				searchGui.filterResults();
 				
-				GM_addStyle('.gs-visibleUrl{display: inline !important}');
+				GM_addStyle('.gs-visibleUrl-long{display: inline !important}');
 			};
 			//hook draw
 			CustomSearchControl=unsafeWindow.google.search.CustomSearchControl;
