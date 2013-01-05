@@ -27,10 +27,9 @@ let ext={
 					prefMeta.isUpdated=false;
 					gfpFilter.save();
 				};
-				let defaultDisp=footAnim.style.display;
 				//add resultsListener only after loading image hides, so no additional events fire when page loads
 				footAnim.addEventListener('DOMAttrModified',function(e){
-					if(footAnim.style.display==defaultDisp){
+					if(footAnim.style.display=='none'){
 						results.addEventListener('DOMNodeInserted',resultsListener,false);
 					}
 				},false);
