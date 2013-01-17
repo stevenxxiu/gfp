@@ -23,8 +23,8 @@ let ext={
 						searchGui.remNodes.push(res);
 					}
 					//the pref window could be opened before loading the next page
-					//	and it isn't known whether there are new hits, so default to this being true
-					prefMeta.isUpdated=true;
+					//	and it isn't known whether there are new hits, so default to this being false
+					prefMeta.isUpdated=false;
 					gfpFilter.save();
 				};
 				//add resultsListener only after loading image hides, so no additional events fire when page loads
@@ -147,7 +147,7 @@ let ext={
 							if(res){
 								searchGui.remNodes.push(res);
 							}
-							prefMeta.isUpdated=true;
+							prefMeta.isUpdated=false;
 							gfpFilter.save();
 						}
 						
