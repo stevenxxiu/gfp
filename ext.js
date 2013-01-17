@@ -1,6 +1,21 @@
 
 let ext={
 	gmonkeyr: {
+		init: function(){
+			o_getResults=searchGui.getResults;
+			searchGui.getResults=function(){
+				return _$('GoogleTabledResults') || o_getResults();
+			};
+			
+			let o_getResultType=searchGui.getResultType;
+			searchGui.getResultType=function(node,filterClass){
+				if(node.id=='GoogleTabledResults')
+					return searchGui.r.res;
+				else
+					return o_getResultType(node,filterClass);
+			};
+		},
+		
 		loaded: function(){
 			let footAnim=_$('navcnt');
 			if(!footAnim) return false;
@@ -133,22 +148,10 @@ let ext={
 					//filter nodes whenever they are added, instead of doing batch filters
 					for(let i=0;i<mutation.addedNodes.length;i++){
 						addedNode=mutation.addedNodes[i];
-						if(addedNode.id=='GoogleTabledResults'){
-							//we have a new query
-							resultsNode=addedNode;
-							searchGui.remNodes=[resultsNode];
-						}else if(addedNode.nodeName=='LI' && addedNode.classList.contains('g')){
-							if(resultsNode==null){
-								logger.error('results node insertion not detected before search node load in instant');
-								return;
-							}
-							let node=addedNode;
-							let res=searchGui._filterResults(node,searchGui.r.res);
-							if(res){
-								searchGui.remNodes.push(res);
-							}
+						if(addedNode.id=='ires'){
+							//we have a new query, google only adds this node with all results added (to test this properly, disable all other userscripts)
+							searchGui.filterResults();
 							prefMeta.isUpdated=false;
-							gfpFilter.save();
 						}
 						
 					};

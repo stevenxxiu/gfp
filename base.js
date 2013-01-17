@@ -130,7 +130,7 @@ let config={
 	
 	//enabled extensions
 	//if gmonkeyr and instant are both needed, then only enable 'instant'
-	ext: ['customSearch','instant'],
+	ext: ['gmonkeyr','customSearch','instant'],
 	
 	//log component times
 	logTime: true,

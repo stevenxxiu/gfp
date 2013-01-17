@@ -33,7 +33,7 @@ let searchGui={
 	},
 	
 	getResults: function(){
-		return _$('GoogleTabledResults');
+		return _$('ires');
 	},
 	
 	directLink: function(url){
@@ -51,7 +51,7 @@ let searchGui={
 		},
 		text: {
 			getResults: function() null,
-			getLinkArea: function(node) node.querySelector('.vshid'),
+			getLinkArea: function(node) node.querySelector('cite').parentNode,
 			getUrl: function(node) node.querySelector('a.l').href,
 			getTitle: function(node) (node.querySelector('h2.r')||node.querySelector('h3.r')).textContent,
 			getSummary: function(node) node.querySelector('div.s').textContent,
@@ -134,8 +134,7 @@ let searchGui={
 				return searchGui.r.news;
 		}
 		switch(node.id){
-			case 'res':
-			case 'GoogleTabledResults':
+			case 'ires':
 				return searchGui.r.res;
 			case 'imagebox':
 			case 'imagebox_bigimages':
