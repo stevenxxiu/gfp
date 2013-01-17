@@ -1,6 +1,11 @@
 
 let ext={
 	gmonkeyr: {
+		/**
+		filters results whenever googlemonkeyr adds a results page
+		the initial results page (including the initial page of instant results) is not processed by this extension
+		*/
+		
 		init: function(){
 			o_getResults=searchGui.getResults;
 			searchGui.getResults=function(){
@@ -17,8 +22,37 @@ let ext={
 		},
 		
 		loaded: function(){
-			let footAnim=document.querySelector('#navcnt > div');
-			if(!footAnim) return false;
+			//check if the instant extension is enabled, if it is wait until the new footAnim appears
+			if(config.ext.indexOf('instant')>-1){
+				window.addEventListener('instantResults',function(e){
+					//wait until footAnim shows up
+					if(ext.gmonkeyr.getFootAnim()){
+						ext.gmonkeyr.monitorFootAnim();
+						return;
+					}
+					
+					let footAnimCreateObserver=new MutationObserver(function(mutations){
+						if(ext.gmonkeyr.getFootAnim()){
+							ext.gmonkeyr.monitorFootAnim();
+							footAnimCreateObserver.disconnect();
+							return;
+						}
+					});
+					
+					let mainNode=document.getElementById('main');
+					footAnimCreateObserver.observe(mainNode,{subtree: true, childList: true});
+				},false);
+			}else{
+				ext.gmonkeyr.monitorFootAnim();
+			}
+		},
+		
+		getFootAnim: function() document.querySelector('#navcnt > div'),
+		
+		monitorFootAnim: function(){
+			let footAnim=ext.gmonkeyr.getFootAnim();
+			if(!footAnim)
+				return false;
 			if(footAnim.textContent=='Loading'){
 				let results=searchGui.getResults();
 				let resultsObserver=new MutationObserver(function(mutations){
@@ -48,11 +82,12 @@ let ext={
 				});
 				
 				//add resultsListener only after loading image hides, so no additional events fire when page loads
-				new MutationObserver(function(mutations){
+				let footAnimObserver=new MutationObserver(function(mutations){
 					if(footAnim.style.display=='block'){
 						resultsObserver.observe(results.querySelector('tbody'),{childList: true});
 					}
-				}).observe(footAnim,{attributes: true});
+				});
+				footAnimObserver.observe(footAnim,{attributes: true});
 			}
 		},
 	},
@@ -154,6 +189,8 @@ let ext={
 							//we have a new query, google only adds this node with all results added (to test this properly, disable all other userscripts)
 							searchGui.filterResults();
 							prefMeta.isUpdated=false;
+							//other extensions might use this
+							window.dispatchEvent(new CustomEvent('instantResults'));
 						}
 					};
 				});
