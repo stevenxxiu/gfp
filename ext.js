@@ -181,6 +181,8 @@ let ext={
 			});
 			
 			let mainNode=document.getElementById('main');
+			if(!mainNode)
+				return false;
 			resultsObserver.observe(mainNode,{subtree: true, childList: true});
 		},
 	},

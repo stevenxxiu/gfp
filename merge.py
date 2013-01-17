@@ -220,7 +220,7 @@ def merge():
 	jsContent=JS.mergeJS()
 	currHTML=Html(open(prefPath+'prefGui.html','r').read(),jsContent)
 	contents=currHTML.getFinalJs()
-	gmPath='C:/Users/Steven/AppData/Roaming/Mozilla/Firefox/Profiles/xd56ivw8.default/gm_scripts/google_search_filter_plu/google_search_filter_plu.user.js'
+	gmPath='C:/Users/Steven/AppData/Roaming/Mozilla/Firefox/Profiles/xd56ivw8.default/scriptish_scripts/google_search_filter_plu/google_search_filter_plu.user.js'
 	if not os.access(gmPath,os.F_OK):
 		raise Exception('cannot find greasemonkey script path')
 	open(gmPath,'w').write(contents)
