@@ -24,7 +24,7 @@ let ext={
 					}
 					//the pref window could be opened before loading the next page
 					//	and it isn't known whether there are new hits, so default to this being true
-					prefMeta.isUpdated=false;
+					prefMeta.isUpdated=true;
 					gfpFilter.save();
 				};
 				//add resultsListener only after loading image hides, so no additional events fire when page loads
@@ -109,7 +109,7 @@ let ext={
 						window.dispatchEvent(new CustomEvent('results'));
 					}
 				});
-				observer.observe(cse,config={subtree: true, childList: true});
+				observer.observe(cse,{subtree: true, childList: true});
 			}
 			//resultsCallback needs privileged functions
 			window.addEventListener('results',resultsCallback,false);
@@ -118,125 +118,44 @@ let ext={
 	
 	instant: {
 		init: function(){
-			//last hidden node
-			let lastHideNode;
-			//last processed res node
-			let lastProcNode;
-			//if results are completely new
-			let isNew=false;
-			//all results loaded
-			let isLoaded=false;
+			//initialize searchGui if we haven't already (e.g. on the home page)
+			if(!searchGui.initialized)
+				searchGui.init();
+			
 			//results parent node
 			let resultsNode;
 			
-			function filterNodes(currNode,isNew){
-				if(!searchGui.initialized){
-					searchGui.init();
-				}
-				if(!isNew){
-					currNode=currNode.nextElementSibling;
-				}
-				let lastNode;
-				while(currNode){
-					let res=searchGui._filterResults(currNode,searchGui.r.res);
-					if(res){
-						searchGui.remNodes.push(res);
-					}else{
-						prefMeta.isUpdated=false;
-					}
-					currNode.style.display='';
-					lastNode=currNode;
-					currNode=currNode.nextElementSibling;
-				}
-				return lastNode;
-			}
+			//main observer node
+			let main=document.getElementById('main');
 			
-			function isInDom(node){
-				return node.parentNode && node.parentNode.offsetWidth!=0;
-			}
-			
-			//hook XMLHttpRequest to get catch google results
-			
-			let XMLHttpRequest=unsafeWindow.XMLHttpRequest;
-			
-			XMLHttpRequest.prototype.__defineSetter__('onreadystatechange',function(func){
-				if(this.listener){
-					this.removeEventListener('readystatechange',this.listener,false);
-				}
-				this.o_listener=func;
-				this.listener=function(){
-					func.call(this,arguments);
-					let currNode;
-					if(lastHideNode && isInDom(lastHideNode)){
-						currNode=lastHideNode.nextElementSibling;
-						if(currNode){
-							isNew=false;
-						}else{
-							return;
+			let observer=new MutationObserver(function(mutations){
+				mutations.forEach(function(mutation) {
+					//filter nodes whenever they are added, instead of doing batch filters
+					for(let i=0;i<mutation.addedNodes.length;i++){
+						addedNode=mutation.addedNodes[i];
+						if(addedNode.id=='GoogleTabledResults'){
+							//we have a new query
+							resultsNode=addedNode;
+							searchGui.remNodes=[resultsNode];
+						}else if(addedNode.nodeName=='LI' && addedNode.classList.contains('g')){
+							if(resultsNode==null){
+								logger.error('results node insertion not detected before search node load in instant');
+								return;
+							}
+							let node=addedNode;
+							let res=searchGui._filterResults(node,searchGui.r.res);
+							if(res){
+								searchGui.remNodes.push(res);
+							}
+							prefMeta.isUpdated=true;
+							gfpFilter.save();
 						}
-					}else{
-						currNode=$X('//ol[@id="rso"]/li',9);
-						if(currNode){
-							searchGui.remNodes=[new searchGui.remNode(currNode.parentNode,searchGui.r.res)];
-							lastProcNode=currNode;
-							isNew=true;
-						}else{
-							return;
-						}
-					}
-					while(currNode){
-						currNode.style.display='none';
-						lastHideNode=currNode;
-						currNode=currNode.nextElementSibling;
-					}
-					isLoaded=(this.readyState==4);
-					window.postMessage('xhr','*');
-				};
-				this.addEventListener('readystatechange',this.listener,false);
+						
+					};
+				});
+				
 			});
-			
-			let o_open=XMLHttpRequest.prototype.open;
-			XMLHttpRequest.prototype.open=function(method,url){
-				if(url.substr(0,3)!='/s?'){
-					if(this.listener){
-						this.removeEventListener('readystatechange',this.listener,false);
-						this.addEventListener('readystatechange',this.o_listener,false);
-					}
-				}
-				return o_open.apply(this,arguments);
-			}
-			
-			//listen to xhr node hide requests
-			window.addEventListener('message',function(e){
-				if(e.data!='xhr') return;
-				//safety check
-				if(!lastProcNode) return;
-				lastProcNode=filterNodes(lastProcNode,isNew);
-				if(isLoaded){
-					if(!prefMeta.isUpdated){
-						gfpFilter.save();
-					}
-					isLoaded=false;
-				}
-			},false);
-			
-			//listen to cached requests
-			unsafeWindow.addEventListener('message',function(e){
-				if(e.data!='comm.df') return;
-				//if already filtered
-				if(lastProcNode && isInDom(lastProcNode)) return;
-				resultsNode.style.display='';
-				let currNode=$X('//ol[@id="rso"]/li',9);
-				if(currNode){
-					searchGui.remNodes=[new searchGui.remNode(currNode.parentNode,searchGui.r.res)];
-					lastProcNode=filterNodes(currNode,true);
-					if(!prefMeta.isUpdated){
-						gfpFilter.save();
-					}
-					isLoaded=false;
-				}
-			},false);
-			
+			observer.observe(main,{subtree: true, childList: true});
 		},
 	},
 	

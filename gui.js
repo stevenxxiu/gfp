@@ -24,6 +24,10 @@ let searchGui={
 		return loc[loc.length-1]=='/';
 	},
 	
+	isSearchPage: function(){
+		return !searchGui.isHomePage();
+	},
+	
 	getQuery: function(){
 		return document.querySelector('input[type="text"][title="Search"]');
 	},
