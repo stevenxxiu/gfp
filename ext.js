@@ -14,7 +14,9 @@ let ext={
 			
 			let o_getResultType=searchGui.getResultType;
 			searchGui.getResultType=function(node,filterClass){
-				if(node.id=='GoogleTabledResults')
+				if(node==null)
+					return null;
+				else if(node.id=='GoogleTabledResults')
 					return searchGui.r.res;
 				else
 					return o_getResultType(node,filterClass);
