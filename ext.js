@@ -17,37 +17,42 @@ let ext={
 		},
 		
 		loaded: function(){
-			let footAnim=_$('navcnt');
+			let footAnim=document.querySelector('#navcnt > div');
 			if(!footAnim) return false;
-			footAnim=footAnim.firstElementChild;
-			if(footAnim.nodeName=='DIV' && footAnim.textContent=='Loading'){
+			if(footAnim.textContent=='Loading'){
 				let results=searchGui.getResults();
-				let resultsListener=function(e){
-					let node=e.target;
-					switch(node.nodeName){
-						case 'HR':
-							results.removeEventListener('DOMNodeInserted',resultsListener,false);
-							return;
-						case 'LI':
-							break;
-						default:
-							return;
-					}
-					let res=searchGui._filterResults(node,searchGui.r.res);
-					if(res){
-						searchGui.remNodes.push(res);
-					}
-					//the pref window could be opened before loading the next page
-					//	and it isn't known whether there are new hits, so default to this being false
-					prefMeta.isUpdated=false;
-					gfpFilter.save();
-				};
+				let resultsObserver=new MutationObserver(function(mutations){
+					mutations.forEach(function(mutation){
+						for(let i=0;i<mutation.addedNodes.length;i++){
+							node=mutation.addedNodes[i];
+							node=node.querySelector('li') || node.querySelector('hr');
+							switch(node.nodeName){
+								case 'HR':
+									resultsObserver.disconnect();
+									return;
+								case 'LI':
+									break;
+								default:
+									return;
+							}
+							let res=searchGui._filterResults(node,searchGui.r.res);
+							if(res){
+								searchGui.remNodes.push(res);
+							}
+							//the pref window could be opened before loading the next page
+							//	and it isn't known whether there are new hits, so default to this being false
+							prefMeta.isUpdated=false;
+							gfpFilter.save();
+						}
+					});
+				});
+				
 				//add resultsListener only after loading image hides, so no additional events fire when page loads
-				footAnim.addEventListener('DOMAttrModified',function(e){
-					if(footAnim.style.display=='none'){
-						results.addEventListener('DOMNodeInserted',resultsListener,false);
+				new MutationObserver(function(mutations){
+					if(footAnim.style.display=='block'){
+						resultsObserver.observe(results.querySelector('tbody'),{childList: true});
 					}
-				},false);
+				}).observe(footAnim,{attributes: true});
 			}
 		},
 	},
@@ -153,10 +158,8 @@ let ext={
 							searchGui.filterResults();
 							prefMeta.isUpdated=false;
 						}
-						
 					};
 				});
-				
 			});
 			observer.observe(main,{subtree: true, childList: true});
 		},
