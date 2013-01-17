@@ -145,10 +145,7 @@ let ext={
 			//results parent node
 			let resultsNode;
 			
-			//main observer node
-			let main=document.getElementById('main');
-			
-			let observer=new MutationObserver(function(mutations){
+			let resultsObserver=new MutationObserver(function(mutations){
 				mutations.forEach(function(mutation) {
 					//filter nodes whenever they are added, instead of doing batch filters
 					for(let i=0;i<mutation.addedNodes.length;i++){
@@ -161,7 +158,9 @@ let ext={
 					};
 				});
 			});
-			observer.observe(main,{subtree: true, childList: true});
+			
+			let mainNode=document.getElementById('main');
+			resultsObserver.observe(mainNode,{subtree: true, childList: true});
 		},
 	},
 	
