@@ -35,7 +35,6 @@ let config={
 	resHidden: false,
 	
 	//enabled extensions
-	//if gmonkeyr and instant are both needed, then only enable 'instant'
 	ext: ['gmonkeyr','customSearch','instant'],
 	
 	//log component times
