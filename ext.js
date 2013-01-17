@@ -22,72 +22,55 @@ let ext={
 		},
 		
 		loaded: function(){
-			//check if the instant extension is enabled, if it is wait until the new footAnim appears
-			if(config.ext.indexOf('instant')>-1){
-				window.addEventListener('instantResults',function(e){
-					//wait until footAnim shows up
-					if(ext.gmonkeyr.getFootAnim()){
-						ext.gmonkeyr.monitorFootAnim();
-						return;
-					}
-					
-					let footAnimCreateObserver=new MutationObserver(function(mutations){
-						if(ext.gmonkeyr.getFootAnim()){
-							ext.gmonkeyr.monitorFootAnim();
-							footAnimCreateObserver.disconnect();
-							return;
-						}
-					});
-					
-					let mainNode=document.getElementById('main');
-					footAnimCreateObserver.observe(mainNode,{subtree: true, childList: true});
-				},false);
-			}else{
-				ext.gmonkeyr.monitorFootAnim();
-			}
-		},
-		
-		getFootAnim: function() document.querySelector('#navcnt > div'),
-		
-		monitorFootAnim: function(){
-			let footAnim=ext.gmonkeyr.getFootAnim();
-			if(!footAnim)
+			let isDescendent=function(node,ancestor){
+				while(node){
+					if(node==ancestor)
+						return true;
+					node=node.parentNode;
+				}
 				return false;
-			if(footAnim.textContent=='Loading'){
-				let results=searchGui.getResults();
-				let resultsObserver=new MutationObserver(function(mutations){
-					mutations.forEach(function(mutation){
-						for(let i=0;i<mutation.addedNodes.length;i++){
-							node=mutation.addedNodes[i];
-							node=node.querySelector('li') || node.querySelector('hr');
-							switch(node.nodeName){
-								case 'HR':
-									resultsObserver.disconnect();
-									return;
-								case 'LI':
-									break;
-								default:
-									return;
-							}
-							let res=searchGui._filterResults(node,searchGui.r.res);
-							if(res){
-								searchGui.remNodes.push(res);
-							}
-							//the pref window could be opened before loading the next page
-							//	and it isn't known whether there are new hits, so default to this being false
-							prefMeta.isUpdated=false;
-							gfpFilter.save();
+			}
+			
+			let procNodeNum=0;
+			
+			let results=searchGui.getResults();
+			let resultsObserver=new MutationObserver(function(mutations){
+				mutations.forEach(function(mutation){
+					//googlemonkeyr adds already processed nodes again
+					for(let i=0;i<mutation.addedNodes.length;i++){
+						node=mutation.addedNodes[i];
+						if(!node || node.nodeName!='LI'){
+							continue;
 						}
-					});
-				});
-				
-				//add resultsListener only after loading image hides, so no additional events fire when page loads
-				let footAnimObserver=new MutationObserver(function(mutations){
-					if(footAnim.style.display=='block'){
-						resultsObserver.observe(results.querySelector('tbody'),{childList: true});
+						if(procNodeNum>0){
+							procNodeNum--;
+							continue;
+						}
+						GM_log(node.parentNode.parentNode.parentNode.parentNode.id);
+						let res=searchGui._filterResults(node,searchGui.r.res);
+						if(res){
+							searchGui.remNodes.push(res);
+						}
+						//the pref window could be opened before loading the next page
+						//	and it isn't known whether there are new hits, so default to this being false
+						prefMeta.isUpdated=false;
+						gfpFilter.save();
 					}
 				});
-				footAnimObserver.observe(footAnim,{attributes: true});
+			});
+			
+			if(results){
+				resultsObserver.observe(results,{childList: true, subtree: true});
+			}else{
+				//use instant if the extension's enabled
+				if(config.ext.indexOf('instant')>-1){
+					window.addEventListener('instantResults',function(e){
+						results=searchGui.getResults();
+						procNodeNum=results.querySelectorAll('li.g').length;
+						//use parentNode, googlemonkeyr copies the results node
+						resultsObserver.observe(results.parentNode,{childList: true, subtree: true});
+					},false);
+				}
 			}
 		},
 	},
