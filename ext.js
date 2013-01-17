@@ -46,7 +46,6 @@ let ext={
 							procNodeNum--;
 							continue;
 						}
-						GM_log(node.parentNode.parentNode.parentNode.parentNode.id);
 						let res=searchGui._filterResults(node,searchGui.r.res);
 						if(res){
 							searchGui.remNodes.push(res);
