@@ -38,7 +38,6 @@ let ext={
 			let results=searchGui.getResults();
 			let resultsObserver=new MutationObserver(function(mutations){
 				mutations.forEach(function(mutation){
-					//googlemonkeyr adds already processed nodes again
 					for(let i=0;i<mutation.addedNodes.length;i++){
 						node=mutation.addedNodes[i];
 						if(!node || node.nodeName!='LI'){
@@ -60,16 +59,21 @@ let ext={
 				});
 			});
 			
+			let observeResults=function(results){
+				//googlemonkeyr adds already processed nodes again
+				procNodeNum=results.querySelectorAll('li.g').length;
+				//use parentNode, googlemonkeyr copies the results node
+				resultsObserver.observe(results.parentNode,{childList: true, subtree: true});
+			};
+			
 			if(results){
-				resultsObserver.observe(results,{childList: true, subtree: true});
+				observeResults(results);
 			}else{
 				//use instant if the extension's enabled
 				if(config.ext.indexOf('instant')>-1){
 					window.addEventListener('instantResults',function(e){
 						results=searchGui.getResults();
-						procNodeNum=results.querySelectorAll('li.g').length;
-						//use parentNode, googlemonkeyr copies the results node
-						resultsObserver.observe(results.parentNode,{childList: true, subtree: true});
+						observeResults(results);
 					},false);
 				}
 			}
