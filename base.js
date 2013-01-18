@@ -10,6 +10,8 @@
 // @include			https://encrypted.google.com/search?*
 // @include			http://www.google.tld/#*&q=*
 // @include			https://www.google.tld/#*&q=*
+// @include			http://www.google.tld/#q=*
+// @include			https://www.google.tld/#q=*
 // @include			https://encrypted.google.com/#*&q=*
 // @include			http://www.google.tld/cse?*
 // @include			https://www.google.tld/cse?*
