@@ -68,14 +68,13 @@ let ext={
 			
 			if(results){
 				observeResults(results);
-			}else{
-				//use instant if the extension's enabled
-				if(config.ext.indexOf('instant')>-1){
-					window.addEventListener('instantResults',function(e){
-						results=searchGui.getResults();
-						observeResults(results);
-					},false);
-				}
+			}
+			//use instant if the extension's enabled
+			if(config.ext.indexOf('instant')>-1){
+				window.addEventListener('instantResults',function(e){
+					results=searchGui.getResults();
+					observeResults(results);
+				},false);
 			}
 		},
 	},
