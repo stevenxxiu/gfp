@@ -35,7 +35,6 @@ let ext={
 			
 			let procNodeNum=0;
 			
-			let results=searchGui.getResults();
 			let resultsObserver=new MutationObserver(function(mutations){
 				mutations.forEach(function(mutation){
 					for(let i=0;i<mutation.addedNodes.length;i++){
@@ -66,6 +65,7 @@ let ext={
 				resultsObserver.observe(results.parentNode,{childList: true, subtree: true});
 			};
 			
+			let results=searchGui.getResults();
 			if(results){
 				observeResults(results);
 			}
