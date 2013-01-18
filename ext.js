@@ -61,7 +61,7 @@ let ext={
 			
 			let observeResults=function(results){
 				//googlemonkeyr adds already processed nodes again
-				procNodeNum=results.querySelectorAll('li.g').length;
+				procNodeNum=searchGui.r.res.getResults(results).length;
 				//use parentNode, googlemonkeyr copies the results node
 				resultsObserver.observe(results.parentNode,{childList: true, subtree: true});
 			};
