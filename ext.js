@@ -60,9 +60,9 @@ let ext={
 			});
 			
 			let observeResults=function(results){
-				//googlemonkeyr adds already processed nodes again
+				//googlemonkeyr moves existing results nodes into the 'GoogleTabledResults' node created by it, these are already processed so don't process them again
 				procNodeNum=searchGui.r.res.getResults(results).length;
-				//use parentNode, googlemonkeyr copies the results node
+				//use parentNode, since googlemonkeyr creates the 'GoogleTabledResults' node and add results there, the results node won't have anything added to it
 				resultsObserver.observe(results.parentNode,{childList: true, subtree: true});
 			};
 			
