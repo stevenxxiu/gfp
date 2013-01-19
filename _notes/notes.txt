@@ -846,3 +846,5 @@ this needs to hide much more than results, so won't do it
 +move to slickgrid
 
 +switch to jetbrains and add some unit tests to parts of the pref ui
+
++refactor to jetbrains and make all classes start with caps
