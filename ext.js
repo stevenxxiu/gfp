@@ -166,6 +166,8 @@ let ext={
 			
 			//results parent node
 			let resultsNode;
+			//pref link
+			let _prefLink;
 			
 			let resultsObserver=new MutationObserver(function(mutations){
 				mutations.forEach(function(mutation) {
@@ -173,6 +175,9 @@ let ext={
 					for(let i=0;i<mutation.addedNodes.length;i++){
 						addedNode=mutation.addedNodes[i];
 						if(addedNode.id=='ires'){
+							//update prefLink (google instant inserts a new one every time)
+							if(!_prefLink || !isInDom(_prefLink))
+								_prefLink=prefLink.createLinkSettings();
 							//we have a new query, google only adds this node with all results added (to test this properly, disable all other userscripts)
 							searchGui.filterResults();
 							prefMeta.isUpdated=false;

@@ -431,19 +431,43 @@ let searchGui={
 }
 
 let prefLink={
-	createLink: function(){
-		//clone from link template
-		let linkT=document.querySelector('a.gbmlb[href*="/ManageAccount?"]');
-		if(!linkT)
-			return null;
+	createLink: function(linkT){
+		//create a link with settings cloned from link template
 		let link=document.createElement('a');
 		link.setAttribute('class',linkT.getAttribute('class'));
 		link.setAttribute('style',linkT.getAttribute('style'));
 		link.setAttribute('href','javascript:void(0);');
 		link.appendChild(document.createTextNode('Config Filters'));
+		link.addEventListener('click',prefLink.prefOpen,false);
+		return link;
+	},
+	
+	createLinkAccount: function(){
+		/**
+		create a link in the account menu when logged in
+		*/
+		let linkT=document.querySelector('a.gbmlb[href*="/ManageAccount?"]');
+		if(!linkT)
+			return null;
+		let link=prefLink.createLink(linkT);
 		let linkParent=linkT.parentNode;
 		linkParent.appendChild(document.createTextNode('\u2013'));
 		linkParent.appendChild(link);
+		return link;
+	},
+	
+	createLinkSettings: function(){
+		/**
+		create a link in the gear icon dropdown menu
+		*/
+		let linkTCont=document.querySelector('#ab_options > ul > li.ab_dropdownitem:nth-child(2)');
+		if(!linkTCont)
+			return null;
+		let linkT=linkTCont.firstElementChild;
+		let link=prefLink.createLink(linkT);
+		let linkCont=linkTCont.cloneNode(false);
+		linkCont.appendChild(link);
+		linkTCont.parentNode.insertBefore(linkCont,linkTCont.nextElementSibling);
 		return link;
 	},
 	
@@ -458,10 +482,8 @@ let prefLink={
 	},
 	
 	init: function(){
-		let link=prefLink.createLink();
-		if(link!=null){
-			link.addEventListener('click',prefLink.prefOpen,false);
-		}
+		prefLink.createLinkAccount();
+		prefLink.createLinkSettings();
 		GM_registerMenuCommand('GoogleSearchFilter+',prefLink.prefOpen,null);
 	},
 }
