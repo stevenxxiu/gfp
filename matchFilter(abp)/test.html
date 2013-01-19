@@ -1,0 +1,27 @@
+
+<script src="FilterClasses.js" type="application/javascript;version=1.7"></script>
+<script src="Matcher.js" type="application/javascript;version=1.7"></script>
+
+<script>
+
+//var testFilter1=Filter.fromText('/abcde/');
+//alert(testFilter1.toSource());
+//var testFilter2=Filter.fromText('abc*def');
+//alert(testFilter2.toSource());
+//alert(testFilter2.regexp);
+//var testFilter2=Filter.fromText('@@abc*def');
+//alert(testFilter2.toSource());
+//alert(testFilter2 instanceof WhitelistFilter);
+
+var testFilterStrings=['@@foo_abc','abc*def'];
+var testFilters=testFilterStrings.map(function(n) Filter.fromText(n));
+var testMatcher=defaultMatcher;
+for(var i=0;i<testFilters.length;i++){
+	testMatcher.add(testFilters[i]);
+}
+//alert(testMatcher.matchesAny('foo_abc_def_bar','OTHER'));
+var buffer=[];
+testFilters[0].serialize(buffer);
+alert(buffer.toSource());
+
+</script>

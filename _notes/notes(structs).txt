@@ -1,0 +1,93 @@
+
+textParts structure:
+	[text1,option1,text2,option2,...]
+
+last element can be text or option
+
+---
+
+compiled single filter structure:
+
+Filter filterLvl1: {
+	text: String,
+	compiled: true,
+	subfilters: {
+		'f1': Filter filterLvl11: {
+			text: String,
+			compiled: true,
+			subfilters: {
+				'f1f1': {
+					Filter filterLvl111: {
+						text: String,
+						fullText: String,
+					},
+				},
+				'f1f2': {
+					...
+				},
+			},
+			submatcher: Matcher,
+		},
+		'f2': Filter filterLvl12: {
+			...
+		},
+		'f3': InvalidFilter filterLvl13,
+	},
+	submatcher: Matcher,
+}
+
+when subfilters is empty, compiled doesn't matter
+
+---
+
+filterChg.filters (always compiled):
+	same as Filter.knownFilters
+
+filterChg.removed:
+{
+	'f1': {
+		'f11': {
+			...
+		},
+		'f12': {
+			...
+		},
+	},
+	'f2': {
+		...
+	},
+}
+
+---
+
+uncompiled single filter structure:
+
+Filter filterLvl1: {
+	text: String,
+	compiled: false,
+	subfilters: {
+		'fullText1': [textParts,dummyFilter],
+		'fullText2': ...,
+	},
+	submatcher: Matcher,
+}
+
+textParts,dummyFilter is in a single array without subarrays
+
+dummyFilter is a text object of filter properties (hitcount, disabled, etc.), and its properties will be copied into the last subfilter
+
+---
+
+remNodes structure:
+	remNodes is an array-based tree, each element is a sub-tree
+		this is different from a the usual tree, where only leaves are stored, here all the nodes are stored
+	
+	single-element tree:
+		remNode
+	
+	example tree ([0] stores the parent node):
+		[remNode,remNode,...,[remNode,remNode,remNode,...],...]
+
+remNodes stores all nodes not filtered, and is used when a filter is added through the 'filter' link
+	to filter the nodes still shown
+

@@ -1,0 +1,846 @@
+
+Filter search method:
+	Filters consist of two types: regex, normal, or function filters
+	At start, as many regex filters are converted into normal filters for processing,
+		using pattern search
+	Different options are grouped into different option-filter groups
+
+---
+2011-01-28
+
+see doc.html
+
+will follow adblock plus's syntax for:
+	Basic filter rules
+	Defining exception rules
+	Matching at beginning/end of an address
+	Comments
+	Specifying filter options (with different options)
+	Using regular expressions
+
+filter optimization groups:
+	normal/simple regex: extract keywords, check keywords match, then check if filters match
+	matching at beginning/end: use startswithm for start keywords, and extract keywords to the normal/simple regex group
+	complex regex: usual matching
+	comments: ignore
+
+combine whitelist/blacklist first then seperate them according to index, this will make things faster
+
+--
+minimum keyword length?
+
+keywords for regular expressions:
+	parse as much as possible
+
+conversion to keywords should be stored, to avoid converting all filters again next time?
+see if this is faster than sort/difference
+
+could use startswithm for pattern keywords, but this probably will slow things down, because not many keywords will overlap anyway
+	so will use matchStr
+
+right now will not treat 'or' in regex
+	in future might split keywords and test if anything in or matches
+
+-characters such as \n do not appear in urls, but will include them anyway for completeness
+-
+-will have a check with all keywords if character is a valid url character
+patterns do not necessary have to match urls, they can match descriptions, etc.
+
+control characters:
+	cA-cZ
+	\x01-\x1A
+
+will not optimize matching at end
+
+---
+theres also the issue about case sensitivity
+
+adding a sperate array for sensitivity might slow things down, so by default everything is case-insensitive, after match, will then check case-
+	sensitivity
+
+for case-sensitive normal filters will parse keywords again, for regex will just match with regex
+
+treat grouping/char match times seperately
+
+-removing redundant keywords is needed because of regex
+calling the group function will make this unnecessary
+
+it is best to not have redundant keywords, or this will be slow to add new filters with an pre-computed keyword array
+
+---
+-run regexp keyword tests:
+-	re2
+-	google v8
+these aren't very useful for this purpose
+
+testing if a regex group is a nop is not trivial:
+	/(?=|[])?/ is a nop
+	/(?=|[?])?/ isn't
+
+so need a var to process if the group is actually a nop
+
+the extraction routine assumes that everything is already simplified
+e.g. expressions like this will be ignored
+	c(ab|ab)d
+	(ab)\1
+
+i.e.
+	the routine will only go forward and never look back/record anything from before
+
+---
+-there is no point in matching keyword sequences to filters
+-invalid filters can be 'pop'ed from the filter list so they are no longer needed
+this is alright, since the mapping can be one way; modifying filters in-place is not necessary
+
+--for filters that match keywords, to check if they match the string, can convert them to regex
+--	this will allow the ^ seperator character as in adblock plus
+--	makes things slower?
+--	adblock plus does this
+-this is probably slower, because without regex only the keyword start/end positions need to be checked
+however, case-sensitive matches need to match the entire string again
+
+will not introduce wildcard chars into aho-corasick
+	this will introduce wildcard overlap, e.g. \d and \w, and make things a lot slower (many more possible chars on each node of the tree)
+
+in adblock plus, filter matching is much faster with the same test used here:
+	https://adblockplus.org/forum/viewtopic.php?p=38095#p38095
+
+compared to 43.4ms, aho-corasick (raw) uses 138ms
+
+can reduce this by changing tree structure to matchStr.py (only for cases where the elements can be hashed)
+
+to convert into this format, the initialization time would be more, but there will not be as many filters, but the urls would be more than abp
+
+can reduce initialization time by doing fail in one pass, can do this by grouping fail/success and difference is fail node is equivalent
+	to root
+
+---
+domain name matching should use keywords first
+
+e.g. the filter: ||com.au should match:
+	google.com.au
+	abc.com.au
+
+there isn't a way to determine which subdomain to use
+
+---
+can't see a way of storing/retrieving the aho-corasick tree efficiently
+	addons can have global variables
+	greasemonkey needs to initialize filters every time (this is probably faster than converting from string for complex objects)
+
+rabin-karp for multiple string matching requires the first n chars of the pattern be used, the rest is false positive
+if n=1, this is about the same as trivial
+
+adblock plus uses n=8
+
+-using matchStrInit for the whole string is equivalent to rabin-karp for the whole string length
+it is faster
+
+-to decrease storage, can use aho-corasick and rabin-karp
+-can do this by splitting the pattern into n parts
+-use the n parts to get an aho-corasick table
+pattern matching will be wrong, since might be at the middle of n
+
+will use rabin-karp
+
+if a pattern is smaller than n, it must be purged
+
+-when no hashes are working for [i:i+n], this means that for the first n chars of all patterns, none match
+-	now need to find a pattern which starts at i+1, if there are none can skip 1, if none at i+2 can skip 2
+-	until there are hashes, don't need to store these, only the skip value (as set lookup is about the same)
+-	then check if any succeed, if none do, have another skip value until it is 1
+-
+-if a hash matches, check next hash of patterns that match, store like above, but need to store hashes
+-	this time (like matchstrm); if none match, store skip value only like above
+this is pointless, there is a small likelihood
+	patterns: abc, abd; if none match, string could as well be 'aabc', can only skip 1
+
+if rabin-karp, will store patterns like matchstrm or aho-corasick when match succeeds
+
+adblock plus uses pure rabin-karp, and stores only 1 hash per filter
+
+the new adblock plus algorithm splits the url and the filter so can combine chars into blocks,
+	-this is url-specific and won't work in general cases
+	it might work in general cases
+	the problem is that some filters might not have shortcuts
+
+	will use this for now
+
+---
+main greasemonkey script startup is in:
+	greasemonkey.js }} injectScripts
+
+can't see anywhere to put global vars in
+---
+
+will re-use abp code
+
+since matchFilter.js uses the ac classes, will not use this anymore
+
+will modify abp's js as little as possible
+
+can use fromObject to load filters:
+	'obj map of serialized properties and their values'
+
+will ignore domain, third-party and add wrapper functions for custom functions
+
+---
+in gui, need to display (like adblock plus):
+	filter (red for invalid filter)
+	enabled
+	slow filter
+	filter match count
+
+can use a selectable table for this
+
+adblock plus serialized filters:
+	C:\Users\Steven\AppData\Roaming\Mozilla\Firefox\Profiles\xd56ivw8.default\adblockplus
+
+---
+cannot use require for abp js, as greasemonkey only allows specifying the path via url
+
+to minify abp, can use:
+	JSMin
+	Dojo shrinksafe
+	YUI Compressor
+
+will not use JSMin, this doesn't change names of local vars, or put the file into multiple short lines
+	JSMin/jsMin+ do not support javascript 1.7
+
+YUI compressor does not support 'let'
+	http://yuilibrary.com/projects/yuicompressor/ticket/2086532
+
+javascript 1.7 was introduced 2 years ago, and the last release of yui compressor was about that time
+
+the rhino that comes with YUI supports javascript 1.7, don't think shrinksafe supports it,
+	since using -js-version 170 does not help
+
+can't find a minifier that supports javascript 1.7
+
+will for now use something to merge the sources to google search filter plus
+
+---
+-adblock plus uses an ini file, this wouldn't be as efficient as json
+serializing only takes slightly longer, while deserializing is about the same speed; will use the ini format
+
+the matcher and filter classes need to be seperate
+	filter: managers all filter operations
+	matcher: needs to init keywords, etc.
+
+will do additional params later (maybe chain filter rules, etc.), filter storage will still be the same
+
+filter chain syntax: directly after '$'
+e.g.
+	test1$,test2$summary,test3$title
+
+filter format: check each param in order, use an associaitve array to see which to test next, etc.
+
+filter storage format:
+	[Filter]
+	single filter options
+	[Simple Store]
+	text of each filter without any other attributes (hit count, etc.)
+
+won't use jquery for config, or init time will take too long
+	the config box needs to be draggable, not needed to be resizable
+	min-width/max-width is only useful when the config box is resizable, table rows can't have this
+		in this case these properties will be purged
+		(previously these values existed as the width/height depended on some google page properties)
+
+filters should be a sortable table, like abp
+
+editable grid modules:
+	dojox.grid.DataGrid
+	http://dhtmlx.com/docs/products/dhtmlxGrid/ (commercial)
+	http://www.webismymind.be/editablegrid/
+	jqgrid
+	xul (firefox only)
+
+-actually a better implemention would be to use an editable treegrid
+-	jqgrid
+this is not necessary and will make the code bloated, the filter catagories are:
+	allow filters
+	invalid filters
+	normal filters
+	
+	normal filters probably won't start with '@', so sorting by name will make the filters sorted anyway
+
+can add a 'open blockable items'
+
+---
+need to make the table scroll
+
+---
+
+[done] when deleting a row, table should be the same width
+	the scrollbar is taking up space
+[done] different width in body and header
+	this is because the scrollbar is taking up space
+	making the width smaller solves the issue
+[done] filter color processing
+[done] make prefGui.html possible to embed directly into src using merge.py (add dummy js file when debugging prefGui when necessary, and don't
+	include this in the final src)
+[done] prevent dragging on exit button
+[done] record row changes, so only need to process that particular row when saving filters
+-change class self-referencing to 'this'
+	this works because the callee is the parent, however would be best to use in object-cases, since when referencing other classes,
+		cannot use 'this'
+[done] to ensure importing filters does not save the current filters, reset Filter.knownFilters and load this afterwards to get a new knownFilters array
+[done] will not use id2filter but use the filters structure abp uses, since it seems that short keys takes longer than long keys
+[done] have a merge filters option when importing filters
++add 'hide results completely' to pref
+-keep two filter objects: knownFilters and currentFilters; there is no need to have an added removed filters list
+	this will increase memory usage and will have copy time, since exportFilters is not used that much
+
+in javascript, adding strings is faster than join
+
+removedFilters and addedFilters should not overlap
+	removedFilters: filters in knownFilters that are removed
+	addedFilters: filters changed/added to knownFitlers
+
+addedFilters and knownFilters are not mutually exclusive
+
+[done] there is no point having addedFilters and removedFilters, this does not offer a speed gain
+	modifying a filter each time needs to check against knownFilters (speed minimal, even in very large arrays)
+	every time filters are imported, they need to be diffed against new filters (slightly higher than duplicating knownFilters)
+	the only speed up is there won't be a need to duplicate the knownFilters object at startup (at 10000 filters, 7ms)
+
+	there can be a compromise:
+		filters=currFilters+addedFilters-removedFilters
+		
+		initially, currFilters is knownFilters
+			when importing it can be changed to the imported filters
+			when exporting it can be a copy of knownFilters with the changes flushed
+		
+		this moves the startup time to export time
+
+can't check if current area is input area when pressing ESC to exit, since the input box closes before the keypress event fires
+
+-will not check column widths each time addRow/removeRow is called
+	this won't slow down by much if buffered
+
+[done] fix esc sometimes closing import/export first
+[done] when closing pref dialog, only prefWindow needs to be finalized, the grid itself does not need to be re-rendered
+	since the filters haven't changed
+[done] when adding new filter need to make modelChanged fire even after filter is not edited
+	could hook editablegrid.isSame, but this might be a bad idea since it is too internal
+	actually will do this since some other functions are hooked anyway, and this is a public api
+[done] fix overflow problem when filter is too long
+
+-filters do not need to be saved when pref is saved, only needed when window is closed
+	might have multi-tab open, best to save when save is clicked
+
+[todo] might have language support in the future
+
+styles are faster than having base64 src for each image
+
+to solve the "div cannot be inside a" problem, can use 'a' only without div, and add display:block and background-url
+
+loading the raw source of editablegrid instead of loading the packed version is much faster because of packing
+
+-will replace adding event listeners for editablegrid in merge.js instead of using prototype, since wrapped elements do not support prototype
+-
+-currently merge.py is very crude with many assumptions (e.g. strings do not contain {})
+-	might use antlr to parse js?
+its too hard doing this automatically without parsing, since events can be set to null, the equivalent of RemoveEventListener
+need some js handlers to emulate event listeners
+it's very hard even with parsing, since parsing needs to determine which event handler was attached when removing event handlers
+another option might be to do everything in unsafeWindow, however this will disable the sandbox
+
+will modify the editablegrid lib manually to make things work
+
+[done] make scrollIntoView call only when having scrollbox
+
+---
+
+-when there are multiple search items, e.g. videos, add only 1 'hide result' link to box and filter individual videos when applying filter
+have a class to filter the main result, and individual results to get nodes, add links, etc.
+
+functions that hide nodes, create filters, etc. should only be 1 function telling what to hide, what links to add and calling the classes
+
+filterNode determines if node should be hidden
+
+main function that iterates through all the nodes calling filterNode, calls hideNode if nodes need to be hidden
+
+filter links don't need to be removed when adding a filter on a result, only the results showing need to be processed,
+	like abp does
+
+will do depth-first search for nodes
+
+need to use snapshotItem instead of converting to arrays, since this will make auto-pagerize support faster
+
+node storage:
+	[node,node,...,[filterClass,node,node,...],...]
+
+filterClass is the filter class of all nodes in the array, until an array is encoutered as a node
+
+will not store all the descriptions, titles, urls in node storage, this will take up too much space
+
+getResults for xxx: get all xxx results in xxx node
+
+should actually be 2 classes:
+	parent node class and child node class, e.g.
+		video node (which looks like text node but isn't)
+		video node children (with the video thumbs)
+
+only parent should have getResults(), children should get results of children's children (in the case of videos, none exist)
+
+nodeRes should store both parent and child classes (after applying filter, parent class might get filtered too)
+
+need parent class, as this could e.g. be able to filter out all videos in search results
+
+parent nodes should not have 'hide result' links
+
+-blacklists are more important than whitelists when hiding parent nodes
+whitelists should be, since the parent nodes aren't as detailed as the children
+
+most properties aren't that for filter adding, etc., can include them as functions instead of properties
+	important properties:
+		url
+		title
+
+because title might not be needed often, can use an object with getters, and get properties from there
+
+evaluate time takes quite long and this will save time
+
+the stored filterClass is the class including parent and children, since both needs to be accessed in filterRem,
+	but when used in arguments should be the single one
+
+storage:
+	[node,node,...,[filterClassA,parentNode,node,node,...],...]
+
+[done] _filterResultsRem should remove the 'add filter' link
+[done] use styles for filter links instead of adding directly to 'style'
+	the time difference is negligible
+[done] buffering the nodes first then using cloneNode() is faster
+-use float:right for hide link
+	this doesn't look good
+[done] add an unkown node when encountering nodes that can't be processed
+
+for 100 results takes about 100ms without filtering, this is quite significant and should try and speed things up
+
+when serializing filters, escape is much faster than replace
+
+[done] make filters work with auto-pagerize for googleMonkeyR
+	initializing this won't be an option and will always happen, since adding an event listener doesn't take much time
+	will make this feature in 'extensions' class, since each script is quite specific
+	could use xpath with 1 event firing every load, or have 1 event fire for each result node added
+	xpath might be slower
+-filterResult's filterClass is not necessary, since each node gets its own filterClass, only the parent filterClass needs to be known
+	there are default classes, since there are parent/child classes
+[done] change the parent/child model to different result classes on the same level
+[done] make auto-pagerize for googleMonkeyR update hitCount
+-add filterClass to nodeData
+	this is not needed, since only nodes are stored
+-change structure to: once nodeClass changes, put it in array, this is needed since nodeClass is not stored
+	no need to put in array, since need constructor compare, can just construct some node objects and compare them
+
+after changing main result recognition from class to id, now filters much faster (79ms for 100 results without hiding)
+
+will not filter live results for now
+
+still need to make matching faster
+
+[done] test logTime.profile
+
+half the time (~36ms) is spent adding 'add filter' to the nodes, can't make this any faster, tried bundling the dash and the link
+
+[done] hide parent node if all child nodes hidden, when resHidden==true
+
+[done] pref window bug, add filter then edit filter exit will display 'filter already exists'
+	this was due to not restoring editableGrid.isSame
+-dragging window is slow, save image first then drag
+	can't save image with js, as dont need to drag much and need to see filter contents, can hide every row currently invisible?
+
+[done] fix bug when importing filters, then selecting will select old value (before importing)
+	can't use existing editableGrid, since existing grid needs to have columns changed, and the renderes are assigned to the columns
+	needed to unattach existing event handlers on table
+
+[done] fix comment filter class
+
+[done] fix hitcount for whitelist filters
+
+-don't need to check if s is empty, because filters can be empty
+if empty, will have '[Simple Store]'
+
+[done] fix header html
+	can't save/load after fixing width, need to do this again, since will lose event handlers after replacing innerHTML
+	after rendering html has changed, therefore can't save afterwards
+	need to reset table width
+	can add another style node
+
+
+[done] add title, summary, query options
+	initialize urls first, then all title, etc. filters when a url filter matches
+	filter syntax: url$title$summary
+	dont need to modify current Matcher.js for other types of matching, the seperator should be a space
+	need to replace FilterClasses: matches() to know if title, etc. matches if url matches
+	don't need to replace anything else since abp accepts spaces in filters
+	the seperate filters won't have blacklist/whitelist but will follow whats in front of the first filter
+	
+	-filter object storage: 3 shortcut hashes, initialized when used, this is to avoid initializing 
+	-actually the likelihood of the same filter with different titles/summaries is unlikely
+	google custom search has this requirement
+	
+	-will initialize a new filter object only when above a certain number of filters, since the time spent initializing
+	-	a new MatchFilter is significant
+	its not too significant, since initializing 1000 times takes 17ms, having 1000 different url matches isn't likely
+
+	storage:
+		need to set the full text on the filter object if only there are more filter types
+			this is much faster than constructing another dict containing all the filters
+		
+		{filterText: filter}
+		
+		additional filter properties:
+			filter.fullText
+			filter.titleFilters=[titleFilters]
+				when initialized will be a dict containing a similar structure to filter,
+					but without filter.fullText
+				make this a getter so its only initialized once
+		
+		titleFilters, summaryFilters
+		
+		for dict keys need to use partial filterText instead of full, since need to know if the filter is present
+		
+		fullText should only be needed when filter has options other than url
+
+	[done] fix filter stringify
+	
+	leave regex as const to prevent re-compiling
+	
+	-dont need to escape when parsing, since only 2 parts in filters (simple store is not escaped, no need for others
+		split doesn't work the way it should
+	
+	remove all Filters. reference in prefGui.js
+		to keep prefGui from storing all filters, can make Filters.knownFilters empty, and generate single filter
+		-each filter will be referenced by its fullText (need new filter array copy)
+		will have functions: exists
+		
+		have old structure, added, removed
+		
+		seperate filter will only have 1 subfilter; added, removed will have multiple
+		
+		still need to compile filters, since it isn't known whether a filter exists before compiling, and need to know filter type, etc.
+	
+	for each subfilter, text: text part of filter (backref to filter key), fullText: entire text of filter (only in deepest subfilters)
+	
+	filter getters need to compile all subfilters?
+	
+	-now having addedFilters/removedFilters is not necessary, since initializing always needs to get all filters
+		filters are compiled when added, and this doesn't save filter key info
+	
+	added/changed need to compile all subfilters, since it needs to determine if entire filter is valid
+	
+	filter structure:
+		{
+			filter1:{
+				partialText1:{
+					filter2:{
+						partialText2:{
+							filter3:{
+								partialText3: filter4
+							},
+						},
+						matcher
+					},
+				},
+				matcher
+			},
+		}
+	-when initializing, everything except matcher should be present
+	-filters dont need to be
+	-	should change the structure so that partial texts aren't under filters
+	-	
+	-	{
+	-		partialText1: [{partialText2:...},filter1,matcher],
+	-	}
+	will leave everyting as-is, since only filter would be given if it matches, need to check subfilters subsequently	
+	
+	[done] fix gfpFilter getters
+	
+	-if leave filters uncompiled when editing, will waste time with compiled filters in filter editor
+		when a new filter is added will compile all subfilters
+	only will compile when combining
+	
+	[done] all disabled/hitcount info should be stored in last subfilter
+		(make fromObject go to text first)
+
+	situations like these are not permitted:
+		||example.com
+		||example.com$$test
+	
+	this ensures that the filter on top doesn't ever need to be considered
+
+	---
+	
+	need to compile everything beforehand because need to determine if valid in gui
+	add/remove will stay compiled
+
+	structure of textParts:
+		[text1,option1,text2,option2,...,dummyFilter]
+		
+		dummyFilter contains properties of the filter obj
+
+	invalid filters are written to filters, but won't have subfilters
+
+	if all child filters invalid, parent won't be invalid, this is to speed things up and be consistent (invalid applies to subfilters only)
+	
+	--if all deleted, parent won't be deleted, but .subfilters will be present
+	--	this is needed since .subfilters determines if the filter is a parent filter, not a single filter by itself
+	--	changing filter text shouldn't affect this, since the old filter will be deleted first
+	-this will actually slow things down, since if not deleted every addFilter will need to delete subfilters (if present)
+	this is faster, since it is hard to know if subfilters is empty
+	
+	-remove text and change it to fullText?
+		filterClasses need this when adding a filter to knownFilters
+
+	will merge removedFilters and addedFilters
+	
+	--for consistency, will store filters into arg: filters, and make this knownFilters when needed
+	-will swap out Filter.knownFilters
+	can make it 'this' when hooking
+
+	-fix searchGui.addFromResult
+	-	when adding a filter, depends on whether filters is compiled or not, if it is, need to update matcher, etc.
+	filters are now always compiled	
+	
+	-filter compilation is synced with matcher compilation
+	prefGui needs to compile filters, but not all matchers
+
+	will keep filters iterator, since it doesn't have much of a performance decrease (calling functions is neglible)
+	
+	[done] remove all Filters. reference in prefGui.js
+		change: filters iterator, merge (put in prefGui)
+		addFilters
+		removeFilters
+		knownFilters
+		
+		if subfilters is empty, don't remove subfilters, as need to signal this is not the final filter
+			can't check using fullText
+		
+		in addFilters, filter itself needs to be copied, since subfilters is an attribute
+	
+	-fromText & fromTextCompiled need to check if filter is already present
+		-can have same filter text but different hitCount, fromText needs to set this if present
+			this won't be addressed here, will override without warning
+	don't need to do this, fromTextParts already does this
+	
+	don't need to update matchers in prefGui.js, only do this when page reloads (need to update filters due to filterStorage, same as abp behaviour)
+	
+	for individual filters, will not make addFilter return filterParts, will need to call isSlowFilter by using filter keys
+		-however can add filters from keys?
+		keys contain options
+		
+	-remove options from keys
+		it is plausible to have a key with match-case title but not summary (e.g. start of title), and for now this can
+		only be used to speeding up isSlowFilter
+		abp also counts these as seperate
+	
+	-having an '$' at the end of a string won't be legal
+	this is not necessary, the regexp ignores this, with or without '$' there will be a last textPart
+	
+	[done] fix remove first filter error
+	
+	[done] fixed fromTextOptions exception not catched
+		changed to return InvalidFilter
+	
+	[done] fix filter with option does not show up
+		need to fix textParts.split
+		can't have split end with an empty string, or can't determine between:
+			a$option	(3)
+			a$option$b	(3)
+			a$			(3)
+			a			(1)
+		
+		after shifting 2 from types 1,2,3, they will contain 1, this can be empty (types 1,3), or not be empty (type 2)
+	
+	[done] fix edit filter with subfilters
+
+	-getSubfilter will accept filters which contain key, have no subfilters, but do not end with key, since these filters will be equivalent
+		best to have seperate functions
+
+	[done] fix 'filter already exists' when editing current line ('a$$b' => 'a$$b$$c')
+	
+	[done] fix slow filter checking: /test1/*$$/test2/*
+	
+	-fix incorrect filter marked as valid: /test1/*$/test2/*
+	this is treated as a single filter, since the options contain more than [\w,]
+	will not do further checks since it is a waste of time
+
+
++see if saving the shortcuts & regexp will decrease filter load time (everything else will need to be loaded)
+
+[done] make sign-in work
+
+[done] fix video link:
+	http://www.google.com.au/search?hl=en&source=hp&biw=1366&bih=575&q=oron+premium+link+generator&aq=f&aqi=&aql=&oq=
+
+[done] make filter link work
+	changed fromTextCompiled so that it checks if filters are all compiled
+	this is ok since it is mostly called in the gui, and won't take much time by checking an attribute
+	need to clear matcher afterwards
+
+[done] fix bug in prefgui
+	change 'a$$b$$c' to 'a$$b' won't get exported
+
+[done] fix subfilters not displaying properly when initializing in pref
+
+[done] hitcount not updating when subfilter matches
+	this is due to object properties not being copied when initializing
+	this requires dummyFilter to be an ActiveFilter
+	will re-write fromObject
+
+[done] filter link not filtering anything after adding a subfilter
+
+[done] fromText displays undefined in pref text when adding subfilter
+
+[done] fix changing an existing subfilter raises exception
+	this is because removing it needs to set a subfilter in pref.chg.filters doesn't have the required subfilter
+	if keep the current structure, will need to copy a subfilter from knownFilters each time the filter is removed
+	it is easier and faster to keep a removedFilters, it only needs to be accessed when the filter is removed,
+		and when filter exists in getFilter
+	for merge is close to same, since unlikely to remove and re-add
+	when removing a filter in knownFilters and merging to filterChg, still need to clone the filter, but not the other way around,
+		so this still saves time
+
+[done] can't remove existing subfilter in pref
+
+[done] fix saving removed filters not working
+
+[done] fix does not work without googlemonkeyr
+
+[done] fix not matching with 3 subfilters
+	this needs re-writing of matchesAny
+
+[done] fixed gfpMatcher not checking type of filter before adding
+
+[done] fix level 1 filters have fullText when they should'nt have
+
+[done] fix disabled filter getting added to matcher
+
+[done] query isn't being used for now, so stripping it
+	can make last part query, but can do this in gfpMatcher instead of searchGui
+
+[done] fix can't filter more than 2 links
+
+[done] replace google custom search links (google url redirect)?
+	will only fix for custom search
+
+[done] fix google custom search url
+
+[done] add prefLink in google custom search
+
+will not support google instant, as googlemonkeyr doesn't support it, and this requires implementing ajax-load as well
+
+can cut back time on:
+	parse
+	stringify
+	matcher
+
+[done] query selector faster than xpath
+	query selectors are faster, replace when possible
+
+[done] google instant filter link not working
+
+[done] google instant filter hitcount not updating
+
+[done] exts should not treat nodes as text, should be res
+
+[done] make google instant ext use last node as checking and nextSibling instead of xpath
+	not sure why, but parentNode still exists after node being removed
+	-a better alternative is to wait until all xhr have finished
+	waiting for the current request is good enough
+	still need event when result nodes change
+
++make google instant support refreshing page with 'ires'
+
+[done] make filter processing prettier on google home page
+	check if home page in searchGui
+	this allows the function to return
+
+[done] fix greasemonkey sandbox warning when hooking XMLHttpRequest
+
+[done] make filters save only when pref is updated
+	this only applies to ext
+
+[done] make google instant caching work (present in both google.com and google.com.au)
+
+[done] using events in the greasemonkey sandbox causes flicker
+	seems like theres no alternative, can temporarily hide the nodes first
+	there is still a flicker even when hiding the nodes, but much less noticeble
+changing the order of hiding nodes removes the flicker
+
+[done] need to keep track of:
+	hidden nodes start
+	last hidden node
+	last processed node (set to hidden nodes start when processed is true)
+	
+	processed is not needed, since the event is only sent when there are new nodes
+		thread 1 hides nodes that are received, notifies thread 2
+		thread 2 filters & unhides nodes starting from node 1
+
+	startHideNode is not needed
+
+[done] remove 'remove mouseclicked' on link?
+	gfp should only handle filtering, not removing link tracking
+
+---there is a small flicker when processing events, can hook window.sendMessage
+--	this makes things too complicated
+-will do this to remove flicker
+this needs to hide much more than results, so won't do it
+
+[done] cancelling pref retains the edited filter list
+
+[done] adding empty filter raises exception
+
+[done] cannot add a filter and close twice
+
++if there are only changes, remove rows instead of re-rendering the grid when editing a filter then cancelling
+	this should be faster than re-rendering filter grid
+	
+	need to remove added rows
+	need to change values of existing rows
+	need to add removed rows
+	
+	to do this,
+		-need to iterate over all knownFilters and check to see which rows what the un-modified text is (can't determine solely using filter changes)
+		can iterate over chg.filters and check for original values if exist, if not remove the filter row
+	
+	iterate over all rows, check if text is in pref.chg.filters
+		true:
+			check if text is in Filter.knownFilters
+				true:
+					change row back to original value
+				false:
+					remove row
+		false:
+			nop
+	iterate over pref.chg.removed
+		add row
+	
+	editableGrid.data
+
+
++speed up editableGrid rendering
+	this is possible, since raw html rendering is much faster
+
+[done] pref image height/width don't work on firefox 4
+	changed -moz-background-size to background-size
+
+[done] increase z-index
+	(set highest?)
+	doesn't seem to be a good way to set the highest, so will set some 9999... value
+
++fix white-list not working:
+	@@|www.crystal-product.com
+	||crystal-product.com
+	
+	update to latest abp engine while fixing this
+
++to update the abp engine, use git cherry pick:
+	http://stackoverflow.com/questions/1405030/using-git-how-can-i-selectively-pull-merge-changes-from-anothers-fork
+
++put *.txt and other source files (matcher.js) into the git repo, then get rid of non-todo portions of notes.txt after a commit
+
++move to slickgrid

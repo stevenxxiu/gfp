@@ -1,0 +1,54 @@
+
+need to ensure:
+	eventListener does not get added more than once
+	[done] use preventDefault instead of 'return false'
+	[done] 'this' is correct
+	make sure elements aren't set custom properties (this is used in event listeners)
+		main custom property is setting node.editablegrid, get rid of this
+
+will start modifying 1.0.11 instead
+fix bug when there are multiple invalid cells, then select will not save changes
+
+-
+
+adding an event listener with the same function pointer twice will only fire once
+
+-
+
+replaced event listeners:
+	editablegrid.js
+	editablegrid_charts.js
+	editablegrid_utils.js
+	editablegrid_validators.js
+	editablegrid_editors.js
+	editablegrid_renderers.js
+
+make unattach method?
+
+attaching the same functions are ok, since the elements are different when having different tables
+this will also prevent attaching twice on the same table
+	(cannot attach 2 same event listeners twice)
+
+each cell renderer from now on will only render 1 element (seems to work when editing simultaneously)
+
+---
+
+need to replace:
+	element.isEditing
+	element.rowIndex
+	element.columnIndex
+
+can construct new object or replace these with element tags
+
+will be better to set attributes, since if an external function needs to know the attributes, will need an array storing the object conversions
+	otherwise
+
+takes <1ms which is not noticeble
+
+the code fixes a bug when name column shouldn't have simultaneous-editing?
+
+childNodes doesn't have indexOf, so need rowIndex/columnIndex
+
+there are however cellIndex/rowIndex for each element, this actually takes longer, but getting/setting added takes longer than rowIndex
+
+changed to rowIndex/cellIndex

@@ -41,8 +41,8 @@ class JS:
 			base,
 			#
 			JS.str2descriptor('adblock plus matching classes'),
-			open('../matchFilter(abp)/FilterClasses.js','r').read(),
-			open('../matchFilter(abp)/Matcher.js','r').read(),
+			open('./matchFilter(abp)/FilterClasses.js','r').read(),
+			open('./matchFilter(abp)/Matcher.js','r').read(),
 			#
 			JS.str2descriptor('google search filter plus'),
 			open('gfpFilter.js','r').read(),

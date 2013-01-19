@@ -1,0 +1,80 @@
+
+<script src="FilterClasses.js" type="application/javascript;version=1.7"></script>
+
+<script type="application/javascript;version=1.7">
+
+//generate test data
+
+var filter={
+	text: '@@.api.playtomic.com/crossdomain.xml',
+	hitCount: 23,
+	lastHit: 1297467294703,
+}
+
+var filters=[];
+for(var i=0;i<10000;i++) filters.push(filter);
+
+//ini serialize
+var currTime=(new Date()).getTime();
+	
+var buffer=[];
+for(let i=0;i<filters.length;i++){
+	let filter=filters[i];
+	buffer.push('[Filter]');
+	buffer.push('text='+filter.text);
+	buffer.push('hitCount='+filter.hitCount.toString());
+	buffer.push('lastHit='+filter.lastHit.toString());
+	/*for(let key in filter){
+		buffer.push(key+'='+filter[key].toString());
+	}*/
+}
+var s=buffer.join('\n');
+document.write('ini serialize time: '+((new Date()).getTime()-currTime)+'ms');
+document.write('<br>');
+
+//ini deserialize
+var currTime=(new Date()).getTime();
+	
+var buffer=s.split('\n');
+var filterRes;
+for(let i=0;i<buffer.length;i++){
+	filterRes={};
+	for(;buffer[i]!='[Filter]' && i<buffer.length;i++){
+		let [key,val]=buffer[i].split('=');
+		filterRes[key]=val;
+	}
+}
+var s=buffer.join('');
+document.write('ini deserialize time: '+((new Date()).getTime()-currTime)+'ms');
+document.write('<br>');
+
+//ini simplified serialize
+var currTime=(new Date()).getTime();
+var buffer=filters.map(function(n) n.text);
+var s=buffer.join('\n');
+document.write('ini simplified serialize time: '+((new Date()).getTime()-currTime)+'ms');
+document.write('<br>');
+
+//ini simplified deserialize
+var currTime=(new Date()).getTime();
+buffer=s.split('\n');
+for(let i=0;i<buffer.length;i++){
+	Filter.fromText(buffer[i]);
+}
+document.write('ini simplified deserialize time: '+((new Date()).getTime()-currTime)+'ms');
+document.write('<br>');
+
+//json serialize
+var currTime=(new Date()).getTime();
+var s=JSON.stringify(filters);
+document.write('json serialize time: '+((new Date()).getTime()-currTime)+'ms');
+document.write('<br>');
+
+//json deserialize
+var currTime=(new Date()).getTime();
+JSON.parse(s);
+document.write('json deserialize time: '+((new Date()).getTime()-currTime)+'ms');
+document.write('<br>');
+
+</script>
+
