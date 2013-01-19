@@ -39,6 +39,8 @@ class JS:
 		base=JS.updateUserscriptsMetadata(open('base.js','r').read())
 		contents=[
 			base,
+			open('utils.js','r').read(),
+			open('logger.js','r').read(),
 			#
 			JS.str2descriptor('adblock plus matching classes'),
 			open('./matchFilter(abp)/FilterClasses.js','r').read(),

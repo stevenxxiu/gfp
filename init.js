@@ -1,5 +1,6 @@
 
 function init(){
+	logger.init();
 	logTime.start();
 	if(ext.init()==false){logger.error('ext.init()'); return;}
 	if(gfpFilter.init()==false){logger.error('gfpFilter.init()'); return;}
