@@ -59,8 +59,6 @@ let ext={
 			});
 			
 			let observeResults=function(results){
-				//googlemonkeyr moves existing results nodes into the 'GoogleTabledResults' node created by it, these are already processed so don't process them again
-				procNodeNum=searchGui.r.res.getResults(results).length;
 				//use parentNode, since googlemonkeyr creates the 'GoogleTabledResults' node and add results there, the results node won't have anything added to it
 				resultsObserver.observe(results.parentNode,{childList: true, subtree: true});
 			};
@@ -73,6 +71,9 @@ let ext={
 			if(config.ext.indexOf('instant')>-1){
 				window.addEventListener('instantResults',function(e){
 					results=searchGui.getResults();
+					//googlemonkeyr moves existing results nodes into the 'GoogleTabledResults' node created by it, these are already processed so don't process them again
+					//	this only occurs in instant
+					procNodeNum=searchGui.r.res.getResults(results).length;
 					observeResults(results);
 				},false);
 			}
