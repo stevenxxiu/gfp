@@ -1,0 +1,6 @@
+
+the match-all ('.') filter is useful for testing
+
+googlemonkeyr plugin:
+	use the '.' filter which matches all results, load some new results to see if they are filtered
+		then open pref to see if the hit count is updated or not
