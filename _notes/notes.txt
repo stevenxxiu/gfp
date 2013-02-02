@@ -753,8 +753,6 @@ can cut back time on:
 	waiting for the current request is good enough
 	still need event when result nodes change
 
-+make google instant support refreshing page with 'ires'
-
 [done] make filter processing prettier on google home page
 	check if home page in searchGui
 	this allows the function to return
