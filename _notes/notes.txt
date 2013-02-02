@@ -292,8 +292,6 @@ need to make the table scroll
 -keep two filter objects: knownFilters and currentFilters; there is no need to have an added removed filters list
 	this will increase memory usage and will have copy time, since exportFilters is not used that much
 
-in javascript, adding strings is faster than join
-
 removedFilters and addedFilters should not overlap
 	removedFilters: filters in knownFilters that are removed
 	addedFilters: filters changed/added to knownFitlers
@@ -332,8 +330,6 @@ can't check if current area is input area when pressing ESC to exit, since the i
 
 [todo] might have language support in the future
 
-styles are faster than having base64 src for each image
-
 to solve the "div cannot be inside a" problem, can use 'a' only without div, and add display:block and background-url
 
 loading the raw source of editablegrid instead of loading the packed version is much faster because of packing
@@ -366,8 +362,6 @@ filter links don't need to be removed when adding a filter on a result, only the
 	like abp does
 
 will do depth-first search for nodes
-
-need to use snapshotItem instead of converting to arrays, since this will make auto-pagerize support faster
 
 node storage:
 	[node,node,...,[filterClass,node,node,...],...]
@@ -412,7 +406,7 @@ storage:
 [done] _filterResultsRem should remove the 'add filter' link
 [done] use styles for filter links instead of adding directly to 'style'
 	the time difference is negligible
-[done] buffering the nodes first then using cloneNode() is faster
+
 -use float:right for hide link
 	this doesn't look good
 [done] add an unkown node when encountering nodes that can't be processed
@@ -434,8 +428,6 @@ when serializing filters, escape is much faster than replace
 	this is not needed, since only nodes are stored
 -change structure to: once nodeClass changes, put it in array, this is needed since nodeClass is not stored
 	no need to put in array, since need constructor compare, can just construct some node objects and compare them
-
-after changing main result recognition from class to id, now filters much faster (79ms for 100 results without hiding)
 
 will not filter live results for now
 
@@ -671,11 +663,6 @@ if empty, will have '[Simple Store]'
 
 +see if saving the shortcuts & regexp will decrease filter load time (everything else will need to be loaded)
 
-[done] make sign-in work
-
-[done] fix video link:
-	http://www.google.com.au/search?hl=en&source=hp&biw=1366&bih=575&q=oron+premium+link+generator&aq=f&aqi=&aql=&oq=
-
 [done] make filter link work
 	changed fromTextCompiled so that it checks if filters are all compiled
 	this is ok since it is mostly called in the gui, and won't take much time by checking an attribute
@@ -708,8 +695,6 @@ if empty, will have '[Simple Store]'
 
 [done] fix saving removed filters not working
 
-[done] fix does not work without googlemonkeyr
-
 [done] fix not matching with 3 subfilters
 	this needs re-writing of matchesAny
 
@@ -724,48 +709,8 @@ if empty, will have '[Simple Store]'
 
 [done] fix can't filter more than 2 links
 
-[done] replace google custom search links (google url redirect)?
-	will only fix for custom search
-
-[done] fix google custom search url
-
-[done] add prefLink in google custom search
-
-can cut back time on:
-	parse
-	stringify
-	matcher
-
-[done] query selector faster than xpath
-	query selectors are faster, replace when possible
-
-[done] google instant filter link not working
-
-[done] google instant filter hitcount not updating
-
-[done] exts should not treat nodes as text, should be res
-
-[done] make google instant ext use last node as checking and nextSibling instead of xpath
-	not sure why, but parentNode still exists after node being removed
-	-a better alternative is to wait until all xhr have finished
-	waiting for the current request is good enough
-	still need event when result nodes change
-
-[done] make filter processing prettier on google home page
-	check if home page in searchGui
-	this allows the function to return
-
-[done] fix greasemonkey sandbox warning when hooking XMLHttpRequest
-
 [done] make filters save only when pref is updated
 	this only applies to ext
-
-[done] make google instant caching work (present in both google.com and google.com.au)
-
-[done] using events in the greasemonkey sandbox causes flicker
-	seems like theres no alternative, can temporarily hide the nodes first
-	there is still a flicker even when hiding the nodes, but much less noticeble
-changing the order of hiding nodes removes the flicker
 
 [done] need to keep track of:
 	hidden nodes start
@@ -813,13 +758,6 @@ changing the order of hiding nodes removes the flicker
 +speed up editableGrid rendering
 	this is possible, since raw html rendering is much faster
 
-[done] pref image height/width don't work on firefox 4
-	changed -moz-background-size to background-size
-
-[done] increase z-index
-	(set highest?)
-	doesn't seem to be a good way to set the highest, so will set some 9999... value
-
 +fix white-list not working:
 	@@|www.crystal-product.com
 	||crystal-product.com
@@ -830,7 +768,7 @@ changing the order of hiding nodes removes the flicker
 	http://stackoverflow.com/questions/1405030/using-git-how-can-i-selectively-pull-merge-changes-from-anothers-fork
 
 +put *.txt and other source files (matcher.js) into the git repo, then get rid of non-todo portions of notes.txt after a commit
-	some of the messages may be useful in testing the new editable grid
+	some of the messages may be useful in unit tests
 
 +move to slickgrid
 

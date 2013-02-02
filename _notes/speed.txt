@@ -1,0 +1,15 @@
+
+query selectors is faster than xpath, use when possible
+
+adding strings is faster than join
+
+styles are faster than having base64 src for each image
+
+buffering nodes first then using cloneNode() is faster
+
+matching ids is faster than classes in selectors
+
+can cut back time on:
+	parse
+	stringify
+	matcher
