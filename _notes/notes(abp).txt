@@ -1,0 +1,24 @@
+
+abp tokenize regex (convert regex which doesn't backtrack into normal tokens)?
+	for filters like test.com/[a-z]/spam-result.html
+
+the newest abp doesn't have this (and abp probably won't, due to these filters being uncommon)
+
+do a diff of the current source and abp to make changes easier in the future
+
+abp uses the regex matcher:
+	/[^a-z0-9%*][a-z0-9%]{3,}(?=[^a-z0-9%*])/g
+	
+	to find keywords
+	this uses the seperator [^a-z0-9%*]
+
+for regex, will take out all the chunks that must match, and test them individually against the keyword matcher
+	this will slow down initialization, but make filter matching fast (due to the math filters like the above)
+
+use abp's default branch
+
++prefGui.chg exists so only changed filters need to be compiled
+	so it needs to know filters internal structures to some extent
+
++if merge abp's default branch, if filter structures have changed, large portions of the source needs changing too?
+	(apart from filter.js and matcher.js these include gui.js, prefGui.js)
