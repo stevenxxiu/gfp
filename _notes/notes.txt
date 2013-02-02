@@ -731,8 +731,6 @@ if empty, will have '[Simple Store]'
 
 [done] add prefLink in google custom search
 
-will not support google instant, as googlemonkeyr doesn't support it, and this requires implementing ajax-load as well
-
 can cut back time on:
 	parse
 	stringify
@@ -832,6 +830,7 @@ changing the order of hiding nodes removes the flicker
 	http://stackoverflow.com/questions/1405030/using-git-how-can-i-selectively-pull-merge-changes-from-anothers-fork
 
 +put *.txt and other source files (matcher.js) into the git repo, then get rid of non-todo portions of notes.txt after a commit
+	some of the messages may be useful in testing the new editable grid
 
 +move to slickgrid
 
