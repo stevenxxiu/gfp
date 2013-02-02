@@ -780,11 +780,6 @@ changing the order of hiding nodes removes the flicker
 
 	startHideNode is not needed
 
----there is a small flicker when processing events, can hook window.sendMessage
---	this makes things too complicated
--will do this to remove flicker
-this needs to hide much more than results, so won't do it
-
 [done] cancelling pref retains the edited filter list
 
 [done] adding empty filter raises exception
