@@ -65,7 +65,9 @@ let ext={
 			
 			let results=searchGui.getResults();
 			if(results){
-				procNodeNum=searchGui.r.res.getResults(results).length;
+				if(!_$('GoogleMonkeyRLink')){
+					procNodeNum=searchGui.r.res.getResults(results).length;
+				}
 				observeResults(results);
 			}
 			//use instant if the extension's enabled
@@ -73,6 +75,7 @@ let ext={
 				window.addEventListener('instantResults',function(e){
 					results=searchGui.getResults();
 					//googlemonkeyr moves existing results nodes into the 'GoogleTabledResults' node created by it, these are already processed so don't process them again
+					//we run after googlemnokeyr due to our own event being triggered
 					procNodeNum=searchGui.r.res.getResults(results).length;
 					observeResults(results);
 				},false);
