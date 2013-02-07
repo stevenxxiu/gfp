@@ -32,8 +32,8 @@ thanks to:
 let config={
 	//blocked sites (default)
 	filters: [
-		'||daniweb.com',
-		'||velocityreviews.com',
+		'||daniweb.com^',
+		'||velocityreviews.com^',
 	],
 	
 	//completely hide filter results (default)
