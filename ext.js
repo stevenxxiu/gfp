@@ -146,21 +146,39 @@ let ext={
 			CustomSearchControl.prototype.draw=function(){
 				//privileged code
 				o_draw.apply(this,arguments);
-				//results table
-				let o_resultsTable=null;
-				//wait until a result is inserted
 				let cse=document.querySelector('#cse');
-				let observer=new MutationObserver(function(mutations){
+				
+				let o_resultsTable=null;
+				//observer callback after loading the first set of results
+				let loadNextCallback=function(mutations){
+					/**
+					returns:
+						whether new results have loaded
+					*/
 					let resultsTable=cse.querySelector('.gsc-table-result');
-					if(resultsTable==null)
-						return;
-					//google instant has ajax, fire event when the resultsTable is out of dom
-					if(o_resultsTable!=null && resultsTable==o_resultsTable)
-						return;
+					if(resultsTable==null || o_resultsTable==resultsTable)
+						return false;
 					o_resultsTable=resultsTable;
 					window.dispatchEvent(new CustomEvent('results'));
-				});
-				observer.observe(cse,{subtree: true, childList: true});
+					return true;
+				}
+				let loadNextObserver=new MutationObserver(loadNextCallback);
+				
+				//observer callback when loading the first set of results
+				let loadFirstCallback=function(mutations){
+					//wait until the first results have loaded before disconnecting
+					if(!loadNextCallback())
+						return false;
+					loadFirstObserver.disconnect();
+					let results=cse.querySelector('.gsc-results');
+					if(results==null)
+						return;
+					loadNextObserver.observe(results,{attributes: true});
+				}
+				let loadFirstObserver=new MutationObserver(loadFirstCallback);
+				
+				//wait until the first set of results have loaded
+				loadFirstObserver.observe(cse,{subtree: true, childList: true});
 			}
 			//resultsCallback needs privileged functions
 			window.addEventListener('results',resultsCallback,false);
