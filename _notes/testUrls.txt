@@ -1,4 +1,4 @@
 
 google custom search:
-	https://www.google.com/cse?cref=http%3A%2F%2Fuserscripts.org%2Fcse.xml&cof=FORID%3A9&ie=UTF-8&q=test&sa=Search&ad=n9&num=10
+	https://www.google.com/cse?cref=http%3A%2F%2Fuserscripts.org%2Fcse.xml&q=test&num=5
 	https://www.google.com/cse?cref=http%3A%2F%2Fwww.guha.com%2Fcref_cse.xml&q=test&sa=Search

@@ -146,13 +146,19 @@ let ext={
 			CustomSearchControl.prototype.draw=function(){
 				//privileged code
 				o_draw.apply(this,arguments);
+				//results table
+				let o_resultsTable=null;
 				//wait until a result is inserted
 				let cse=document.querySelector('#cse');
 				let observer=new MutationObserver(function(mutations){
-					if(cse.querySelector('.gsc-table-result')!=null){
-						observer.disconnect();
-						window.dispatchEvent(new CustomEvent('results'));
-					}
+					let resultsTable=cse.querySelector('.gsc-table-result');
+					if(resultsTable==null)
+						return;
+					//google instant has ajax, fire event when the resultsTable is out of dom
+					if(o_resultsTable!=null && resultsTable==o_resultsTable)
+						return;
+					o_resultsTable=resultsTable;
+					window.dispatchEvent(new CustomEvent('results'));
 				});
 				observer.observe(cse,{subtree: true, childList: true});
 			}
