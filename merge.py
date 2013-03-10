@@ -68,9 +68,6 @@ class JS:
 		]
 		jsContent=''.join(contents)
 		
-		#gm compatability fixes
-		jsContent=jsContent.replace('this.get_html_translation_table','get_html_translation_table')
-		
 		return jsContent
 
 class HtmlTmp:
