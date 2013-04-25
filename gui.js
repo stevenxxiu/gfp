@@ -52,7 +52,7 @@ let searchGui={
 		text: {
 			getResults: function() null,
 			getLinkArea: function(node) node.querySelector('cite').parentNode,
-			getUrl: function(node) node.querySelector('a.l').href,
+			getUrl: function(node) node.querySelector('h3.r>a').href,
 			getTitle: function(node) (node.querySelector('h2.r')||node.querySelector('h3.r')).textContent,
 			getSummary: function(node) node.querySelector('div.s').textContent,
 		},
