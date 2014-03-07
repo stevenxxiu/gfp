@@ -18,29 +18,29 @@ let searchGui={
 	//remNodes is an array-based tree of 'remNode's
 	remNodes: null,
 	initialized: false,
-	
+
 	isHomePage: function(){
 		let loc=window.location.href;
 		return loc[loc.length-1]=='/';
 	},
-	
+
 	isSearchPage: function(){
 		return !searchGui.isHomePage();
 	},
-	
+
 	getQuery: function(){
 		return document.querySelector('input[type="text"][title="Search"]');
 	},
-	
+
 	getResults: function(){
 		return _$('ires');
 	},
-	
+
 	directLink: function(url){
 		if(!(url[0]=='/')) return url;
 		return url.substring(7,url.indexOf('&')||url.length);
 	},
-	
+
 	r: {
 		res: {
 			getResults: function(node) node.querySelectorAll('li.g'),
@@ -106,19 +106,19 @@ let searchGui={
 			getSummary: function(node) node.querySelector('div[style]').textContent,
 		},
 	},
-	
+
 	nodeData: function(node,filterClass){
 		this.__defineGetter__('linkArea',function(){let linkArea=filterClass.getLinkArea(node); this.linkArea=linkArea; return linkArea;});
 		this.__defineGetter__('url',function(){let url=filterClass.getUrl(node); this.url=url; return url;});
 		this.__defineGetter__('title',function(){let title=filterClass.getTitle(node); this.title=title; return title;});
 		this.__defineGetter__('summary',function(){let summary=filterClass.getSummary(node); this.summary=summary; return summary;});
 	},
-	
+
 	remNode: function(node,filterClass){
 		this.node=node;
 		this.filterClass=filterClass;
 	},
-	
+
 	getResultType: function(node,filterClass){
 		/**
 		args:
@@ -144,7 +144,7 @@ let searchGui={
 			case 'newsbox':
 				return searchGui.r.newsCtn;
 		}
-		if(node.firstElementChild.childElementCount>2)
+		if(node.firstElementChild.childElementCount==2)
 			return searchGui.r.text;
 		else if(node.firstElementChild.childElementCount>=1){
 			if(node.querySelector('div.th')){
@@ -155,7 +155,7 @@ let searchGui={
 		}
 		return null;
 	},
-	
+
 	addStyles: function(){
 		GM_addStyle(
 			'.filterAdd{color: #1122CC !important; font-size="90%"; text-decoration: none;} .filterAdd:hover{text-decoration: underline;}'+
@@ -163,7 +163,7 @@ let searchGui={
 			'.showLink{color: #999999 !important; font-size="90%"; text-decoration: none;}}'
 		);
 	},
-	
+
 	initNodes: function(){
 		/**
 		buffer nodes
@@ -203,7 +203,7 @@ let searchGui={
 		}
 		searchGui.showLink=showLink;
 	},
-	
+
 	showResult: function(node,contentNodes,showTitle,showLink){
 		/**
 		re-show hidden filtered result
@@ -224,7 +224,7 @@ let searchGui={
 			showLink.addEventListener('click',hideListener,false);
 		}
 	},
-	
+
 	hideResult: function(node,filter,nodeData,contentNodes,showTitle,showLink){
 		/**
 		hide filtered result
@@ -273,7 +273,7 @@ let searchGui={
 		}
 		return true;
 	},
-	
+
 	createAddLink: function(node,nodeData){
 		let linkArea=nodeData.linkArea;
 		if(!linkArea) return;
@@ -285,14 +285,14 @@ let searchGui={
 		}
 		addLink.addEventListener('click',addListener,false);
 	},
-	
+
 	removeAddLink: function(nodeData){
 		let linkArea=nodeData.linkArea;
 		if(!linkArea) return;
 		linkArea.removeChild(linkArea.lastChild);
 		linkArea.removeChild(linkArea.lastChild);
 	},
-	
+
 	addFromResult: function(nodeData){
 		//trim domainUrl
 		let domainUrl='||'+nodeData.url.replace(/^[\w\-]+:\/+(?:www\.)?/,'');
@@ -309,7 +309,7 @@ let searchGui={
 		prefMeta.isUpdated=false;
 		searchGui.filterResultsRem();
 	},
-	
+
 	_filterResultsRem: function(remNodes){
 		/**
 		filters 'remNode's in the remNodes tree
@@ -361,7 +361,7 @@ let searchGui={
 			return false;
 		}
 	},
-	
+
 	_filterResults: function(node,filterClass){
 		/**
 		parses a html node into a remNodes tree and filters the 'remNode's
@@ -406,17 +406,17 @@ let searchGui={
 		}
 		return remNodes;
 	},
-	
+
 	filterResultsRem: function(){
 		searchGui._filterResultsRem(searchGui.remNodes);
 		gfpFilter.save();
 	},
-	
+
 	filterResults: function(){
 		searchGui.remNodes=searchGui._filterResults(searchGui.getResults());
 		gfpFilter.save();
 	},
-	
+
 	init: function(){
 		let resHidden=GM_getValue('resHidden');
 		if(resHidden==undefined){
@@ -441,7 +441,7 @@ let prefLink={
 		link.addEventListener('click',prefLink.prefOpen,false);
 		return link;
 	},
-	
+
 	createLinkAccount: function(){
 		/**
 		create a link in the account menu when logged in
@@ -455,7 +455,7 @@ let prefLink={
 		linkParent.appendChild(link);
 		return link;
 	},
-	
+
 	createLinkSettings: function(){
 		/**
 		create a link in the gear icon dropdown menu
@@ -470,7 +470,7 @@ let prefLink={
 		linkTCont.parentNode.insertBefore(linkCont,linkTCont.nextElementSibling);
 		return link;
 	},
-	
+
 	prefOpen: function(){
 		if(prefMeta.isUpdated){
 			pref.show();
@@ -480,7 +480,7 @@ let prefLink={
 			prefMeta.isUpdated=true;
 		}
 	},
-	
+
 	init: function(){
 		prefLink.createLinkAccount();
 		prefLink.createLinkSettings();
