@@ -1,16 +1,10 @@
 
 export default {
-  // default blocked sites
-  filters: [
-    '||daniweb.com^',
-    '||velocityreviews.com^',
-  ],
+  // enabled plugins
+  plugins: ['customSearch', 'instant'],
 
-  // completely hide filter results (default)
-  resHidden: false,
-
-  // enabled extensions
-  ext: ['gmonkeyr', 'customSearch', 'instant'],
+  // allow hiding of filter results
+  allowHidden: true,
 
   // log component times
   logTime: true,
