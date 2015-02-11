@@ -1,0 +1,14 @@
+{
+  "name": "google_search_filter_plus",
+  "version": "1.0.0",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "tests"
+  ],
+  "devDependencies": {
+    "qunit": "~1.17.1"
+  }
+}
