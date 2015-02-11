@@ -1,0 +1,107 @@
+
+<html>
+<body>
+
+<link rel="stylesheet" href="editableGrid/editablegrid-1.0.11.css" type="text/css" media="screen">
+
+<!-- preferences !-->
+<div id="googleSearchFilterPlus" class="gfp" style="display:none;">
+  <h2 id="titleBar" class="caption" style="-moz-user-select:none;">
+    <span style="cursor:default">Google Search Filter Plus</span>
+    <a id="exitButton" href="javascript:void(0);" style="float:right;">[X]</a>
+  </h2>
+
+  <div class="prefRow">
+    <a href="javascript:void(0);" id="addFilterButton" title="Add filter"><img class="iconButton" src="edit_add.png"/></a>
+    <a href="javascript:void(0);" id="importFiltersButton" title="Import filters"><img class="iconButton" src="import.png"/></a>
+    <a href="javascript:void(0);" id="exportFiltersButton" title="Export filters"><img class="iconButton" src="export.png"/></a>
+
+    <table id="filterGrid" class="filterGrid">
+      <thead>
+        <tr>
+          <th>Filter rule</th>
+          <th>!</th>
+          <th>Enabled</th>
+          <th>Hits</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr id="1">
+          <td>test1</td>
+          <td>true</td>
+          <td>true</td>
+          <td>1</td>
+          <td>1</td>
+        </tr>
+        <tr id="2">
+          <td>test2</td>
+          <td>false</td>
+          <td>true</td>
+          <td>2</td>
+          <td>2</td>
+        </tr>
+        <tr id="3">
+          <td>test3</td>
+          <td>false</td>
+          <td>true</td>
+          <td>3</td>
+          <td>3</td>
+        </tr>
+        <tr id="4">
+          <td>test4</td>
+          <td>false</td>
+          <td>true</td>
+          <td>4</td>
+          <td>4</td>
+        </tr>
+        <tr id="5">
+          <td>test5</td>
+          <td>false</td>
+          <td>true</td>
+          <td>5</td>
+          <td>5</td>
+        </tr>
+      </tbody>
+    </table>
+    <div id="edition"></div>
+  </div>
+
+  <div class="prefRow">
+    <input id="cancelButton" type="button" value="Cancel" style="float:right;"></input>
+    <input id="saveButton" type="button" value="Save" style="float:right; margin-right:8px;"></input>
+  </div>
+</div>
+
+<!-- import/export textarea !-->
+<div id="tGoogleSearchFilterPlus" class="gfp" style="display:none;">
+  <h2 id="tTitleBar" class="caption" style="-moz-user-select:none;">
+    <span id="tTitle" style="cursor:default">&nbsp;</span>
+    <a id="tExitButton" href="javascript:void(0);" style="float:right;">[X]</a>
+  </h2>
+  <div class="prefRow">
+    <textarea id="tText" wrap="off" spellcheck="false" style="height:200px; width:100%;"></textarea>
+  </div>
+  <div class="prefRow">
+    <input id="tCancelButton" type="button" value="Cancel" style="float:right;"></input>
+    <input id="tOkButton" type="button" value="OK" style="float:right; margin-right:8px;"></input>
+  </div>
+</div>
+
+<script type="application/javascript;version=1.8" src="../../matchFilter(abp)/FilterClasses.js"></script>
+<script type="application/javascript;version=1.8" src="../../matchFilter(abp)/Matcher.js"></script>
+<script type="application/javascript;version=1.8" src="../base.js"></script>
+<script type="application/javascript;version=1.8" src="../gfpFilter.js"></script>
+<script type="application/javascript;version=1.8" src="../gfpMatcher.js"></script>
+<script src="editableGrid/src/editablegrid.js"></script>
+<script src="editableGrid/src/editablegrid_charts.js"></script>
+<script src="editableGrid/src/editablegrid_editors.js"></script>
+<script src="editableGrid/src/editablegrid_renderers.js"></script>
+<script src="editableGrid/src/editablegrid_utils.js"></script>
+<script src="editableGrid/src/editablegrid_validators.js"></script>
+<script type="application/javascript;version=1.8" src="dummyBefore.js"></script>
+<script type="application/javascript;version=1.8" src="prefGui.js"></script>
+<script type="application/javascript;version=1.8" src="dummyAfter.js"></script>
+
+</body>
+</html>
