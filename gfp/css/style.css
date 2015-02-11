@@ -1,0 +1,147 @@
+
+.gfp {
+  color: #333333;
+  border: 1px solid #CCCCCC;
+  background-color: #FFFFFF;
+  font-family: "Lucida Grande","Bitstream Vera Sans",Verdana,Arial,sans-serif;
+  font-size: 12px;
+  padding: 0;
+  width: 550px;
+  position: absolute;
+  z-index: 9999;
+}
+
+.gfp a {
+  text-decoration: none;
+  color: #999999;
+  font-size: 11px;
+}
+
+.gfp .prefRow {
+  margin-top: 3px;
+  overflow: hidden;
+  padding: 8px 12px;
+}
+
+.gfp .caption {
+  margin: 0;
+  padding: 2px 5px 3px 5px;
+  font-size: 11px;
+  font-weight: bold;
+  background: #CCCCCC url("caption.gif") top left repeat-x;
+  color: #666666;
+  border-bottom: 0;
+}
+
+.gfp .iconButton {
+  border-style: none;
+  height: 16px;
+  width: 16px;
+}
+
+/* buttons */
+
+.gfp input[type="button"] {
+  padding: 0px 10px 0px 10px;
+  color: #999999;
+  background-color: White;
+  font-weight: bold;
+  border: solid 1px #CCCCCC;
+  text-align: center;
+  font-size:12px;
+}
+.gfp input[type="button"]:hover {
+  padding: 1px 11px 1px 11px;
+  color: #333333;
+  border-color: #666666;
+}
+
+/* filterGrid */
+
+.gfp .filterGrid {
+  border-collapse: collapse;
+  border: 1px solid #D5D5D5;
+  width: 100%;
+}
+
+.gfp .whitelistFilter{
+  color: #008800;
+}
+.gfp .invalidFilter{
+  color: #C00000;
+}
+.gfp .commentFilter{
+  color: #808080;
+}
+.gfp .disabledFilter{
+  background-color: #E0E0E0;
+}
+
+.gfp .filterGrid input.invalid {
+  background: red;
+  color: #FDFDFD;
+}
+
+/**/
+
+.gfp .filterGrid>thead {
+  font-size: 11px;
+  display: block;
+}
+
+.gfp .filterGrid th {
+  background: #E5E5E5;
+  border: 1px solid #D5D5D5;
+  color: #555;
+  text-align: left;
+}
+
+.gfp .filterGrid a:hover {
+  text-decoration: underline;
+}
+
+.gfp .filterGrid>tbody {
+  display: block;
+  height: 150px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  color: black;
+}
+
+.gfp .filterGrid>tbody tr:hover {
+  background-color: #888888;
+  color: white;
+}
+
+.gfp .filterGrid td {
+  border-left: 1px solid #E0E0E0;
+  border-right: 1px solid #E0E0E0;
+  font-size: 11px;
+}
+
+/**/
+
+.gfp .filterGrid th:nth-child(1), .gfp .filterGrid td:nth-child(1) {
+  width: 320px;
+  max-width: 320px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.gfp .filterGrid th:nth-child(2), .gfp .filterGrid td:nth-child(2) {
+  width: 30px;
+}
+.gfp .filterGrid th:nth-child(3), .gfp .filterGrid td:nth-child(3) {
+  width: 70px;
+}
+.gfp .filterGrid th:nth-child(4), .gfp .filterGrid td:nth-child(4) {
+  padding-right: 5px;
+  width: 40px;
+  max-width: 40px;
+  overflow-x: hidden;
+}
+
+#edition {
+  padding-top: 5px;
+  width: 600px;
+  border: 0px;
+}
