@@ -5,6 +5,7 @@ var glob = require('glob');
 var gulp = require('gulp');
 var addsrc = require('gulp-add-src');
 var concat = require('gulp-concat-util');
+var sourcemaps = require('gulp-sourcemaps');
 var watch = require('gulp-watch');
 var merge = require('merge');
 var buffer = require('vinyl-buffer');
@@ -12,8 +13,11 @@ var source = require('vinyl-source-stream');
 
 function bundle(config){
   config = config || {};
-  config = merge(config, {paths: ['.', './gfp/lib'], transform: to5ify.configure({blacklist: ['regenerator']})});
-  return browserify(config).bundle().on('error', function(err){console.log(err.message);});
+  config = merge(config, {paths: ['.', './gfp/lib']});
+  return browserify(config)
+    .transform(to5ify.configure({blacklist: ['regenerator']}))
+    .bundle()
+    .on('error', function(err){console.log(err.message);});
 }
 
 gulp.task('build', function(){
@@ -34,6 +38,9 @@ gulp.task('test', function(){
     var fileName = 'google_search_filter_plus.test.js';
     bundle({debug: true, entries: glob.sync('gfp/**/test_*.js')})
       .pipe(source(fileName))
+      .pipe(buffer())
+      .pipe(sourcemaps.init({loadMaps: true}))
+      .pipe(sourcemaps.write('./'))
       .pipe(gulp.dest('dist'));
   }
   watch('gfp/**/*.js', {}, cb); cb();
