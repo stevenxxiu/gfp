@@ -18,10 +18,11 @@
     "gulp": "^3.8.11",
     "gulp-add-src": "^0.2.0",
     "gulp-concat-util": "^0.5.1",
+    "gulp-plumber": "^0.6.6",
     "gulp-util": "^3.0.3",
+    "gulp-watch": "^4.1.1",
     "merge": "^1.2.0",
     "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.0.0",
-    "watchify": "^2.3.0"
+    "vinyl-source-stream": "^1.0.0"
   }
 }
