@@ -12,7 +12,7 @@ var source = require('vinyl-source-stream');
 
 function bundle(config){
   config = config || {};
-  config = merge(config, {paths: ['.'], transform: to5ify.configure({blacklist: ['regenerator']})});
+  config = merge(config, {paths: ['.', './gfp/lib'], transform: to5ify.configure({blacklist: ['regenerator']})});
   return browserify(config).bundle().on('error', function(err){console.log(err.message);});
 }
 
