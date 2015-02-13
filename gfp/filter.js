@@ -1,7 +1,7 @@
-import {ActiveFilter, Filter, InvalidFilter, RegExpFilter} from 'gfp/lib/filterClasses';
+import {ActiveFilter, Filter, InvalidFilter, RegExpFilter as RegExpFilter_} from 'gfp/lib/filterClasses';
 
 Filter.prototype.toObject = function(){
-  let res = Object.create(null);
+  let res = {text: this.text};
   if(this instanceof ActiveFilter){
     if(this._disabled)
       res.disabled = true;
@@ -13,9 +13,8 @@ Filter.prototype.toObject = function(){
   return res;
 };
 
-class RegExpFilter extends RegExpFilter {
-  constructor(text, regexpSource, matchCase, collapse){
-    ActiveFilter.call(this, text);
+export class RegExpFilter extends RegExpFilter_ {
+  constructor(regexpSource, matchCase, collapse){
     if(matchCase)
       this.matchCase = matchCase;
     if(collapse)
@@ -33,11 +32,10 @@ class RegExpFilter extends RegExpFilter {
     return this.regexp.test(data);
   }
 
-  static fromParts(text, optionsStr){
-    if(optionsStr)
-      text += `$${optionsStr}`;
+  static fromParts(text, optionsStr=''){
+    // text is not stored to save memory
     let matchCase = false;
-    let collapse = true;
+    let collapse = false;
     let options = optionsStr.toUpperCase().split(',');
     for(let option of options){
       switch(option){
@@ -48,26 +46,21 @@ class RegExpFilter extends RegExpFilter {
           return new InvalidFilter(`Unknown option: ${option}`);
       }
     }
-    return new RegExpFilter(text, options);
+    return new RegExpFilter(text, matchCase, collapse);
   }
 }
 
+RegExpFilter.prototype.matchCase = false;
+RegExpFilter.prototype.collapse = false;
+
 export class MultiRegExpFilter extends ActiveFilter {
-  constructor(filters){
-    // text is stored in subfilters to save memory
-    super();
+  constructor(text, filters){
+    ActiveFilter.call(this, text);
     for(let filter of filters){
       if(filter)
         filter.parent = this;
     }
     this.filters = filters;
-  }
-
-  get text(){
-    let parts = [];
-    for(let filter of this.filters)
-      parts.push(filter.text);
-    return parts.join('$');
   }
 
   get collapse(){
@@ -78,6 +71,7 @@ export class MultiRegExpFilter extends ActiveFilter {
   }
 
   static fromText(text){
+    let origText = text;
     let filters = [];
     let blocking = true;
     if(text.indexOf('@@') === 0){
@@ -87,22 +81,18 @@ export class MultiRegExpFilter extends ActiveFilter {
     let parts = text.split(/\$([\w,]*?)(?:\$|$)/);
     for(let i = 0; i < parts.length; i += 2){
       let [part, options] = [parts[i], parts[i+1]];
-      if(!part){
+      if(!part)
+        continue;
+      for(let j = filters.length*2; j < i; j += 2)
         filters.push(null);
-      }else{
-        let filter = RegExpFilter.fromParts(part, options);
-        if(filter instanceof InvalidFilter)
-          return InvalidFilter(part);
-        filters.push(RegExpFilter.fromParts(part, options));
-      }
+      let filter = RegExpFilter.fromParts(part, options);
+      if(filter instanceof InvalidFilter)
+        return InvalidFilter(part);
+      filters.push(filter);
     }
-    return blocking ? new BlockingFilter(filters) : WhitelistFilter(filters);
+    return blocking ? new BlockingFilter(origText, filters) : new WhitelistFilter(origText, filters);
   }
 }
 
 export class BlockingFilter extends MultiRegExpFilter {}
-export class WhitelistFilter extends MultiRegExpFilter {
-  get text(){
-    return '@@' + super.text;
-  }
-}
+export class WhitelistFilter extends MultiRegExpFilter {}

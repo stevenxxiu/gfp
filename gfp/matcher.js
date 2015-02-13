@@ -10,7 +10,7 @@ class SubMatcher extends Matcher {
     // duplicates are ignored for memory efficiency, otherwise we need to store subfilter text maps.
     let keyword = this.findKeyword(filter);
     let oldEntry = this.filterByKeyword.get(keyword);
-    if(typeof oldEntry == 'undefined'){
+    if(oldEntry === undefined){
       this.filterByKeyword.set(keyword, filter);
     }else if(oldEntry.length == 1){
       this.filterByKeyword.set(keyword, [oldEntry, filter]);
@@ -80,7 +80,7 @@ export class MultiMatcher {
     let curFilters = new Set();
     for(let i = 0; i < this.n; i++){
       for(let subfilter of this.matchers.iterMatches(i, data[attrs[i]], prevFilters)){
-        if(subfilter.parent.filters.length == 1)
+        if(i == subfilter.parent.filters.length - 1)
           return subfilter.parent;
         if(i != this.n - 1)
           curFilters.add(subfilter.parent);
