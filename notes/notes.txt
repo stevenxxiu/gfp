@@ -6,17 +6,3 @@
 +fix white-list not working:
 	@@|www.crystal-product.com
 	||crystal-product.com
-
-	update to latest abp engine while fixing this
-
-+to update the abp engine, use git cherry pick:
-	http://stackoverflow.com/questions/1405030/using-git-how-can-i-selectively-pull-merge-changes-from-anothers-fork
-
-+put *.txt and other source files (matcher.js) into the git repo, then get rid of non-todo portions of notes.txt after a commit
-	some of the messages may be useful in unit tests
-
-+move to slickgrid
-
-+switch to jetbrains and add some unit tests to parts of the pref ui
-
-+refactor to jetbrains and make all classes start with caps
