@@ -1,489 +1,245 @@
+/* globals GM_addStyle */
+import Config from 'gfp/config';
+import {MultiRegExpFilter, WhitelistFilter} from 'gfp/filter';
+import {FilterNotifier} from 'gfp/lib/filterNotifier';
+import {CombinedMultiMatcher} from 'gfp/matcher';
+import {guiStyle} from 'gfp/resource';
 
-/**
-pref metadata class
-*/
+class NodeData {
+  constructor(node){
+    this.node = node;
+  }
 
-let prefMeta={
-	//if the pref grid has changed (e.g. hitcounts, new filters are added) so pref requires to be re-rendered
-	isUpdated: false,
-};
+  *getChildren(){}
+  getLinkArea(){return null;}
+  getUrl(){return null;}
+  getTitle(){return null;}
+  getSummary(){return null;}
 
-/**
-search results gui
-	hiding search results, adding filter dialog
-*/
-
-let searchGui={
-	resHidden: false,
-	//remNodes is an array-based tree of 'remNode's
-	remNodes: null,
-	initialized: false,
-
-	isHomePage: function(){
-		let loc=window.location.href;
-		return loc[loc.length-1]=='/';
-	},
-
-	isSearchPage: function(){
-		return !searchGui.isHomePage();
-	},
-
-	getQuery: function(){
-		return document.querySelector('input[type="text"][title="Search"]');
-	},
-
-	getResults: function(){
-		return _$('ires');
-	},
-
-	directLink: function(url){
-		if(!(url[0]=='/')) return url;
-		return url.substring(7,url.indexOf('&')||url.length);
-	},
-
-	r: {
-		res: {
-			getResults: function(node) node.querySelectorAll('li.g'),
-			getLinkArea: function() null,
-			getUrl: function() null,
-			getTitle: function() null,
-			getSummary: function() null,
-		},
-		text: {
-			getResults: function() null,
-			getLinkArea: function(node) node.querySelector('cite').parentNode,
-			getUrl: function(node) node.querySelector('h3.r>a').href,
-			getTitle: function(node) (node.querySelector('h2.r')||node.querySelector('h3.r')).textContent,
-			getSummary: function(node) node.querySelector('div.s').textContent,
-		},
-		book: {
-			getResults: function() null,
-			getLinkArea: function(node) node.querySelector('cite').parentNode,
-			getUrl: function(node) node.querySelector('h3.r>a').href,
-			getTitle: function(node) node.querySelector('h3.r').textContent,
-			getSummary: function(node) node.querySelector('div.s').textContent,
-		},
-		videoCtn: {
-			getResults: function(node) node.querySelectorAll('div.vresult'),
-			getLinkArea: function() null,
-			getUrl: function() null,
-			getTitle: function(node) node.querySelector('h3.r').textContent,
-			getSummary: function() null,
-		},
-		video: {
-			getResults: function() null,
-			getLinkArea: function(node) node.querySelector('cite'),
-			getUrl: function(node) node.querySelector('h3.r>a').href,
-			getTitle: function(node) node.querySelector('h3.r').textContent,
-			getSummary: function(node) node.querySelector('span.st').textContent,
-		},
-		imageCtn: {
-			getResults: function(node) node.querySelectorAll('div>a'),
-			getLinkArea: function() null,
-			getUrl: function() null,
-			getTitle: function(node) node.querySelector('h3.r').textContent,
-			getSummary: function() null,
-		},
-		image: {
-			getResults: function() null,
-			getLinkArea: function() null,
-			getUrl: function(node) node.href,
-			getTitle: function() null,
-			getSummary: function() null,
-		},
-		newsCtn: {
-			getResults: function(node) node.querySelectorAll('li.w0>div'),
-			getLinkArea: function() null,
-			getUrl: function() null,
-			getTitle: function(node) node.querySelector('h3.r').textContent,
-			getSummary: function() null,
-		},
-		news: {
-			getResults: function() null,
-			getLinkArea: function(node) node.querySelector('.gl'),
-			getUrl: function(node) node.querySelector('a.l').href,
-			getTitle: function(node) node.querySelector('a.l').textContent,
-			getSummary: function(node) node.querySelector('div[style]').textContent,
-		},
-	},
-
-	nodeData: function(node,filterClass){
-		this.__defineGetter__('linkArea',function(){let linkArea=filterClass.getLinkArea(node); this.linkArea=linkArea; return linkArea;});
-		this.__defineGetter__('url',function(){let url=filterClass.getUrl(node); this.url=url; return url;});
-		this.__defineGetter__('title',function(){let title=filterClass.getTitle(node); this.title=title; return title;});
-		this.__defineGetter__('summary',function(){let summary=filterClass.getSummary(node); this.summary=summary; return summary;});
-	},
-
-	remNode: function(node,filterClass){
-		this.node=node;
-		this.filterClass=filterClass;
-	},
-
-	getResultType: function(node,filterClass){
-		/**
-		args:
-			filterClass: parent result filter class
-		returns: resultClass
-		*/
-		switch(filterClass){
-			case searchGui.r.videoCtn:
-				return searchGui.r.video;
-			case searchGui.r.imageCtn:
-				return searchGui.r.image;
-			case searchGui.r.newsCtn:
-				return searchGui.r.news;
-		}
-		switch(node.id){
-			case 'ires':
-				return searchGui.r.res;
-			case 'imagebox':
-			case 'imagebox_bigimages':
-				return searchGui.r.imageCtn;
-			case 'videobox':
-				return searchGui.r.videoCtn;
-			case 'newsbox':
-				return searchGui.r.newsCtn;
-		}
-		if(node.firstElementChild.childElementCount==2)
-			return searchGui.r.text;
-		else if(node.firstElementChild.childElementCount>=1){
-			if(node.querySelector('div.th')){
-				return searchGui.r.video;
-			}else{
-				return null;
-			}
-		}
-		return null;
-	},
-
-	addStyles: function(){
-		GM_addStyle(
-			'.filterAdd{color: #1122CC !important; font-size="90%"; text-decoration: none;} .filterAdd:hover{text-decoration: underline;}'+
-			'.showTitle{color: #999999 !important; font-size="90%";}'+
-			'.showLink{color: #999999 !important; font-size="90%"; text-decoration: none;}}'
-		);
-	},
-
-	initNodes: function(){
-		/**
-		buffer nodes
-		*/
-		//dash
-		let dash=document.createElement('span');
-		with(dash){
-			innerHTML='&nbsp;-&nbsp;';
-		}
-		searchGui.dash=dash;
-		//add filter link
-		let addLink=document.createElement('a');
-		with(addLink){
-			innerHTML='Filter';
-			href='javascript:void(0);';
-			setAttribute('class','filterAdd');
-		}
-		searchGui.addLink=addLink;
-		//add filter container
-		let addCtn=document.createElement('span');
-		with(addCtn){
-			appendChild(dash.cloneNode(true));
-			appendChild(addLink.cloneNode(true));
-		}
-		searchGui.addCtn=addCtn;
-		//hidden result title
-		let showTitle=document.createElement('span');
-		with(showTitle){
-			setAttribute('class','showTitle');
-		}
-		searchGui.showTitle=showTitle;
-		//hidden result 'show' link
-		let showLink=document.createElement('a');
-		with(showLink){
-			href='javascript:void(0);';
-			setAttribute('class','showLink');
-		}
-		searchGui.showLink=showLink;
-	},
-
-	showResult: function(node,contentNodes,showTitle,showLink){
-		/**
-		re-show hidden filtered result
-		*/
-		if(searchGui.resHidden){
-			node.style.display='';
-		}else{
-			for(let i=0;i<contentNodes.length;i++){
-				contentNodes[i].style.display='';
-			}
-			showTitle.style.display='none';
-			showLink.innerHTML='hide';
-			let hideListener=function(e){
-				searchGui.hideResult(node,null,null,contentNodes,showTitle,showLink);
-				e.preventDefault();
-				this.removeEventListener('click',hideListener,false);
-			};
-			showLink.addEventListener('click',hideListener,false);
-		}
-	},
-
-	hideResult: function(node,filter,nodeData,contentNodes,showTitle,showLink){
-		/**
-		hide filtered result
-		args:
-			contentNodes (optional): content nodes that will be hidden
-			showTitle (optional): title that will be shown
-			showLink (optional): link that will be shown, changed to 'hide'
-		*/
-		//hide node
-		if(searchGui.resHidden){
-			node.style.display='none';
-		}else{
-			//show only title and 'show' link
-			if(filter){
-				contentNodes=[];
-				for(let i=0;i<node.childNodes.length;i++){
-					let childNode=node.childNodes[i];
-					if(childNode.style){
-						childNode.style.display='none';
-						contentNodes.push(childNode);
-					}
-				}
-				showTitle=searchGui.showTitle.cloneNode(false);
-				let title=nodeData.title;
-				if(title){
-					showTitle.innerHTML=title+'&nbsp;&nbsp;';
-				}
-				node.appendChild(showTitle);
-				showLink=searchGui.showLink.cloneNode(false);
-				showLink.innerHTML='show';
-				showLink.title=filter.fullText||filter.text;
-				node.appendChild(showLink);
-			}else{
-				for(let i=0;i<contentNodes.length;i++){
-					contentNodes[i].style.display='none';
-				}
-				showTitle.style.display='';
-				showLink.innerHTML='show';
-			}
-			let showListener=function(e){
-				searchGui.showResult(node,contentNodes,showTitle,showLink);
-				e.preventDefault();
-				this.removeEventListener('click',showListener,false);
-			};
-			showLink.addEventListener('click',showListener,false);
-		}
-		return true;
-	},
-
-	createAddLink: function(node,nodeData){
-		let linkArea=nodeData.linkArea;
-		if(!linkArea) return;
-		linkArea.appendChild(searchGui.dash.cloneNode(true));
-		let addLink=searchGui.addLink.cloneNode(true);
-		linkArea.appendChild(addLink);
-		let addListener=function(e){
-			searchGui.addFromResult(nodeData);
-		}
-		addLink.addEventListener('click',addListener,false);
-	},
-
-	removeAddLink: function(nodeData){
-		let linkArea=nodeData.linkArea;
-		if(!linkArea) return;
-		linkArea.removeChild(linkArea.lastChild);
-		linkArea.removeChild(linkArea.lastChild);
-	},
-
-	addFromResult: function(nodeData){
-		//trim domainUrl
-		let domainUrl='||'+nodeData.url.replace(/^[\w\-]+:\/+(?:www\.)?/,'');
-		let text=prompt('Filter: ',domainUrl);
-		if(text==null) return;
-		let keys=gfpFilter.getKeys(text);
-		if(gfpFilter.isDuplicate(keys,Filter.knownFilters)){
-			alert('Filter already exists');
-			return;
-		}
-		//add filter
-		let filter=gfpFilter.fromTextCompiled(text,Filter.knownFilters);
-		gfpMatcher.add(filter,keys);
-		prefMeta.isUpdated=false;
-		searchGui.filterResultsRem();
-	},
-
-	_filterResultsRem: function(remNodes){
-		/**
-		filters 'remNode's in the remNodes tree
-		returns:
-			if all nodes in remNodes are hidden
-		*/
-		let node,remNode,rnChildren,filterClass;
-		if(remNodes.constructor==Array){
-			//check if parent node needs to be hidden
-			rnChildren=remNodes;
-			remNode=remNodes[0];
-		}else{
-			remNode=remNodes;
-		}
-		node=remNode.node;
-		filterClass=remNode.filterClass;
-		let _nodeData=new searchGui.nodeData(node,filterClass);
-		let filter=defaultMatcher.matchesAny(_nodeData);
-		if(filter){
-			filter.hitCount++;
-			if(!(filter instanceof WhitelistFilter)){
-				searchGui.removeAddLink(_nodeData);
-				searchGui.hideResult(node,filter,_nodeData);
-				return true;
-			}else{
-				return false;
-			}
-		}
-		if(rnChildren){
-			//hide child nodes
-			let allHidden=true;
-			for(let i=1;i<rnChildren.length;i++){
-				let res=searchGui._filterResultsRem(rnChildren[i]);
-				if(res){
-					rnChildren.splice(i,1);
-					i--;
-				}else{
-					allHidden=false;
-				}
-			}
-			if(allHidden){
-				if(searchGui.resHidden){
-					//hide parent node
-					searchGui.hideResult(node,null,_nodeData);
-				}
-			}
-			return allHidden;
-		}else{
-			return false;
-		}
-	},
-
-	_filterResults: function(node,filterClass){
-		/**
-		parses a html node into a remNodes tree and filters the 'remNode's
-		returns:
-			filtered remNodes tree
-		*/
-		let filterClass=searchGui.getResultType(node,filterClass);
-		if(filterClass==null){
-			//unkown node type
-			return null;
-		}
-		let _nodeData=new searchGui.nodeData(node,filterClass);
-		let filter=defaultMatcher.matchesAny(_nodeData);
-		if(filter){
-			filter.hitCount++;
-			if(!(filter instanceof WhitelistFilter)){
-				searchGui.hideResult(node,filter,_nodeData);
-			}
-			return null;
-		}
-		searchGui.createAddLink(node,_nodeData);
-		//html resNodes
-		let resNodes=filterClass.getResults(node);
-		if(!resNodes){
-			return new searchGui.remNode(node,filterClass);
-		}
-		//filter subnodes
-		let remNodes=[new searchGui.remNode(node,filterClass)];
-		for(let i=0;i<resNodes.length;i++){
-			let _node=resNodes[i];
-			let res=searchGui._filterResults(_node,filterClass);
-			if(res){
-				remNodes.push(res);
-			}
-		}
-		if(remNodes.length==1){
-			if(searchGui.resHidden){
-				//hide parent node
-				searchGui.hideResult(node,null,_nodeData);
-			}
-			return null;
-		}
-		return remNodes;
-	},
-
-	filterResultsRem: function(){
-		searchGui._filterResultsRem(searchGui.remNodes);
-		gfpFilter.save();
-	},
-
-	filterResults: function(){
-		searchGui.remNodes=searchGui._filterResults(searchGui.getResults());
-		gfpFilter.save();
-	},
-
-	init: function(){
-		let resHidden=GM_getValue('resHidden');
-		if(resHidden==undefined){
-			resHidden=config.resHidden;
-			GM_setValue('resHidden',resHidden);
-		}
-		searchGui.resHidden=resHidden;
-		searchGui.addStyles();
-		searchGui.initNodes();
-		searchGui.initialized=true;
-	},
+  get linkArea(){this.linkArea = this.getLinkArea(); return this.linkArea;}
+  get url(){this.url = this.getUrl(); return this.url;}
+  get title(){this.title = this.getTitle(); return this.title;}
+  get summary(){this.summary = this.getSummary(); return this.summary;}
 }
 
-let prefLink={
-	createLink: function(linkT){
-		//create a link with settings cloned from link template
-		let link=document.createElement('a');
-		link.setAttribute('class',linkT.getAttribute('class'));
-		link.setAttribute('style',linkT.getAttribute('style'));
-		link.setAttribute('href','javascript:void(0);');
-		link.appendChild(document.createTextNode('Config Filters'));
-		link.addEventListener('click',prefLink.prefOpen,false);
-		return link;
-	},
+class ResultsData extends NodeData {
+  *getResults(){
+    for(let child of this.node.querySelectorAll('li.g')){
+      switch(child.id){
+        case 'imagebox':
+        case 'imagebox_bigimages':
+          yield new ImageContainerData(child); break;
+        case 'videobox':
+          yield new VideoContainerData(child); break;
+        case 'newsbox':
+          yield new NewsContainerData(child); break;
+        default:
+          if(child.firstElementChild.childElementCount == 2){
+            yield new TextData(child);
+          }else if(child.firstElementChild.childElementCount >= 1){
+            if(child.querySelector('div.th'))
+              yield new VideoData(child);
+          }
+      }
+    }
+  }
+}
 
-	createLinkAccount: function(){
-		/**
-		create a link in the account menu when logged in
-		*/
-		let linkT=document.querySelector('a.gbmlb[href*="/ManageAccount?"]');
-		if(!linkT)
-			return null;
-		let link=prefLink.createLink(linkT);
-		let linkParent=linkT.parentNode;
-		linkParent.appendChild(document.createTextNode('\u2013'));
-		linkParent.appendChild(link);
-		return link;
-	},
+class TextData extends NodeData {
+  getLinkArea(){return this.node.querySelector('cite').parentNode;}
+  getUrl(){return this.node.querySelector('h3.r>a').href;}
+  getTitle(){return (this.node.querySelector('h2.r') || this.node.querySelector('h3.r')).textContent;}
+  getSummary(){return this.node.querySelector('div.s').textContent;}
+}
 
-	createLinkSettings: function(){
-		/**
-		create a link in the gear icon dropdown menu
-		*/
-		let linkTCont=document.querySelector('#ab_options > ul > li.ab_dropdownitem:nth-child(2)');
-		if(!linkTCont)
-			return null;
-		let linkT=linkTCont.firstElementChild;
-		let link=prefLink.createLink(linkT);
-		let linkCont=linkTCont.cloneNode(false);
-		linkCont.appendChild(link);
-		linkTCont.parentNode.insertBefore(linkCont,linkTCont.nextElementSibling);
-		return link;
-	},
+class VideoContainerData extends NodeData {
+  *getResults(){for(let child of this.node.querySelectorAll('div.vresult')) yield new VideoData(child);}
+  getTitle(){return this.node.querySelector('h3.r').textContent;}
+}
 
-	prefOpen: function(){
-		if(prefMeta.isUpdated){
-			pref.show();
-		}else{
-			//renderAll resets the gui first if it's already open
-			pref.renderAll();
-			prefMeta.isUpdated=true;
-		}
-	},
+class VideoData extends NodeData {
+  getLinkArea(){return this.node.querySelector('cite');}
+  getUrl(){return this.node.querySelector('h3.r>a').href;}
+  getTitle(){return this.node.querySelector('h3.r').textContent;}
+  getSummary(){return this.node.querySelector('span.st').textContent;}
+}
 
-	init: function(){
-		prefLink.createLinkAccount();
-		prefLink.createLinkSettings();
-		GM_registerMenuCommand('GoogleSearchFilter+',prefLink.prefOpen,null);
-	},
+class ImageContainerData extends NodeData {
+  *getResults(){for(let child of this.node.querySelectorAll('div>a')) yield new ImageData(child);}
+  getTitle(){return this.node.querySelector('h3.r').textContent;}
+}
+
+class ImageData extends NodeData {
+  getUrl(){return this.node.href;}
+}
+
+class NewsContainerData extends NodeData {
+  *getResults(){for(let child of this.node.querySelectorAll('li.w0>div')) yield new NewsData(child);}
+  getTitle(){return this.node.querySelector('h3.r').textContent;}
+}
+
+class NewsData extends NodeData {
+  getLinkArea(){return this.node.querySelector('.gl');}
+  getUrl(){return this.node.querySelector('a.l').href;}
+  getTitle(){return this.node.querySelector('a.l').textContent;}
+  getSummary(){return this.node.querySelector('div[style]').textContent;}
+}
+
+class SearchGui {
+  constructor(){
+    this.filters = Config.filters;
+    this.matcher = new CombinedMultiMatcher();
+    for(let filter of this.filters)
+      this.matcher.add(filter);
+    // save to prevent pref modifications
+    this.allowHidden = Config.allowHidden;
+    this.nodeDatas = [];
+    this.createNodes();
+    GM_addStyle(guiStyle);
+  }
+
+  static isHomePage(){
+    return window.location.href.endsWith('/');
+  }
+
+  static isSearchPage(){
+    return !this.isHomePage();
+  }
+
+  static getResults(){
+    return document.getElementById('ires');
+  }
+
+  createNodes(){
+    /**
+    Create once and clone to improve performance.
+    */
+    // dash
+    let dash = document.createElement('span');
+    dash.innerHTML='&nbsp;-&nbsp;';
+    this.dash = dash;
+    // add filter link
+    let addLink = document.createElement('a');
+    addLink.innerHTML = 'Filter';
+    addLink.setAttribute('href', '#');
+    addLink.setAttribute('class', 'filter-add');
+    this.addLink = addLink;
+    // hidden result title
+    let showTitle = document.createElement('span');
+    showTitle.setAttribute('class', 'show-title');
+    this.showTitle = showTitle;
+    // hidden result 'show' link
+    let showLink = document.createElement('a');
+    showLink.setAttribute('href', '#');
+    showLink.setAttribute('class', 'show-link');
+    this.showLink = showLink;
+  }
+
+  toggleResult(hide, node){
+    if(this.allowHidden){
+      node.style.display = hide ? 'none' : '';
+      return;
+    }
+    for(let child of node.children)
+      child.style.display = hide ? 'none' : '';
+    let showTitle = node.querySelector('.showTitle');
+    showTitle.style.display = hide ? '' : 'none';
+    let showLink = node.querySelector('.showLink');
+    showLink.style.display = hide ? '' : 'none';
+    showLink.innerHTML = hide ? 'show' : 'hide';
+  }
+
+  hideResult(nodeData, filter){
+    let node = nodeData.node;
+    let showTitle = this.showTitle.cloneNode(false);
+    let title = nodeData.title;
+    if(title)
+      showTitle.innerHTML = title + '&nbsp;&nbsp;';
+    node.appendChild(showTitle);
+    let showLink = this.showLink.cloneNode(false);
+    showLink.innerHTML = 'show';
+    showLink.title = filter.text;
+    node.appendChild(showLink);
+    let hide = false;
+    this.toggleResult(true, node);
+    showLink.onclick = (e) => {
+      this.toggleResult(hide, node);
+      hide = !hide;
+      return false;
+    };
+  }
+
+  createAddLink(nodeData){
+    let linkArea = nodeData.linkArea;
+    if(!linkArea)
+      return;
+    let dash = this.dash.cloneNode(true);
+    linkArea.appendChild(dash);
+    let addLink = this.addLink.cloneNode(true);
+    linkArea.appendChild(addLink);
+    addLink.onclick = () => {this.addFromResult(nodeData); return false;};
+  }
+
+  removeAddLink(nodeData){
+    let linkArea = nodeData.linkArea;
+    if(!linkArea)
+      return;
+    linkArea.removeChild(linkArea.lastChild);
+    linkArea.removeChild(linkArea.lastChild);
+  }
+
+  addFromResult(nodeData){
+    let domainUrl = '||' + nodeData.url.replace(/^[\w\-]+:\/+(?:www\.)?/, '');
+    let text = prompt('Filter: ', domainUrl);
+    this.matcher.add(MultiRegExpFilter.fromText(text));
+    this.filterResultsRem();
+  }
+
+  _filterResults(nodeData){
+    let filter = this.matcher.matchesAny(nodeData);
+    if(filter){
+      filter.hitCount++;
+      if(!(filter instanceof WhitelistFilter))
+        this.hideResult(nodeData, filter);
+      return true;
+    }
+    this.createAddLink(nodeData);
+    let filtered = true;
+    if(nodeData.children === undefined){
+      nodeData.children = [];
+      for(let childData of nodeData.getChildren()){
+        if(!this._filterResults(childData)){
+          nodeData.children.push(childData);
+          filtered = false;
+        }
+      }
+    }else{
+      for(let i = 0; i < nodeData.children.length;){
+        if(this._filterResults(nodeData[i])){
+          nodeData.children.splice(i, 1);
+        }else{
+          filtered = false;
+          i++;
+        }
+      }
+    }
+  }
+
+  filterResults(node=null){
+    let nodeDatas;
+    if(node){
+      nodeDatas = [new ResultsData(node)];
+      this.nodeDatas.push(nodeDatas[0]);
+    }else{
+      nodeDatas = this.nodeDatas;
+    }
+    let matched = false;
+    let listener = (action) => {if(action == 'filter.hitCount') matched = true;};
+    FilterNotifier.addListener(listener);
+    for(let nodeData of nodeDatas)
+      this._filterResults(nodeData);
+    if(matched)
+      Config.filters = this.filters;
+    FilterNotifier.removeListener(listener);
+  }
 }

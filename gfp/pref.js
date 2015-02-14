@@ -3,6 +3,64 @@
 base classes
 */
 
+let prefLink={
+  createLink: function(linkT){
+    //create a link with settings cloned from link template
+    let link=document.createElement('a');
+    link.setAttribute('class',linkT.getAttribute('class'));
+    link.setAttribute('style',linkT.getAttribute('style'));
+    link.setAttribute('href','javascript:void(0);');
+    link.appendChild(document.createTextNode('Config Filters'));
+    link.addEventListener('click',prefLink.prefOpen,false);
+    return link;
+  },
+
+  createLinkAccount: function(){
+    /**
+    create a link in the account menu when logged in
+    */
+    let linkT=document.querySelector('a.gbmlb[href*="/ManageAccount?"]');
+    if(!linkT)
+      return null;
+    let link=prefLink.createLink(linkT);
+    let linkParent=linkT.parentNode;
+    linkParent.appendChild(document.createTextNode('\u2013'));
+    linkParent.appendChild(link);
+    return link;
+  },
+
+  createLinkSettings: function(){
+    /**
+    create a link in the gear icon dropdown menu
+    */
+    let linkTCont=document.querySelector('#ab_options > ul > li.ab_dropdownitem:nth-child(2)');
+    if(!linkTCont)
+      return null;
+    let linkT=linkTCont.firstElementChild;
+    let link=prefLink.createLink(linkT);
+    let linkCont=linkTCont.cloneNode(false);
+    linkCont.appendChild(link);
+    linkTCont.parentNode.insertBefore(linkCont,linkTCont.nextElementSibling);
+    return link;
+  },
+
+  prefOpen: function(){
+    if(prefMeta.isUpdated){
+      pref.show();
+    }else{
+      //renderAll resets the gui first if it's already open
+      pref.renderAll();
+      prefMeta.isUpdated=true;
+    }
+  },
+
+  init: function(){
+    prefLink.createLinkAccount();
+    prefLink.createLinkSettings();
+    GM_registerMenuCommand('GoogleSearchFilter+',prefLink.prefOpen,null);
+  },
+}
+
 function draggable(dragButton,dragObj){
 	let obj=this;
 	this.dragBegin=function(e){
@@ -17,7 +75,7 @@ function draggable(dragButton,dragObj){
 		window.addEventListener('mouseup',obj.dragEnd,false);
 		return false;
 	};
-	
+
 	this.drag=function(e){
 		let dragObj=obj.dragObj;
 		let x=parseInt(dragObj.style.left);
@@ -28,18 +86,18 @@ function draggable(dragButton,dragObj){
 		obj.mouseY=e.clientY;
 		return false;
 	};
-	
+
 	this.dragEnd=function(){
 		window.removeEventListener('mousemove',obj.drag,false);
 		window.removeEventListener('mouseup',obj.dragEnd,false);
 	};
-	
+
 	this.finalize=function(){
 		this.dragButton.removeEventListener('mousedown',this.dragBegin,false);
 	};
-	
+
 	dragButton.addEventListener('mousedown',this.dragBegin,false);
-	
+
 	//fields
 	this.dragButton=dragButton;
 	this.dragObj=dragObj;
@@ -55,7 +113,7 @@ let prefModalObjs=[];
 
 function prefModal(prefObj,titleBar,titleExitButton,exitButton,exitFunc){
 	if(exitFunc==undefined) exitFunc=new Function();
-	
+
 	function _exitFunc(){
 		exitFunc();
 		dragObj.finalize();
@@ -67,14 +125,14 @@ function prefModal(prefObj,titleBar,titleExitButton,exitButton,exitFunc){
 		}
 		prefObj.style.display='none';
 	}
-	
+
 	function titleNoDrag(e){
 		//prevent dragging exit button
 		e.preventDefault();
 		//prevent dragging prefs using exit button
 		e.stopPropagation();
 	}
-	
+
 	function escapeKeyPress(e){
 		//detect some event simulation which bubbles up to window
 		if(e.target!=document.body) return;
@@ -85,14 +143,14 @@ function prefModal(prefObj,titleBar,titleExitButton,exitButton,exitFunc){
 		}
 		e.stopPropagation();
 	}
-	
+
 	titleExitButton.addEventListener('click',_exitFunc,false);
 	exitButton.addEventListener('click',_exitFunc,false);
 	titleExitButton.addEventListener('mousedown',titleNoDrag,false);
 	if(prefModalObjs.length==0){
 		window.addEventListener('keypress',escapeKeyPress,false);
 	}
-	
+
 	//add dragging to titleBar
 	let dragObj=new draggable(titleBar,prefObj);
 	//display modal dialog
@@ -141,7 +199,7 @@ pref.settings={
 			pref.s=JSON.parse(res);
 		}
 	},
-	
+
 	save: function(){
 		GM_setValue(pref.c.guiSettings,JSON.stringify(pref.s));
 	},
@@ -162,13 +220,13 @@ main pref gui
 
 pref.gui={
 	modalObj: null,
-	
+
 	init: function(){
 		pref.gui.modalObj=new prefModal(pref.guiObj,_$('titleBar'),_$('exitButton'),_$('cancelButton'),pref.gui.close);
 		pref.gui.load();
 		_$('saveButton').addEventListener('click',pref.gui.save,false);
 	},
-	
+
 	load: function(){
 		let guiObj=pref.guiObj;
 		let mouseX=pref.s.mouseX;
@@ -181,13 +239,13 @@ pref.gui={
 		guiObj.style.left=mouseX+'px';
 		guiObj.style.top=mouseY+'px';
 	},
-	
+
 	save: function(){
 		//grid gui settings are flushed when pref is closed
 		pref.grid.grid2filters();
 		gfpFilter.save();
 	},
-	
+
 	close: function(){
 		let guiObj=pref.guiObj;
 		pref.s.mouseX=guiObj.offsetLeft;
@@ -206,7 +264,7 @@ import/export modal dialog
 
 pref.tGui={
 	modalObj: null,
-	
+
 	init: function(titleStr,saveFunc){
 		if(pref.tGui.modalObj) return null;
 		_$('tTitle').innerHTML=titleStr;
@@ -226,7 +284,7 @@ pref.tGui={
 		pref.tGui.load();
 		return modalObj;
 	},
-	
+
 	load: function(){
 		let tGuiObj=pref.tGuiObj;
 		//default x, y to middle of page
@@ -252,11 +310,11 @@ pref.chg={
 	//	when this is true, filters is the changes need to be made to knownFilters to make it current
 	//	when this is false, filters is a copy of the current filters
 	currIsDelta: true,
-	
+
 	isRemoved: function(keys,len){
 		return pref.chg.getRemoved(keys,len)==true;
 	},
-	
+
 	getRemoved: function(keys,len){
 		/**
 		returns removed (does not have to be true/false)
@@ -269,7 +327,7 @@ pref.chg={
 		}
 		return removed;
 	},
-	
+
 	setRemoved: function(keys,len){
 		if(!len) len=keys.length;
 		len--;
@@ -288,7 +346,7 @@ pref.chg={
 		}
 		removed[keys[len]]=true;
 	},
-	
+
 	removeFilters: function(filters,removed){
 		for(let key in removed){
 			if(removed[key]==true){
@@ -298,7 +356,7 @@ pref.chg={
 			}
 		}
 	},
-	
+
 	removeFilter: function(text){
 		/**
 		doesn't assume text exists
@@ -316,7 +374,7 @@ pref.chg={
 			return gfpFilter.popSubfilter(keys,pref.chg.filters);
 		}
 	},
-	
+
 	getFilter: function(text){
 		/**
 		doesn't assume text exists
@@ -335,7 +393,7 @@ pref.chg={
 			return gfpFilter.getSubfilter(keys,pref.chg.filters);
 		}
 	},
-	
+
 	hasFilter: function(text){
 		let keys=gfpFilter.getKeys(text);
 		let level=gfpFilter.isDuplicate(keys,Filter.knownFilters);
@@ -346,7 +404,7 @@ pref.chg={
 		}
 		return gfpFilter.isDuplicate(keys,pref.chg.filters)>0;
 	},
-	
+
 	addFilter: function(filter){
 		/**
 		args:
@@ -354,12 +412,12 @@ pref.chg={
 		*/
 		return gfpFilter.fromObjectCompiled(filter,pref.chg.filters);
 	},
-	
+
 	mergeFiltersFlush: function(filters,filtersM,removed){
 		pref.chg.removeFilters(filters,removed);
 		pref.chg._mergeFiltersFlush(filters,filtersM);
 	},
-	
+
 	_mergeFiltersFlush: function(filters,filtersM){
 		/**
 		merges filters and flushes to filters
@@ -388,7 +446,7 @@ pref.chg={
 			}
 		}
 	},
-	
+
 	mergeFiltersFlushM: function(filters,filtersM,removed){
 		/**
 		merges filters
@@ -420,7 +478,7 @@ pref.chg={
 		}
 		return filtersM;
 	},
-	
+
 	mergeFilters: function(filters){
 		/**
 		merges filters with currFilters
@@ -428,7 +486,7 @@ pref.chg={
 		pref.chg.filters=pref.chg.mergeFiltersFlushM(pref.chg.filters,filters,{});
 		return pref.chg.filters;
 	},
-	
+
 	flush: function(flush2known){
 		/**
 		flushes changes (removes filters delta)
@@ -451,7 +509,7 @@ pref.chg={
 			return pref.chg.filters;
 		}
 	},
-	
+
 	isEmpty: function(){
 		for(let key in pref.chg.filters) return false;
 		if(pref.chg.currIsDelta){
@@ -459,13 +517,13 @@ pref.chg={
 		}
 		return true;
 	},
-	
+
 	clear: function(){
 		pref.chg.filters={};
 		pref.chg.removed={};
 		pref.chg.currIsDelta=true;
 	},
-	
+
 	init: function(filters){
 		/**
 		initializes filters to filters
@@ -493,9 +551,9 @@ pref.grid={
 	lastColumnStyle: [],
 	cellWidthSub: null,
 	lastCellWidth: 0,
-	
+
 	filterGrid: null,
-	
+
 	load: function(){
 		/**
 		loads grid gui information: column sort
@@ -514,7 +572,7 @@ pref.grid={
 		editableGrid.sort();
 		editableGrid.columns[0].headerRenderer._render(-1,0,editableGrid.tHead.rows[0].cells[0],editableGrid.columns[0].label);
 	},
-	
+
 	save: function(){
 		/**
 		saves grid gui information
@@ -523,7 +581,7 @@ pref.grid={
 		pref.s.sortedColumnName=editableGrid.sortedColumnName;
 		pref.s.sortDescending=editableGrid.sortDescending;
 	},
-	
+
 	grid2filters: function(flush){
 		/**
 		pref.chg.flush
@@ -561,7 +619,7 @@ pref.grid={
 		//render grid
 		pref.grid.gridInit();
 	},
-	
+
 	addFilter: function(){
 		let editableGrid=pref.grid.editableGrid;
 		let currRowId=pref.grid.currRowId;
@@ -617,7 +675,7 @@ pref.grid={
 		row.scrollIntoView(false);
 		editableGrid.columns[0].cellEditor.edit(rowIndex,0,row.childNodes[0],'');
 	},
-	
+
 	importFilters: function(){
 		pref.tGui.init('Import Filters',function(){
 			let newFilters;
@@ -639,14 +697,14 @@ pref.grid={
 			pref.grid.filters2grid(newFilters);
 		});
 	},
-	
+
 	exportFilters: function(){
 		let res=pref.tGui.init('Export Filters',new Function());
 		if(res){
 			_$('tText').value=gfpFilter.stringify(pref.grid.grid2filters(false));
 		}
 	},
-	
+
 	updateLastColumnWidth: function(){
 		/**
 		adjusts right-most column (header, body) to fill up all space
@@ -680,7 +738,7 @@ pref.grid={
 			pref.grid.lastCellWidth=lastCellWidth;
 		}
 	},
-	
+
 	getFilterClass: function(filter){
 		if(filter instanceof WhitelistFilter){
 			return 'whitelistFilter';
@@ -690,7 +748,7 @@ pref.grid={
 			return 'commentFilter';
 		}
 	},
-	
+
 	renderRow: function(filter,filters,row){
 		/**
 		render an existing row
@@ -716,7 +774,7 @@ pref.grid={
 		editableGrid.setValueAt(rowIndex,2,!isDisabled);
 		editableGrid.setValueAt(rowIndex,3,filter.hitCount||0);
 	},
-	
+
 	renderRowHTML: function(filter,filterParts,rowId){
 		/**
 		render raw html of row
@@ -744,23 +802,23 @@ pref.grid={
 		rowHTML+='</tr>';
 		return rowHTML;
 	},
-	
+
 	addRow: function(rowId,data){
 		pref.grid.editableGrid.addRow(rowId,data);
 		pref.grid.updateLastColumnWidth();
-	},	
-	
+	},
+
 	removeRow: function(rowId){
 		pref.grid.editableGrid.removeRow(rowId);
 		pref.grid.updateLastColumnWidth();
 	},
-	
+
 	removeRowFilter: function(row,rowId){
 		let filterText=row.childNodes[0].textContent;
 		pref.chg.removeFilter(filterText);
 		pref.grid.removeRow(rowId);
 	},
-	
+
 	gridInit: function(){
 		let filterGrid=pref.grid.filterGrid;
 		//check if header is already rendered
@@ -861,7 +919,7 @@ pref.grid={
 		pref.grid.updateLastColumnWidth();
 		pref.grid.load();
 	},
-	
+
 	init: function(){
 		pref.grid.filterGrid=_$('filterGrid');
 		pref.chg.init({});
@@ -870,7 +928,7 @@ pref.grid={
 		_$('importFiltersButton').addEventListener('click',pref.grid.importFilters,false);
 		_$('exportFiltersButton').addEventListener('click',pref.grid.exportFilters,false);
 	},
-	
+
 	finalize: function(){
 		//restore default values
 		with(pref.grid){
