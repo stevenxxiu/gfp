@@ -1,5 +1,5 @@
 /*jshint -W079*/
-var to5ify = require('6to5ify');
+var babelify = require('babelify');
 var browserify = require('browserify');
 var istanbul = require('browserify-istanbul');
 var FirefoxProfile = require('firefox-profile');
@@ -18,7 +18,7 @@ gulp.task('build', function(){
   function cb(){
     var fileName = 'google_search_filter_plus.user.js';
     browserify({paths: ['.', './gfp/lib'], entries: 'gfp/main.js'})
-      .transform(to5ify.configure({blacklist: ['regenerator']}))
+      .transform(babelify.configure({blacklist: ['regenerator']}))
       .on('error', function(err){console.log(err.message);})
       .bundle()
       .pipe(source(fileName))
@@ -39,7 +39,6 @@ gulp.task('greasemonkey', ['build'], function(){
 var karmaConfig = {
   common: {
     frameworks: ['browserify', 'qunit'],
-    files: ['gfp/**/test_*.js'],
     preprocessors: {
       'gfp/**/test_*.js': ['browserify'],
     },
@@ -49,14 +48,16 @@ var karmaConfig = {
   },
   test: {
     port: 9876,
+    files: ['gfp/**/test_*.js'],
     reporters: ['progress'],
     browserify: {
       debug: true,
-      transform: [to5ify.configure({blacklist: ['regenerator']})]
+      transform: [babelify.configure({blacklist: ['regenerator']})]
     }
   },
   cover: {
     port: 9877,
+    files: [{pattern: 'node_modules/isparta/node_modules/babel-core/browser-polyfill.js', watched: false}, 'gfp/**/test_*.js'],
     reporters: ['coverage'],
     browserify: {
       transform: [istanbul({instrumenter: isparta, defaultIgnore: false})]
