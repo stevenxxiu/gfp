@@ -11,8 +11,13 @@ var isparta = require('isparta');
 var karma = require('karma');
 var merge = require('merge');
 var open = require('open');
+var path = require('path');
 var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
+
+function regExpEscape(str) {
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+}
 
 gulp.task('build', function(){
   function cb(){
@@ -57,10 +62,15 @@ var karmaConfig = {
   },
   cover: {
     port: 9877,
-    files: [{pattern: 'node_modules/isparta/node_modules/babel-core/browser-polyfill.js', watched: false}, 'gfp/**/test_*.js'],
-    reporters: ['coverage'],
+    files: [
+      {pattern: 'node_modules/isparta/node_modules/babel-core/browser-polyfill.js', watched: false}, 'gfp/**/test_*.js'
+    ],
+    reporters: ['progress', 'coverage'],
     browserify: {
-      transform: [istanbul({instrumenter: isparta, defaultIgnore: false})]
+      transform: [
+        istanbul({instrumenter: isparta, defaultIgnore: false, ignore: [path.join(__dirname, '/gfp/lib/') + '**']}),
+        babelify.configure({only: new RegExp(regExpEscape(path.join(__dirname, '/gfp/lib/')))})
+      ]
     }
   }
 };
