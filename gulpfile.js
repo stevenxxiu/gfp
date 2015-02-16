@@ -77,4 +77,4 @@ gulp.task('cover', function(){
   open('http://localhost:' + config.port);
 });
 
-gulp.task('default', ['test', 'cover']);
+gulp.task('default', ['greasemonkey']);
