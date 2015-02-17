@@ -50,45 +50,62 @@ gulp.task('greasemonkey', ['build'], function(){
   });
 });
 
-gulp.task('test', function(){
-  var testFileName = 'google_search_filter_plus.test.js';
-  var coverFileName = 'google_search_filter_plus.cover.js';
-  karma.server.start({
-    frameworks: ['qunit'],
-    reporters: ['coverage', 'progress'],
-    autoWatch: false,
-    files: [path.join('dist', testFileName), path.join('dist', coverFileName)]
-  });
+function karmaTask(karmaConfig, bundle){
+  var first = true;
   watchCall('gfp/**/*.js', {}, function(){
-    var entries = glob.sync('gfp/**/test_*.js');
-    bundle({debug: true, entries: entries})
-      .pipe(source(testFileName))
-      .pipe(buffer())
-      .pipe(concat.header('if(window.location.href.endsWith("debug.html")){'))
-      .pipe(concat.footer('}'))
-      .pipe(gulp.dest('dist'));
-    bundle({
-      entries: entries,
+    bundle().on('end', function(){
+      if(first){
+        karmaConfig = merge.recursive(true, {
+          frameworks: ['mocha', 'chai'],
+          client: {mocha: {reporter: 'html', ui: 'tdd'}},
+          autoWatch: false
+        }, karmaConfig);
+        karma.server.start(karmaConfig);
+        open('http://localhost:' + karmaConfig.port);
+        first = false;
+      }
+      // monkey-patch to get rid of stdout
+      var http = require('http');
+      var request = http.request;
+      http.request = function(options, response){return request(options);};
+      karma.runner.run(karmaConfig, function(){});
+      http.request = request;
+    });
+  });
+}
+
+gulp.task('test', function(){
+  var fileName = 'google_search_filter_plus.test.js';
+  karmaTask({
+    port: 9876,
+    reporters: ['progress'],
+    files: [path.join('dist', fileName)],
+    preprocessors: {'dist/*': ['sourcemap']}
+  }, function(){
+    return bundle({
+      entries: glob.sync('gfp/**/test_*.js'), debug: true
+    }).pipe(source(fileName)).pipe(gulp.dest('dist'));
+  });
+});
+
+gulp.task('cover', function(){
+  var fileName = 'google_search_filter_plus.cover.js';
+  karmaTask({
+    port: 9877,
+    reporters: ['coverage'],
+    files: [
+      {pattern: 'node_modules/isparta/node_modules/babel-core/browser-polyfill.js', watched: false},
+      path.join('dist', fileName)
+    ]
+  }, function(){
+    return bundle({
+      entries: glob.sync('gfp/**/test_*.js'),
       transform: [
         istanbul({instrumenter: isparta, defaultIgnore: false, ignore: [path.join(__dirname, 'gfp/lib/') + '**']}),
         babelify.configure({only: new RegExp(regExpEscape(path.join(__dirname, 'gfp/lib/')))})
       ]
-    })
-      .pipe(source(coverFileName))
-      .pipe(buffer())
-      .pipe(concat.header('if(!window.location.href.endsWith("debug.html")){'))
-      .pipe(concat.footer('}'))
-      .pipe(gulp.dest('dist'))
-      .on('end', function(){
-        // monkey-patch to get rid of stdout
-        var http = require('http');
-        var request = http.request;
-        http.request = function(options, response){return request(options);};
-        karma.runner.run({});
-        http.request = request;
-      });
+    }).pipe(source(fileName)).pipe(gulp.dest('dist'));
   });
-  open('http://localhost:9876/');
 });
 
-gulp.task('default', ['test']);
+gulp.task('default', ['test', 'cover']);
