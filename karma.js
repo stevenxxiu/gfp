@@ -1,11 +1,35 @@
 /*jshint -W079*/
-var child_process = require('child_process');
+var http = require('http');
 var karma = require('karma');
 var merge = require('merge');
 var open = require('open');
 var through = require('through2');
 
 var ports = {};
+
+function run(config, retry){
+  function rerun(){
+    if(retry)
+      setTimeout(function(){run(config, retry);}, 100);
+  }
+  var req = http.request({
+    hostname: config.hostname || 'localhost',
+    path: (config.urlRoot || '/') + 'run',
+    port: config.port || 9876,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }, function(response){
+    response.on('data', function(buffer){
+      if(/^No captured browser/.test(buffer.toString()))
+        rerun();
+    });
+  });
+  if(retry)
+    req.on('error', rerun);
+  req.end(JSON.stringify({}));
+}
 
 module.exports = function(config){
   return through.obj(function(file, encoding, next){
@@ -19,22 +43,7 @@ module.exports = function(config){
       ports[config.port] = true;
       open('http://localhost:' + config.port);
     }
-    (function run(){
-      child_process.fork(__filename, [JSON.stringify(config)], {silent: true}).on('exit', function(code){
-        if(code === 1)
-          run();
-      });
-    })();
+    run(config, first);
     next(null, file);
   });
 };
-
-function main(){
-  karma.runner.run(JSON.parse(process.argv[2]), function(code){
-    // add 1 to differentiate between server response exit codes & throws (server connection errors)
-    process.exit(code + 1);
-  });
-}
-
-if(require.main === module)
-  main();
