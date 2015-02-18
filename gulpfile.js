@@ -14,8 +14,9 @@ var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
 var karma = require('./karma');
 
-function regExpEscape(str) {
-  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+function globToRegExp(str){
+  var escaped = str.replace(/[-\[\]/{}()*+?.\\^$|]/g, '\\$&');
+  return escaped.replace(/\\\*(\\\*)?/g, '.*');
 }
 
 function watchCall(glob, options, callback){
@@ -68,11 +69,12 @@ gulp.task('test', function(){
 
 gulp.task('cover', function(){
   watchCall('gfp/**/*.js', {}, function(){
+    var ignore = ['gfp/lib/**', 'gfp/**/test_*.js'].map(function(str){return path.join(__dirname, str);});
     bundle({
       entries: glob.sync('gfp/**/test_*.js'),
       transform: [
-        istanbul({instrumenter: isparta, defaultIgnore: false, ignore: [path.join(__dirname, 'gfp/lib/') + '**']}),
-        babelify.configure({only: new RegExp(regExpEscape(path.join(__dirname, 'gfp/lib/')))})
+        istanbul({instrumenter: isparta, defaultIgnore: false, ignore: ignore}),
+        babelify.configure({only: ignore.map(globToRegExp)})
       ]
     })
       .pipe(source('google_search_filter_plus.cover.js'))
