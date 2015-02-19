@@ -85,7 +85,7 @@ class NewsData extends NodeData {
   getSummary(){return this.node.querySelector('div[style]').textContent;}
 }
 
-class SearchGui {
+export class SearchGui {
   constructor(){
     this.filters = Config.filters;
     this.matcher = new CombinedMultiMatcher();
