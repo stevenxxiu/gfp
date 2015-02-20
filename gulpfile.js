@@ -51,7 +51,10 @@ gulp.task('greasemonkey', ['build'], function(){
 
 var karmaConfig = {
   frameworks: ['mocha', 'chai'],
-  client: {mocha: {reporter: 'html', ui: 'tdd'}}
+  client: {
+    captureConsole: true,
+    mocha: {reporter: 'html', ui: 'tdd'}
+  }
 };
 
 gulp.task('test', function(){

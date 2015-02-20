@@ -2,97 +2,98 @@ import {BlockingFilter, MultiRegExpFilter, RegExpFilter, WhitelistFilter} from '
 import {ActiveFilter, InvalidFilter} from 'gfp/lib/filterClasses';
 
 suite('Filter', () => {
-  test('ActiveFilter toObject', () => {
-    let filter = new ActiveFilter('text');
-    filter._disabled = true;
-    filter._hitCount = 1;
-    filter._lastHit = 1;
-    assert.deepEqual(filter.toObject(), {text: 'text', disabled: true, hitCount: 1, lastHit: 1});
-  });
-  test('InvalidFilter toObject', () => {
-    let filter = new InvalidFilter('text');
-    assert.deepEqual(filter.toObject(), {text: 'text'});
+  suite('toObject', () => {
+    test('ActiveFilter', () => {
+      let filter = new ActiveFilter('text');
+      filter._disabled = true;
+      filter._hitCount = 1;
+      filter._lastHit = 1;
+      assert.deepEqual(filter.toObject(), {text: 'text', disabled: true, hitCount: 1, lastHit: 1});
+    });
+    test('InvalidFilter', () => {
+      let filter = new InvalidFilter('text');
+      assert.deepEqual(filter.toObject(), {text: 'text'});
+    });
   });
 });
 
+RegExpFilter.prototype.toTestObject = function(){
+  let obj = {};
+  if(this.regexp !== null)
+    obj.regexp = this.regexp.toString();
+  if(this.matchCase)
+    obj.matchCase = true;
+  if(this.collapse)
+    obj.collapse = true;
+  return obj;
+};
+
 suite('RegExpFilter', () => {
-  test('fromParts', function(){
-    let filter;
-
-    filter = RegExpFilter.fromParts('a*b', '');
-    assert.strictEqual(filter.regexp.toString(), /a.*b/i.toString());
-    assert.isFalse(filter.matchCase);
-    assert.isFalse(filter.collapse);
-
-    filter = RegExpFilter.fromParts('/abc/', 'match_case,COLLAPSE');
-    assert.strictEqual(filter.regexp.toString(), /abc/.toString());
-    assert.isTrue(filter.matchCase);
-    assert.isTrue(filter.collapse);
+  suite('fromParts', () => {
+    test('plain', () => {
+      assert.deepEqual(RegExpFilter.fromParts('a*b', '').toTestObject(), {regexp: /a.*b/i.toString()});
+      assert.deepEqual(RegExpFilter.fromParts('/a.*b/', '').toTestObject(), {regexp: /a.*b/i.toString()});
+      assert.deepEqual(RegExpFilter.fromParts('/a.*b/', 'match_case,COLLAPSE').toTestObject(), {
+        regexp: /a.*b/.toString(), matchCase: true, collapse: true
+      });
+    });
+    test('types', () => {
+      assert.instanceOf(RegExpFilter.fromParts('a', 'INVALID'), InvalidFilter);
+    });
   });
-  test('matches', function(){
+  test('matches', () => {
     let filter = RegExpFilter.fromParts('a*c', '');
     assert.isTrue(filter.matches('abc'));
     assert.isFalse(filter.matches('b'));
   });
 });
 
-assert.multiRegExpFilter = function(src, dest, message){
-  let res = src.toObject();
-  res.filters = [];
-  for(let filter of src.filters){
-    if(filter === null){
-      res.filters.push(null);
-    }else{
-      let obj = {};
-      if(filter.text !== null)
-        obj.text = filter.text;
-      if(filter.collapse)
-        obj.collapse = true;
-      if(filter.matchCase)
-        obj.matchCase = true;
-      res.filters.push(obj);
-    }
+MultiRegExpFilter.prototype.toTestObject = function(){
+  let obj = this.toObject();
+  obj.filters = [];
+  for(let subFilter of this.filters){
+    let subObj = subFilter.toTestObject();
+    delete subObj.regexp;
+    if(subFilter.index)
+      subObj.index = subFilter.index;
+    if(subFilter.dataIndex)
+      subObj.dataIndex = subFilter.dataIndex;
+    obj.filters.push(subObj);
   }
-  assert.deepEqual(res, dest, message);
+  return obj;
 };
 
 suite('MultiRegExpFilter', () => {
-  test('collapse', function(){
-    let filter;
-
-    filter = MultiRegExpFilter.fromText('a$COLLAPSE');
-    assert.isTrue(filter.collapse);
-
-    filter = MultiRegExpFilter.fromText('a$$b$COLLAPSE');
-    assert.isTrue(filter.collapse);
+  test('collapse', () => {
+    assert.isFalse(MultiRegExpFilter.fromText('a').collapse);
+    assert.isFalse(MultiRegExpFilter.fromText('a$$b').collapse);
+    assert.isTrue(MultiRegExpFilter.fromText('a$COLLAPSE').collapse);
+    assert.isTrue(MultiRegExpFilter.fromText('a$$b$COLLAPSE').collapse);
   });
-  test('fromText', function(){
-    let filter;
-
-    filter = MultiRegExpFilter.fromText('a');
-    assert.instanceOf(filter, BlockingFilter);
-    assert.multiRegExpFilter(filter, {text: 'a', filters: [{}]});
-
-    filter = MultiRegExpFilter.fromText('@@a');
-    assert.instanceOf(filter, WhitelistFilter);
-    assert.multiRegExpFilter(filter, {text: '@@a', filters: [{}]});
-
-    filter = MultiRegExpFilter.fromText('');
-    assert.multiRegExpFilter(filter, {text: '', filters: []});
-
-    filter = MultiRegExpFilter.fromText('a$MATCH_CASE');
-    assert.multiRegExpFilter(filter, {text: 'a$MATCH_CASE', filters: [{matchCase: true}]});
-
-    filter = MultiRegExpFilter.fromText('a$$');
-    assert.multiRegExpFilter(filter, {text: 'a$$', filters: [{}]});
-
-    filter = MultiRegExpFilter.fromText('a$$b$MATCH_CASE');
-    assert.multiRegExpFilter(filter, {text: 'a$$b$MATCH_CASE', filters: [{}, {matchCase: true}]});
-
-    filter = MultiRegExpFilter.fromText('a$$$$');
-    assert.multiRegExpFilter(filter, {text: 'a$$$$', filters: [{}]});
-
-    filter = MultiRegExpFilter.fromText('a$$$$b$MATCH_CASE');
-    assert.multiRegExpFilter(filter, {text: 'a$$$$b$MATCH_CASE', filters: [{}, null, {matchCase: true}]});
+  suite('fromText', () => {
+    test('plain', () => {
+      assert.deepEqual(MultiRegExpFilter.fromText('').toTestObject(), {text: '', filters: []});
+      assert.deepEqual(MultiRegExpFilter.fromText('a').toTestObject(), {text: 'a', filters: [{}]});
+      assert.deepEqual(MultiRegExpFilter.fromText('a$$').toTestObject(), {text: 'a$$', filters: [{}]});
+      assert.deepEqual(MultiRegExpFilter.fromText('a$$$$b').toTestObject(), {
+        text: 'a$$$$b', filters: [{}, {index: 2, dataIndex: 1}]
+      });
+    });
+    test('options', () => {
+      assert.deepEqual(MultiRegExpFilter.fromText('$MATCH_CASE').toTestObject(), {
+        text: '$MATCH_CASE', filters: []
+      });
+      assert.deepEqual(MultiRegExpFilter.fromText('a$MATCH_CASE').toTestObject(), {
+        text: 'a$MATCH_CASE', filters: [{matchCase: true}]
+      });
+      assert.deepEqual(MultiRegExpFilter.fromText('a$$b$MATCH_CASE').toTestObject(), {
+        text: 'a$$b$MATCH_CASE', filters: [{}, {index: 1, dataIndex: 1, matchCase: true}]
+      });
+    });
+    test('types', () => {
+      assert.instanceOf(MultiRegExpFilter.fromText('a'), BlockingFilter);
+      assert.instanceOf(MultiRegExpFilter.fromText('@@a'), WhitelistFilter);
+      assert.instanceOf(MultiRegExpFilter.fromText('a$INVALID'), InvalidFilter);
+    });
   });
 });

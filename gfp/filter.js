@@ -20,7 +20,7 @@ export class RegExpFilter extends RegExpFilter_ {
     if(collapse)
       this.collapse = collapse;
     // convert regex filters immediately to catch syntax errors, normal filters on-demand
-    if(regexpSource.length >= 2 && regexpSource[0] == '/' && regexpSource[regexpSource.length - 1] == '/'){
+    if(regexpSource.length >= 2 && regexpSource.startsWith('/') && regexpSource.endsWith('/')){
       let regexp = new RegExp(regexpSource.substr(1, regexpSource.length - 2), this.matchCase ? '' : 'i');
       Object.defineProperty(this, 'regexp', {value: regexp});
     }else{
@@ -48,19 +48,23 @@ export class RegExpFilter extends RegExpFilter_ {
     }
     return new RegExpFilter(text, matchCase, collapse);
   }
+
+  *[Symbol.iterator](){
+    yield this;
+  }
 }
 
 RegExpFilter.prototype.matchCase = false;
 RegExpFilter.prototype.collapse = false;
+RegExpFilter.prototype.index = 0;
+RegExpFilter.prototype.dataIndex = 0;
 
 export class MultiRegExpFilter extends ActiveFilter {
   constructor(text, filters){
     ActiveFilter.call(this, text);
-    for(let filter of filters){
-      if(filter)
-        filter.parent = this;
-    }
     this.filters = filters;
+    for(let filter of filters)
+      filter.parent = this;
   }
 
   get collapse(){
@@ -83,13 +87,17 @@ export class MultiRegExpFilter extends ActiveFilter {
       let [part, options] = [parts[i], parts[i+1]];
       if(!part)
         continue;
-      for(let j = filters.length*2; j < i; j += 2)
-        filters.push(null);
       let filter = RegExpFilter.fromParts(part, options);
       if(filter instanceof InvalidFilter)
-        return InvalidFilter(part);
+        return new InvalidFilter(text);
+      if(i > 0)
+        filter.index = i/2;
+      if(filters.length > 0)
+        filter.dataIndex = filters.length;
       filters.push(filter);
     }
+    if(filters.length == 1)
+      filters = filters[0];
     return blocking ? new BlockingFilter(origText, filters) : new WhitelistFilter(origText, filters);
   }
 }
