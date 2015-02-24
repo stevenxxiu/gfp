@@ -6,6 +6,7 @@ var glob = require('glob');
 var gulp = require('gulp');
 var addsrc = require('gulp-add-src');
 var concat = require('gulp-concat-util');
+var minifyCSS = require('gulp-minify-css');
 var watch = require('gulp-watch');
 var isparta = require('isparta');
 var merge = require('merge');
@@ -30,7 +31,18 @@ function bundle(config){
   ).bundle().on('error', function(err){console.log(err.message);});
 }
 
+function buildResources(){
+  gulp.src('gfp/css/gui.css')
+    .pipe(minifyCSS())
+    .pipe(concat('resource.js', {process: function(src){
+      var ext = path.extname(this.path);
+      return 'let ' + path.basename(this.path, ext) + {'.css': 'Style'}[ext] + ' = ' + JSON.stringify(src) + ';';
+    }}))
+    .pipe(gulp.dest('gfp'));
+}
+
 function build(){
+  buildResources();
   var fileName = 'google_search_filter_plus.user.js';
   return bundle({entries: 'gfp/main.js'})
     .pipe(source(fileName))
