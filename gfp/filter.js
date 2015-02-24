@@ -1,17 +1,4 @@
-import {ActiveFilter, Filter, InvalidFilter, RegExpFilter as RegExpFilter_} from 'gfp/lib/filterClasses';
-
-Filter.prototype.toObject = function(){
-  let res = {text: this.text};
-  if(this instanceof ActiveFilter){
-    if(this._disabled)
-      res.disabled = true;
-    if(this._hitCount)
-      res.hitCount = this._hitCount;
-    if(this._lastHit)
-      res.lastHit = this._lastHit;
-  }
-  return res;
-};
+import {ActiveFilter, Filter as Filter_, InvalidFilter, RegExpFilter as RegExpFilter_} from 'gfp/lib/filterClasses';
 
 export class RegExpFilter extends RegExpFilter_ {
   constructor(regexpSource, matchCase, collapse){
@@ -101,6 +88,23 @@ export class MultiRegExpFilter extends ActiveFilter {
     return blocking ? new BlockingFilter(origText, filters) : new WhitelistFilter(origText, filters);
   }
 }
+
+export let Filter = Filter_;
+
+Filter.prototype.toObject = function(){
+  let res = {text: this.text};
+  if(this instanceof ActiveFilter){
+    if(this._disabled)
+      res.disabled = true;
+    if(this._hitCount)
+      res.hitCount = this._hitCount;
+    if(this._lastHit)
+      res.lastHit = this._lastHit;
+  }
+  return res;
+};
+
+Filter.fromText = MultiRegExpFilter.fromText;
 
 export class BlockingFilter extends MultiRegExpFilter {}
 export class WhitelistFilter extends MultiRegExpFilter {}
