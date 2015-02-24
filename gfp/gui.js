@@ -88,7 +88,7 @@ class NewsData extends NodeData {
 export class SearchGui {
   constructor(){
     this.filters = Config.filters;
-    this.matcher = new CombinedMultiMatcher();
+    this.matcher = new CombinedMultiMatcher(3);
     for(let filter of this.filters)
       this.matcher.add(filter);
     // save to prevent pref modifications
