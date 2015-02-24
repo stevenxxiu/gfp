@@ -7,7 +7,6 @@ var gulp = require('gulp');
 var addsrc = require('gulp-add-src');
 var concat = require('gulp-concat-util');
 var minifyCSS = require('gulp-minify-css');
-var watch = require('gulp-watch');
 var isparta = require('isparta');
 var merge = require('merge');
 var path = require('path');
@@ -20,9 +19,10 @@ function globToRegExp(str){
   return escaped.replace(/\\\*(\\\*)?/g, '.*');
 }
 
-function watchCall(glob, options, callback){
-  callback();
-  watch(glob, options, callback);
+function watch(name, deps, glob, cb){
+  if(!cb){cb = glob; glob = deps; deps = [];}
+  gulp.task('_' + name, deps, cb);
+  gulp.task(name, ['_' + name], function(){gulp.watch(glob, ['_' + name]);});
 }
 
 function bundle(config){
@@ -31,7 +31,7 @@ function bundle(config){
   ).bundle().on('error', function(err){console.log(err.message);});
 }
 
-function buildResources(){
+gulp.task('resources', function(){
   gulp.src('gfp/css/gui.css')
     .pipe(minifyCSS())
     .pipe(concat('resource.js', {process: function(src){
@@ -39,10 +39,9 @@ function buildResources(){
       return 'let ' + path.basename(this.path, ext) + {'.css': 'Style'}[ext] + ' = ' + JSON.stringify(src) + ';';
     }}))
     .pipe(gulp.dest('gfp'));
-}
+});
 
-function build(){
-  buildResources();
+watch('build', ['resources'], 'gfp/**/!(test_*.js)', function(){
   var fileName = 'google_search_filter_plus.user.js';
   return bundle({entries: 'gfp/main.js'})
     .pipe(source(fileName))
@@ -50,18 +49,13 @@ function build(){
     .pipe(addsrc('gfp/header.js'))
     .pipe(concat(fileName))
     .pipe(gulp.dest('dist'));
-}
-
-gulp.task('build', function(){
-  watchCall('gfp/**/!(test_*.js)', {}, build);
 });
 
-gulp.task('greasemonkey', function(){
+watch('greasemonkey', ['_build'], 'gfp/**/!(test_*.js)', function(){
   new FirefoxProfile.Finder().getPath('default', function(err, profilePath){
-    watchCall('gfp/**/!(test_*.js)', {}, function(){
-      build().pipe(gulp.dest(path.join(profilePath, 'gm_scripts/Google_Search_Filter_Plus')));
+    gulp.src('dist/google_search_filter_plus.user.js')
+      .pipe(gulp.dest(path.join(profilePath, 'gm_scripts/Google_Search_Filter_Plus')));
     });
-  });
 });
 
 var karmaConfig = {
@@ -72,37 +66,33 @@ var karmaConfig = {
   }
 };
 
-gulp.task('test', function(){
-  watchCall('gfp/**/*.js', {}, function(){
-    bundle({entries: glob.sync('gfp/**/test_*.js'), debug: true})
-      .pipe(source('google_search_filter_plus.test.js'))
-      .pipe(gulp.dest('dist'))
-      .pipe(karma(merge(true, karmaConfig, {
-        port: 9876,
-        reporters: ['progress'],
-        preprocessors: {'dist/google_search_filter_plus.test.js': ['sourcemap']}
-      })));
-  });
+watch('test', 'gfp/**/*.js', function(){
+  bundle({entries: glob.sync('gfp/**/test_*.js'), debug: true})
+    .pipe(source('google_search_filter_plus.test.js'))
+    .pipe(gulp.dest('dist'))
+    .pipe(karma(merge(true, karmaConfig, {
+      port: 9876,
+      reporters: ['progress'],
+      preprocessors: {'dist/google_search_filter_plus.test.js': ['sourcemap']}
+    })));
 });
 
-gulp.task('cover', function(){
-  watchCall('gfp/**/*.js', {}, function(){
-    var ignore = ['gfp/lib/**', 'gfp/**/test_*.js'].map(function(str){return path.join(__dirname, str);});
-    bundle({
-      entries: glob.sync('gfp/**/test_*.js'),
-      transform: [
-        istanbul({instrumenter: isparta, defaultIgnore: false, ignore: ignore}),
-        babelify.configure({only: ignore.map(globToRegExp)})
-      ]
-    })
-      .pipe(source('google_search_filter_plus.cover.js'))
-      .pipe(gulp.dest('dist'))
-      .pipe(karma(merge(true, karmaConfig, {
-        port: 9877,
-        reporters: ['coverage'],
-        files: [{pattern: 'node_modules/isparta/node_modules/babel-core/browser-polyfill.js', watched: false}]
-      })));
-  });
+watch('cover', 'gfp/**/*.js', function(){
+  var ignore = ['gfp/lib/**', 'gfp/**/test_*.js'].map(function(str){return path.join(__dirname, str);});
+  bundle({
+    entries: glob.sync('gfp/**/test_*.js'),
+    transform: [
+      istanbul({instrumenter: isparta, defaultIgnore: false, ignore: ignore}),
+      babelify.configure({only: ignore.map(globToRegExp)})
+    ]
+  })
+    .pipe(source('google_search_filter_plus.cover.js'))
+    .pipe(gulp.dest('dist'))
+    .pipe(karma(merge(true, karmaConfig, {
+      port: 9877,
+      reporters: ['coverage'],
+      files: [{pattern: 'node_modules/isparta/node_modules/babel-core/browser-polyfill.js', watched: false}]
+    })));
 });
 
 gulp.task('default', ['test', 'cover']);
