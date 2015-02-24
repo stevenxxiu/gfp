@@ -12,7 +12,7 @@ var merge = require('merge');
 var path = require('path');
 var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
-var karma = require('./karma');
+var karma = require('./gulp-karma');
 
 function globToRegExp(str){
   var escaped = str.replace(/[-\[\]/{}()*+?.\\^$|]/g, '\\$&');
@@ -30,22 +30,25 @@ function bundle(config){
   ).bundle().on('error', function(err){console.log(err.message);});
 }
 
+function build(){
+  var fileName = 'google_search_filter_plus.user.js';
+  return bundle({entries: 'gfp/main.js'})
+    .pipe(source(fileName))
+    .pipe(buffer())
+    .pipe(addsrc('gfp/header.js'))
+    .pipe(concat(fileName))
+    .pipe(gulp.dest('dist'));
+}
+
 gulp.task('build', function(){
-  watchCall('gfp/**/!(test_*.js)', {}, function(){
-    var fileName = 'google_search_filter_plus.user.js';
-    return bundle({entries: 'gfp/main.js'})
-      .pipe(source(fileName))
-      .pipe(buffer())
-      .pipe(addsrc('gfp/header.js'))
-      .pipe(concat(fileName))
-      .pipe(gulp.dest('dist'));
-  });
+  watchCall('gfp/**/!(test_*.js)', {}, build);
 });
 
-gulp.task('greasemonkey', ['build'], function(){
+gulp.task('greasemonkey', function(){
   new FirefoxProfile.Finder().getPath('default', function(err, profilePath){
-    gulp.src('dist/google_search_filter_plus.user.js')
-      .pipe(gulp.dest(path.join(profilePath, 'gm_scripts/Google_Search_Filter_Plus')));
+    watchCall('gfp/**/!(test_*.js)', {}, function(){
+      build().pipe(gulp.dest(path.join(profilePath, 'gm_scripts/Google_Search_Filter_Plus')));
+    });
   });
 });
 
