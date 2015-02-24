@@ -48,7 +48,7 @@ RegExpFilter.prototype.dataIndex = 0;
 
 export class MultiRegExpFilter extends ActiveFilter {
   constructor(text, filters){
-    ActiveFilter.call(this, text);
+    this.text = text;
     this.filters = filters;
     for(let filter of filters)
       filter.parent = this;
