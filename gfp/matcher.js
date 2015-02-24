@@ -74,6 +74,8 @@ export class SubMatcher extends Matcher {
     Args:
       parents: All parent filters matched so far, excluding the ones whose subFilters have so far been null.
     */
+    if(data === null)
+      return;
     let candidates = data.toLowerCase().match(/[a-z0-9%]{3,}/g);
     if(candidates === null)
       candidates = [];

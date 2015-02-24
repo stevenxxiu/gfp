@@ -1,9 +1,5 @@
 
-export function isInDom(element){
-  while(true){
-    element = element.parentNode;
-    if(element == document)
-      return true;
-  }
-  return false;
+export function cache(obj, prop, value){
+  Object.defineProperty(obj, prop, {value: value});
+  return value;
 }

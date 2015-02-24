@@ -36,7 +36,7 @@ gulp.task('resources', function(){
     .pipe(minifyCSS())
     .pipe(concat('resource.js', {process: function(src){
       var ext = path.extname(this.path);
-      return 'let ' + path.basename(this.path, ext) + {'.css': 'Style'}[ext] + ' = ' + JSON.stringify(src) + ';';
+      return 'export let ' + path.basename(this.path, ext) + {'.css': 'Style'}[ext] + ' = ' + JSON.stringify(src) + ';';
     }}))
     .pipe(gulp.dest('gfp'));
 });

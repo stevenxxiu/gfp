@@ -1,6 +1,14 @@
 
+.hide {
+  display: none;
+}
+
+.dash {
+  padding: 0 3px;
+}
+
 .filter-add {
-  color: #1122CC !important;
+  color: #12C !important;
   font-size: 90%;
   text-decoration: none;
 }
@@ -10,7 +18,8 @@
 }
 
 .show-title {
-  color: #999 !important;
+  padding-right: 5px;
+  color: #999;
   font-size: 90%;
 }
 
@@ -18,4 +27,9 @@
   color: #999 !important;
   font-size: 90%;
   text-decoration: none;
+}
+
+.show-link.hide {
+  display: inline;
+  color: #12C !important;
 }

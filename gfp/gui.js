@@ -4,6 +4,7 @@ import {MultiRegExpFilter, WhitelistFilter} from 'gfp/filter';
 import {FilterNotifier} from 'gfp/lib/filterNotifier';
 import {CombinedMultiMatcher} from 'gfp/matcher';
 import {guiStyle} from 'gfp/resource';
+import {cache} from 'gfp/utils';
 
 class NodeData {
   constructor(node){
@@ -16,14 +17,16 @@ class NodeData {
   getTitle(){return null;}
   getSummary(){return null;}
 
-  get linkArea(){this.linkArea = this.getLinkArea(); return this.linkArea;}
-  get url(){this.url = this.getUrl(); return this.url;}
-  get title(){this.title = this.getTitle(); return this.title;}
-  get summary(){this.summary = this.getSummary(); return this.summary;}
+  get linkArea(){return cache(this, 'linkArea', this.getLinkArea());}
+  get url(){return cache(this, 'url', this.getUrl());}
+  get title(){return cache(this, 'title', this.getTitle());}
+  get summary(){return cache(this, 'summary', this.getSummary());}
 }
 
+NodeData.attrs = ['url', 'title', 'summary'];
+
 class ResultsData extends NodeData {
-  *getResults(){
+  *getChildren(){
     for(let child of this.node.querySelectorAll('li.g')){
       switch(child.id){
         case 'imagebox':
@@ -53,7 +56,7 @@ class TextData extends NodeData {
 }
 
 class VideoContainerData extends NodeData {
-  *getResults(){for(let child of this.node.querySelectorAll('div.vresult')) yield new VideoData(child);}
+  *getChildren(){for(let child of this.node.querySelectorAll('div.vresult')) yield new VideoData(child);}
   getTitle(){return this.node.querySelector('h3.r').textContent;}
 }
 
@@ -65,7 +68,7 @@ class VideoData extends NodeData {
 }
 
 class ImageContainerData extends NodeData {
-  *getResults(){for(let child of this.node.querySelectorAll('div>a')) yield new ImageData(child);}
+  *getChildren(){for(let child of this.node.querySelectorAll('div>a')) yield new ImageData(child);}
   getTitle(){return this.node.querySelector('h3.r').textContent;}
 }
 
@@ -74,7 +77,7 @@ class ImageData extends NodeData {
 }
 
 class NewsContainerData extends NodeData {
-  *getResults(){for(let child of this.node.querySelectorAll('li.w0>div')) yield new NewsData(child);}
+  *getChildren(){for(let child of this.node.querySelectorAll('li.w0>div')) yield new NewsData(child);}
   getTitle(){return this.node.querySelector('h3.r').textContent;}
 }
 
@@ -115,90 +118,90 @@ export class SearchGui {
     Create once and clone to improve performance.
     */
     // dash
-    let dash = document.createElement('span');
-    dash.innerHTML='&nbsp;-&nbsp;';
-    this.dash = dash;
+    this.dash = document.createElement('span');
+    this.dash.textContent = '-';
+    this.dash.classList.add('dash');
     // add filter link
-    let addLink = document.createElement('a');
-    addLink.innerHTML = 'Filter';
-    addLink.setAttribute('href', '#');
-    addLink.setAttribute('class', 'filter-add');
-    this.addLink = addLink;
+    this.addLink = document.createElement('a');
+    this.addLink.textContent = 'Filter';
+    this.addLink.setAttribute('href', '#');
+    this.addLink.classList.add('filter-add');
     // hidden result title
-    let showTitle = document.createElement('span');
-    showTitle.setAttribute('class', 'show-title');
-    this.showTitle = showTitle;
+    this.showTitle = document.createElement('span');
+    this.showTitle.classList.add('show-title');
     // hidden result 'show' link
-    let showLink = document.createElement('a');
-    showLink.setAttribute('href', '#');
-    showLink.setAttribute('class', 'show-link');
-    this.showLink = showLink;
+    this.showLink = document.createElement('a');
+    this.showLink.textContent = 'show';
+    this.showLink.setAttribute('href', '#');
+    this.showLink.classList.add('show-link');
   }
 
-  toggleResult(hide, node){
-    if(this.allowHidden){
-      node.style.display = hide ? 'none' : '';
+  toggleResult(nodeData, showTitle, showLink, initial=false){
+    for(let child of nodeData.node.children)
+      if(child != showTitle && child != showLink)
+        child.classList.toggle('hide');
+    if(initial)
       return;
-    }
-    for(let child of node.children)
-      child.style.display = hide ? 'none' : '';
-    let showTitle = node.querySelector('.showTitle');
-    showTitle.style.display = hide ? '' : 'none';
-    let showLink = node.querySelector('.showLink');
-    showLink.style.display = hide ? '' : 'none';
-    showLink.innerHTML = hide ? 'show' : 'hide';
+    if(showTitle)
+      showTitle.classList.toggle('hide');
+    showLink.classList.toggle('hide');
+    showLink.textContent = showLink.classList.contains('hide') ? 'hide' : 'show';
   }
 
   hideResult(nodeData, filter){
-    let node = nodeData.node;
-    let showTitle = this.showTitle.cloneNode(false);
-    let title = nodeData.title;
-    if(title)
-      showTitle.innerHTML = title + '&nbsp;&nbsp;';
-    node.appendChild(showTitle);
-    let showLink = this.showLink.cloneNode(false);
-    showLink.innerHTML = 'show';
+    if(this.allowHidden && filter.collapse){
+      nodeData.node.classList.add('hide');
+      return;
+    }
+    let showTitle;
+    if(nodeData.title !== null){
+      showTitle = this.showTitle.cloneNode(false);
+      showTitle.textContent = nodeData.title;
+      nodeData.node.appendChild(showTitle);
+    }
+    let showLink = this.showLink.cloneNode(true);
     showLink.title = filter.text;
-    node.appendChild(showLink);
-    let hide = false;
-    this.toggleResult(true, node);
-    showLink.onclick = (e) => {
-      this.toggleResult(hide, node);
-      hide = !hide;
+    nodeData.node.appendChild(showLink);
+    this.toggleResult(nodeData, showTitle, showLink, true);
+    showLink.onclick = () => {
+      this.toggleResult(nodeData, showTitle, showLink);
       return false;
     };
   }
 
   createAddLink(nodeData){
-    let linkArea = nodeData.linkArea;
-    if(!linkArea)
+    if(!nodeData.linkArea)
       return;
     let dash = this.dash.cloneNode(true);
-    linkArea.appendChild(dash);
+    nodeData.linkArea.appendChild(dash);
     let addLink = this.addLink.cloneNode(true);
-    linkArea.appendChild(addLink);
+    nodeData.linkArea.appendChild(addLink);
     addLink.onclick = () => {this.addFromResult(nodeData); return false;};
   }
 
   removeAddLink(nodeData){
-    let linkArea = nodeData.linkArea;
-    if(!linkArea)
+    if(!nodeData.linkArea)
       return;
-    linkArea.removeChild(linkArea.lastChild);
-    linkArea.removeChild(linkArea.lastChild);
+    nodeData.linkArea.removeChild(nodeData.linkArea.lastChild);
+    nodeData.linkArea.removeChild(nodeData.linkArea.lastChild);
   }
 
   addFromResult(nodeData){
     let domainUrl = '||' + nodeData.url.replace(/^[\w\-]+:\/+(?:www\.)?/, '');
     let text = prompt('Filter: ', domainUrl);
-    this.matcher.add(MultiRegExpFilter.fromText(text));
-    this.filterResultsRem();
+    if(text === null)
+      return;
+    let filter = MultiRegExpFilter.fromText(text);
+    this.filters.push(filter);
+    this.matcher.add(filter);
+    this.filterResults(true);
   }
 
   _filterResults(nodeData){
-    let filter = this.matcher.matchesAny(nodeData);
+    let filter = this.matcher.matchesAny(nodeData, NodeData.attrs);
     if(filter){
       filter.hitCount++;
+      filter.lastHit = new Date().getTime();
       if(!(filter instanceof WhitelistFilter))
         this.hideResult(nodeData, filter);
       return true;
@@ -225,13 +228,13 @@ export class SearchGui {
     }
   }
 
-  filterResults(node=null){
+  filterResults(prev=false, node=null){
     let nodeDatas;
-    if(node){
-      nodeDatas = [new ResultsData(node)];
-      this.nodeDatas.push(nodeDatas[0]);
-    }else{
+    if(prev){
       nodeDatas = this.nodeDatas;
+    }else{
+      nodeDatas = [new ResultsData(node || this.constructor.getResults())];
+      this.nodeDatas.push(nodeDatas[0]);
     }
     let matched = false;
     let listener = (action) => {if(action == 'filter.hitCount') matched = true;};
