@@ -41,7 +41,7 @@ gulp.task('resources', function(){
     .pipe(gulp.dest('gfp'));
 });
 
-watch('build', ['resources'], 'gfp/**/!(test_*.js)', function(){
+watch('build', ['resources'], ['gfp/**/!(test_*.js)', 'gfp/css/*.css'], function(){
   var fileName = 'google_search_filter_plus.user.js';
   return bundle({entries: 'gfp/main.js'})
     .pipe(source(fileName))
@@ -51,7 +51,7 @@ watch('build', ['resources'], 'gfp/**/!(test_*.js)', function(){
     .pipe(gulp.dest('dist'));
 });
 
-watch('greasemonkey', ['_build'], 'gfp/**/!(test_*.js)', function(){
+watch('greasemonkey', ['_build'], ['gfp/**/!(test_*.js)', 'gfp/css/*.css'], function(){
   new FirefoxProfile.Finder().getPath('default', function(err, profilePath){
     gulp.src('dist/google_search_filter_plus.user.js')
       .pipe(gulp.dest(path.join(profilePath, 'gm_scripts/Google_Search_Filter_Plus')));
@@ -66,7 +66,7 @@ var karmaConfig = {
   }
 };
 
-watch('test', 'gfp/**/*.js', function(){
+watch('test', ['resources'], 'gfp/**/*.js', function(){
   bundle({entries: glob.sync('gfp/**/test_*.js'), debug: true})
     .pipe(source('google_search_filter_plus.test.js'))
     .pipe(gulp.dest('dist'))
@@ -77,7 +77,7 @@ watch('test', 'gfp/**/*.js', function(){
     })));
 });
 
-watch('cover', 'gfp/**/*.js', function(){
+watch('cover', ['resources'], 'gfp/**/*.js', function(){
   var ignore = ['gfp/lib/**', 'gfp/**/test_*.js'].map(function(str){return path.join(__dirname, str);});
   bundle({
     entries: glob.sync('gfp/**/test_*.js'),
