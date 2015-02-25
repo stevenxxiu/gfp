@@ -15,7 +15,7 @@ var source = require('vinyl-source-stream');
 var karma = require('./gulp-karma');
 
 function globToRegExp(str){
-  var escaped = str.replace(/[-\[\]/{}()*+?.\\^$|]/g, '\\$&');
+  var escaped = path.join(__dirname, str).replace(/[-\[\]/{}()*+?.\\^$|]/g, '\\$&');
   return escaped.replace(/\\\*(\\\*)?/g, '.*');
 }
 
@@ -78,7 +78,7 @@ watch('test', ['resources'], 'gfp/**/*.js', function(){
 });
 
 watch('cover', ['resources'], 'gfp/**/*.js', function(){
-  var ignore = ['gfp/lib/**', 'gfp/**/test_*.js'].map(function(str){return path.join(__dirname, str);});
+  var ignore = ['gfp/lib/**', 'gfp/**/test_*.js'];
   bundle({
     entries: glob.sync('gfp/**/test_*.js'),
     transform: [
