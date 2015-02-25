@@ -12,18 +12,13 @@ class NodeData {
   }
 
   *getChildren(){}
-  getLinkArea(){return null;}
-  getUrl(){return null;}
-  getTitle(){return null;}
-  getSummary(){return null;}
-
-  get linkArea(){return cache(this, 'linkArea', this.getLinkArea());}
-  get url(){return cache(this, 'url', this.getUrl());}
-  get title(){return cache(this, 'title', this.getTitle());}
-  get summary(){return cache(this, 'summary', this.getSummary());}
 }
 
 NodeData.attrs = ['url', 'title', 'summary'];
+NodeData.prototype.linkArea = null;
+NodeData.prototype.url = null;
+NodeData.prototype.title = null;
+NodeData.prototype.summary = null;
 
 class ResultsData extends NodeData {
   *getChildren(){
@@ -49,43 +44,43 @@ class ResultsData extends NodeData {
 }
 
 class TextData extends NodeData {
-  getLinkArea(){return this.node.querySelector('cite').parentNode;}
-  getUrl(){return this.node.querySelector('h3.r>a').href;}
-  getTitle(){return (this.node.querySelector('h2.r') || this.node.querySelector('h3.r')).textContent;}
-  getSummary(){return this.node.querySelector('div.s').textContent;}
+  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite').parentNode);}
+  get url(){return cache(this, 'url', this.node.querySelector('h3.r>a').href);}
+  get title(){return cache(this, 'title', this.node.querySelector('h2.r, h3.r').textContent);}
+  get summary(){return cache(this, 'summary', this.node.querySelector('div.s').textContent);}
 }
 
 class VideoContainerData extends NodeData {
   *getChildren(){for(let child of this.node.querySelectorAll('div.vresult')) yield new VideoData(child);}
-  getTitle(){return this.node.querySelector('h3.r').textContent;}
+  get title(){return cache(this, 'title', this.node.querySelector('h3.r').textContent);}
 }
 
 class VideoData extends NodeData {
-  getLinkArea(){return this.node.querySelector('cite');}
-  getUrl(){return this.node.querySelector('h3.r>a').href;}
-  getTitle(){return this.node.querySelector('h3.r').textContent;}
-  getSummary(){return this.node.querySelector('span.st').textContent;}
+  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite'));}
+  get url(){return cache(this, 'url', this.node.querySelector('h3.r>a').href);}
+  get title(){return cache(this, 'title', this.node.querySelector('h3.r').textContent);}
+  get summary(){return cache(this, 'summary', this.node.querySelector('span.st').textContent);}
 }
 
 class ImageContainerData extends NodeData {
   *getChildren(){for(let child of this.node.querySelectorAll('div>a')) yield new ImageData(child);}
-  getTitle(){return this.node.querySelector('h3.r').textContent;}
+  get title(){return cache(this, 'title', this.node.querySelector('h3.r').textContent);}
 }
 
 class ImageData extends NodeData {
-  getUrl(){return this.node.href;}
+  get url(){return cache(this, 'url', this.node.href);}
 }
 
 class NewsContainerData extends NodeData {
   *getChildren(){for(let child of this.node.querySelectorAll('li.w0>div')) yield new NewsData(child);}
-  getTitle(){return this.node.querySelector('h3.r').textContent;}
+  get title(){return cache(this, 'title', this.node.querySelector('h3.r').textContent);}
 }
 
 class NewsData extends NodeData {
-  getLinkArea(){return this.node.querySelector('.gl');}
-  getUrl(){return this.node.querySelector('a.l').href;}
-  getTitle(){return this.node.querySelector('a.l').textContent;}
-  getSummary(){return this.node.querySelector('div[style]').textContent;}
+  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('.gl'));}
+  get url(){return cache(this, 'url', this.node.querySelector('a.l').href);}
+  get title(){return cache(this, 'title', this.node.querySelector('a.l').textContent);}
+  get summary(){return cache(this, 'summary', this.node.querySelector('div[style]').textContent);}
 }
 
 export class SearchGui {
