@@ -12,52 +12,69 @@ var merge = require('merge');
 var path = require('path');
 var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
+var watchify = require('watchify');
 var karma = require('./gulp-karma');
 
+function resolvePath(str){
+  return path.resolve(str);
+}
+
 function globToRegExp(str){
-  var escaped = path.join(__dirname, str).replace(/[-\[\]/{}()*+?.\\^$|]/g, '\\$&');
+  var escaped = str.replace(/[-\[\]/{}()*+?.\\^$|]/g, '\\$&');
   return escaped.replace(/\\\*(\\\*)?/g, '.*');
 }
 
-function watch(name, deps, glob, cb){
-  if(!cb){cb = glob; glob = deps; deps = [];}
-  gulp.task('_' + name, deps, cb);
-  gulp.task(name, ['_' + name], function(){gulp.watch(glob, ['_' + name]);});
+function bundle(config, pipe){
+  var ignore = ['gfp/lib/**'].map(resolvePath).map(globToRegExp);
+  var bundler = browserify(merge(true, watchify.args, merge(true, {
+    paths: ['.', './gfp/lib'], transform: [
+      babelify.configure({blacklist: ['regenerator'], optional: ['spec.protoToAssign'], ignore: ignore}),
+      babelify.configure({only: ignore})
+    ]
+  }, config || {})));
+  bundler = watchify(bundler, {delay: 100});
+  bundler.on('update', function(){
+    pipe.call(bundler.bundle().on('error', function(err){
+      console.log(err.message);
+    }));
+  });
+  bundler.emit('update');
 }
 
-function bundle(config){
-  return browserify(merge({
-    paths: ['.', './gfp/lib'], transform: [babelify.configure({
-      blacklist: ['regenerator'], optional: ['spec.protoToAssign'], ignore: ['gfp/lib/**'].map(globToRegExp)
-    }), babelify.configure({only: ['gfp/lib/**'].map(globToRegExp)})]
-  }, config || {})).bundle().on('error', function(err){console.log(err.message);});
+function build(cb){
+  var fileName = 'google_search_filter_plus.user.js';
+  bundle({entries: 'gfp/main.js'}, function(){
+    var sr = this
+      .pipe(source(fileName))
+      .pipe(buffer())
+      .pipe(addsrc('gfp/header.js'))
+      .pipe(concat(fileName))
+      .pipe(gulp.dest('dist'));
+    cb(sr);
+  });
 }
 
-gulp.task('resources', function(){
+gulp.task('_resources', function(){
   gulp.src('gfp/css/gui.css')
     .pipe(minifyCSS())
     .pipe(concat('resource.js', {process: function(src){
       var ext = path.extname(this.path);
-      return 'export let ' + path.basename(this.path, ext) + {'.css': 'Style'}[ext] + ' = ' + JSON.stringify(src) + ';';
+      var name = path.basename(this.path, ext);
+      return 'export let ' + name + {'.css': 'Style'}[ext] + ' = ' + JSON.stringify(src) + ';';
     }}))
     .pipe(gulp.dest('gfp'));
 });
 
-watch('build', ['resources'], ['gfp/**/!(test_*.js)', 'gfp/css/*.css'], function(){
-  var fileName = 'google_search_filter_plus.user.js';
-  return bundle({entries: 'gfp/main.js'})
-    .pipe(source(fileName))
-    .pipe(buffer())
-    .pipe(addsrc('gfp/header.js'))
-    .pipe(concat(fileName))
-    .pipe(gulp.dest('dist'));
+gulp.task('resources', ['_resources'], function(){
+  gulp.watch('gfp/css/*.css', ['_resources']);
 });
 
-watch('greasemonkey', ['_build'], ['gfp/**/!(test_*.js)', 'gfp/css/*.css'], function(){
+gulp.task('greasemonkey', ['resources'], function(){
   new FirefoxProfile.Finder().getPath('default', function(err, profilePath){
-    gulp.src('dist/google_search_filter_plus.user.js')
-      .pipe(gulp.dest(path.join(profilePath, 'gm_scripts/Google_Search_Filter_Plus')));
+    build(function(sr){
+      sr.pipe(gulp.dest(path.join(profilePath, 'gm_scripts/Google_Search_Filter_Plus')));
     });
+  });
 });
 
 var karmaConfig = {
@@ -68,33 +85,37 @@ var karmaConfig = {
   }
 };
 
-watch('test', ['resources'], 'gfp/**/*.js', function(){
-  bundle({entries: glob.sync('gfp/**/test_*.js'), debug: true})
-    .pipe(source('google_search_filter_plus.test.js'))
-    .pipe(gulp.dest('dist'))
-    .pipe(karma(merge(true, karmaConfig, {
-      port: 9876,
-      reporters: ['progress'],
-      preprocessors: {'dist/google_search_filter_plus.test.js': ['sourcemap']}
-    })));
+gulp.task('test', ['resources'], function(){
+  bundle({entries: glob.sync('gfp/**/test_*.js'), debug: true}, function(){
+    this
+      .pipe(source('google_search_filter_plus.test.js'))
+      .pipe(gulp.dest('dist'))
+      .pipe(karma(merge(true, karmaConfig, {
+        port: 9876,
+        reporters: ['progress'],
+        preprocessors: {'dist/google_search_filter_plus.test.js': ['sourcemap']}
+      })));
+  });
 });
 
-watch('cover', ['resources'], 'gfp/**/*.js', function(){
-  var ignore = ['gfp/lib/**', 'gfp/**/test_*.js'];
+gulp.task('cover', ['resources'], function(){
+  var ignore = ['gfp/lib/**', 'gfp/**/test_*.js'].map(resolvePath);
   bundle({
     entries: glob.sync('gfp/**/test_*.js'),
     transform: [
       istanbul({instrumenter: isparta, defaultIgnore: false, ignore: ignore}),
       babelify.configure({only: ignore.map(globToRegExp)})
     ]
-  })
-    .pipe(source('google_search_filter_plus.cover.js'))
-    .pipe(gulp.dest('dist'))
-    .pipe(karma(merge(true, karmaConfig, {
-      port: 9877,
-      reporters: ['coverage'],
-      files: [{pattern: 'node_modules/isparta/node_modules/babel-core/browser-polyfill.js', watched: false}]
-    })));
+  }, function(){
+    this
+      .pipe(source('google_search_filter_plus.cover.js'))
+      .pipe(gulp.dest('dist'))
+      .pipe(karma(merge(true, karmaConfig, {
+        port: 9877,
+        reporters: ['coverage'],
+        files: [{pattern: 'node_modules/isparta/node_modules/babel-core/browser-polyfill.js', watched: false}]
+      })));
+  });
 });
 
 gulp.task('default', ['test', 'cover']);
