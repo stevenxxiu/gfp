@@ -26,9 +26,11 @@ function watch(name, deps, glob, cb){
 }
 
 function bundle(config){
-  return browserify(merge(
-    {paths: ['.', './gfp/lib'], transform: [babelify.configure({blacklist: ['regenerator']})]}, config || {})
-  ).bundle().on('error', function(err){console.log(err.message);});
+  return browserify(merge({
+    paths: ['.', './gfp/lib'], transform: [babelify.configure({
+      blacklist: ['regenerator'], optional: ['spec.protoToAssign'], ignore: ['gfp/lib/**'].map(globToRegExp)
+    }), babelify.configure({only: ['gfp/lib/**'].map(globToRegExp)})]
+  }, config || {})).bundle().on('error', function(err){console.log(err.message);});
 }
 
 gulp.task('resources', function(){
