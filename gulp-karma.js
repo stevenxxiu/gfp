@@ -26,8 +26,7 @@ function run(config, retry){
         rerun();
     });
   });
-  if(retry)
-    req.on('error', rerun);
+  req.on('error', rerun);
   req.end(JSON.stringify({}));
 }
 
