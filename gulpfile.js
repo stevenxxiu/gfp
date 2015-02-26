@@ -26,13 +26,18 @@ function globToRegExp(str){
 
 function bundle(config, pipe){
   var ignore = ['gfp/lib/**'].map(resolvePath).map(globToRegExp);
-  var bundler = browserify(merge(true, watchify.args, merge(true, {
+  var entries = config.entries;
+  config = merge(true, config || {});
+  config = merge({
     paths: ['.', './gfp/lib'], transform: [
       babelify.configure({blacklist: ['regenerator'], optional: ['spec.protoToAssign'], ignore: ignore}),
       babelify.configure({only: ignore})
     ]
-  }, config || {})));
-  bundler = watchify(bundler, {delay: 100});
+  }, config);
+  config = merge(config, {entries: glob.sync(entries)});
+  config = merge(config, watchify.args);
+  var bundler = browserify(config);
+  bundler = watchify(bundler, {delay: 100, glob: entries});
   bundler.on('update', function(){
     pipe.call(bundler.bundle().on('error', function(err){
       console.log(err.message);
@@ -86,7 +91,7 @@ var karmaConfig = {
 };
 
 gulp.task('test', ['resources'], function(){
-  bundle({entries: glob.sync('gfp/**/test_*.js'), debug: true}, function(){
+  bundle({entries: 'gfp/**/test_*.js', debug: true}, function(){
     this
       .pipe(source('google_search_filter_plus.test.js'))
       .pipe(gulp.dest('dist'))
@@ -101,7 +106,7 @@ gulp.task('test', ['resources'], function(){
 gulp.task('cover', ['resources'], function(){
   var ignore = ['gfp/lib/**', 'gfp/**/test_*.js'].map(resolvePath);
   bundle({
-    entries: glob.sync('gfp/**/test_*.js'),
+    entries: 'gfp/**/test_*.js',
     transform: [
       istanbul({instrumenter: isparta, defaultIgnore: false, ignore: ignore}),
       babelify.configure({only: ignore.map(globToRegExp)})
