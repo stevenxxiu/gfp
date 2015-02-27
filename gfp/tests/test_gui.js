@@ -1,24 +1,6 @@
 import Config from 'gfp/config';
-import {NodeData, SearchGui} from 'gfp/gui';
+import {SearchGui} from 'gfp/gui';
 import {Filter} from 'gfp/filter';
-
-suite('NodeData', () => {
-  test('cache', () => {
-    class TestData extends NodeData {
-      *children(){yield 1; yield 2; yield 3;}
-      url(){return 'url';}
-    }
-    let children = sinon.spy(TestData.prototype, 'children');
-    let url = sinon.spy(TestData.prototype, 'url');
-    let testData = new (NodeData.cache(TestData))();
-    assert.deepEqual(testData.children, [1, 2, 3]);
-    assert.deepEqual(testData.children, [1, 2, 3]);
-    sinon.assert.calledOnce(children);
-    assert.equal(testData.url, 'url');
-    assert.equal(testData.url, 'url');
-    sinon.assert.calledOnce(url);
-  });
-});
 
 suite('SearchGui', () => {
   let self = {};
