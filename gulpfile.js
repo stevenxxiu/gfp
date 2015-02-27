@@ -28,14 +28,14 @@ function bundle(config, pipe){
   var ignore = ['gfp/lib/**'].map(resolvePath).map(globToRegExp);
   var entries = config.entries;
   config = merge(true, config || {});
-  config = merge({
+  config = merge(true, {
     paths: ['.', './gfp/lib'], transform: [
       babelify.configure({blacklist: ['regenerator'], optional: ['spec.protoToAssign'], ignore: ignore}),
       babelify.configure({only: ignore})
     ]
   }, config);
-  config = merge(config, {entries: glob.sync(entries)});
-  config = merge(config, watchify.args);
+  config = merge(true, config, {entries: glob.sync(entries)});
+  config = merge(true, config, watchify.args);
   var bundler = browserify(config);
   bundler = watchify(bundler, {delay: 100, glob: entries});
   bundler.on('update', function(){
@@ -83,7 +83,7 @@ gulp.task('greasemonkey', ['resources'], function(){
 });
 
 var karmaConfig = {
-  frameworks: ['mocha', 'chai'],
+  frameworks: ['mocha', 'chai', 'sinon'],
   client: {
     captureConsole: true,
     mocha: {reporter: 'html', ui: 'tdd'}
