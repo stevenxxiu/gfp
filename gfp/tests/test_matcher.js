@@ -67,41 +67,41 @@ suite('MultiMatcher', () => {
   });
   suite('matchesAny', () => {
     suite('single filter', () => {
-      let matcher;
-      let attrs = [0, 1, 2, 3];
-      setup(() => matcher = new MultiMatcher(4));
+      let self = {};
+      setup(() => self.matcher = new MultiMatcher(4));
+      suiteSetup(() => self.attrs = [0, 1, 2, 3]);
       test('[0]', () => {
         let filter = MultiRegExpFilter.fromText('a');
-        matcher.add(filter);
-        assert.equal(matcher.matchesAny(['a', '', '', ''], attrs), filter);
-        assert.isNull(matcher.matchesAny(['b', '', '', ''], attrs));
+        self.matcher.add(filter);
+        assert.equal(self.matcher.matchesAny(['a', '', '', ''], self.attrs), filter);
+        assert.isNull(self.matcher.matchesAny(['b', '', '', ''], self.attrs));
       });
       test('[1]', () => {
         let filter = MultiRegExpFilter.fromText('$$a');
-        matcher.add(filter);
-        assert.equal(matcher.matchesAny(['', 'a', '', ''], attrs), filter);
-        assert.isNull(matcher.matchesAny(['', 'b', '', ''], attrs));
+        self.matcher.add(filter);
+        assert.equal(self.matcher.matchesAny(['', 'a', '', ''], self.attrs), filter);
+        assert.isNull(self.matcher.matchesAny(['', 'b', '', ''], self.attrs));
       });
       test('[0, 1]', () => {
         let filter = MultiRegExpFilter.fromText('a$$a');
-        matcher.add(filter);
-        assert.equal(matcher.matchesAny(['a', 'a', '', ''], attrs), filter);
-        assert.isNull(matcher.matchesAny(['a', 'b', '', ''], attrs));
-        assert.isNull(matcher.matchesAny(['b', 'a', '', ''], attrs));
+        self.matcher.add(filter);
+        assert.equal(self.matcher.matchesAny(['a', 'a', '', ''], self.attrs), filter);
+        assert.isNull(self.matcher.matchesAny(['a', 'b', '', ''], self.attrs));
+        assert.isNull(self.matcher.matchesAny(['b', 'a', '', ''], self.attrs));
       });
       test('[0, 2]', () => {
         let filter = MultiRegExpFilter.fromText('a$$$$a');
-        matcher.add(filter);
-        assert.equal(matcher.matchesAny(['a', '', 'a', ''], attrs), filter);
-        assert.isNull(matcher.matchesAny(['a', '', 'b', ''], attrs));
-        assert.isNull(matcher.matchesAny(['b', '', 'a', ''], attrs));
+        self.matcher.add(filter);
+        assert.equal(self.matcher.matchesAny(['a', '', 'a', ''], self.attrs), filter);
+        assert.isNull(self.matcher.matchesAny(['a', '', 'b', ''], self.attrs));
+        assert.isNull(self.matcher.matchesAny(['b', '', 'a', ''], self.attrs));
       });
       test('[0, 3]', () => {
         let filter = MultiRegExpFilter.fromText('a$$$$$$a');
-        matcher.add(filter);
-        assert.equal(matcher.matchesAny(['a', '', '', 'a'], attrs), filter);
-        assert.isNull(matcher.matchesAny(['a', '', '', 'b'], attrs));
-        assert.isNull(matcher.matchesAny(['b', '', '', 'a'], attrs));
+        self.matcher.add(filter);
+        assert.equal(self.matcher.matchesAny(['a', '', '', 'a'], self.attrs), filter);
+        assert.isNull(self.matcher.matchesAny(['a', '', '', 'b'], self.attrs));
+        assert.isNull(self.matcher.matchesAny(['b', '', '', 'a'], self.attrs));
       });
     });
     test('multiple filters', () => {
@@ -132,17 +132,17 @@ suite('CombinedMultiMatcher', () => {
     assert.equal(matcher.whitelist.matchers[0].toTestObject().length, 0);
   });
   suite('add', () => {
-    let matcher;
-    setup(() => matcher = new CombinedMultiMatcher(1));
+    let self = {};
+    setup(() => self.matcher = new CombinedMultiMatcher(1));
     test('blacklist', () => {
-      matcher.add(MultiRegExpFilter.fromText('a'));
-      assert.equal(matcher.blacklist.matchers[0].toTestObject().length, 1);
-      assert.equal(matcher.whitelist.matchers[0].toTestObject().length, 0);
+      self.matcher.add(MultiRegExpFilter.fromText('a'));
+      assert.equal(self.matcher.blacklist.matchers[0].toTestObject().length, 1);
+      assert.equal(self.matcher.whitelist.matchers[0].toTestObject().length, 0);
     });
     test('whitelist', () => {
-      matcher.add(MultiRegExpFilter.fromText('@@a'));
-      assert.equal(matcher.blacklist.matchers[0].toTestObject().length, 0);
-      assert.equal(matcher.whitelist.matchers[0].toTestObject().length, 1);
+      self.matcher.add(MultiRegExpFilter.fromText('@@a'));
+      assert.equal(self.matcher.blacklist.matchers[0].toTestObject().length, 0);
+      assert.equal(self.matcher.whitelist.matchers[0].toTestObject().length, 1);
     });
   });
   test('isSlowFilter', () => {

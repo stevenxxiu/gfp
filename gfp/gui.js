@@ -4,84 +4,99 @@ import {MultiRegExpFilter, WhitelistFilter} from 'gfp/filter';
 import {FilterNotifier} from 'gfp/lib/filterNotifier';
 import {CombinedMultiMatcher} from 'gfp/matcher';
 import {guiStyle} from 'gfp/resource';
-import {cache} from 'gfp/utils';
 
-class NodeData {
+export class NodeData {
   constructor(node){
     this.node = node;
   }
 
-  *getChildren(){}
+  static cache(cls){
+    class Decorated extends NodeData {}
+    for(let prop of Object.keys(Object.getPrototypeOf(cls.prototype))){
+      Object.defineProperty(Decorated.prototype, prop, {
+        get: ((prop, method) => function(){
+          // children is cached so we can ignore filtered nodes when re-filtering
+          let res = method.call(this);
+          if(prop == 'children')
+            res = Array.from(res);
+          Object.defineProperty(this, prop, {value: res});
+          return res;
+        })(prop, cls.prototype[prop])
+      });
+    }
+    return Decorated;
+  }
 }
 
 NodeData.attrs = ['url', 'title', 'summary'];
+NodeData.prototype.children = [];
 NodeData.prototype.linkArea = null;
 NodeData.prototype.url = null;
 NodeData.prototype.title = null;
 NodeData.prototype.summary = null;
 
-class ResultsData extends NodeData {
-  *getChildren(){
+var ResultsData = NodeData.cache(class extends NodeData {
+  *children(){
     for(let child of this.node.querySelectorAll('li.g')){
       switch(child.id){
         case 'imagebox':
         case 'imagebox_bigimages':
-          yield new ImageContainerData(child); break;
+          yield ImageContainerData(child); break;
         case 'videobox':
-          yield new VideoContainerData(child); break;
+          yield VideoContainerData(child); break;
         case 'newsbox':
-          yield new NewsContainerData(child); break;
+          yield NewsContainerData(child); break;
         default:
           if(child.firstElementChild.childElementCount == 2){
-            yield new TextData(child);
+            yield TextData(child);
           }else if(child.firstElementChild.childElementCount >= 1){
             if(child.querySelector('div.th'))
-              yield new VideoData(child);
+              yield VideoData(child);
           }
       }
     }
   }
-}
+});
 
-class TextData extends NodeData {
-  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite').parentNode);}
-  get url(){return cache(this, 'url', this.node.querySelector('h3.r>a').href);}
-  get title(){return cache(this, 'title', this.node.querySelector('h2.r, h3.r').textContent);}
-  get summary(){return cache(this, 'summary', this.node.querySelector('div.s').textContent);}
-}
+var TextData = NodeData.cache(class extends NodeData {
+  linkArea(){return this.node.querySelector('cite').parentNode;}
+  url(){return this.node.querySelector('h3.r>a').href;}
+  title(){return this.node.querySelector('h2.r, h3.r').textContent;}
+  summary(){return this.node.querySelector('div.s').textContent;}
+});
 
-class VideoContainerData extends NodeData {
-  *getChildren(){for(let child of this.node.querySelectorAll('div.vresult')) yield new VideoData(child);}
-  get title(){return cache(this, 'title', this.node.querySelector('h3.r').textContent);}
-}
+var VideoContainerData = NodeData.cache(class extends NodeData {
+  *children(){for(let child of this.node.querySelectorAll('div.vresult')) yield new VideoData(child);}
+  title(){return this.node.querySelector('h3.r').textContent;}
+});
 
-class VideoData extends NodeData {
-  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite'));}
-  get url(){return cache(this, 'url', this.node.querySelector('h3.r>a').href);}
-  get title(){return cache(this, 'title', this.node.querySelector('h3.r').textContent);}
-  get summary(){return cache(this, 'summary', this.node.querySelector('span.st').textContent);}
-}
+var VideoData = NodeData.cache(class extends NodeData {
+  linkArea(){return this.node.querySelector('cite');}
+  url(){return this.node.querySelector('h3.r>a').href;}
+  title(){return this.node.querySelector('h3.r').textContent;}
+  summary(){return this.node.querySelector('span.st').textContent;}
+});
 
-class ImageContainerData extends NodeData {
-  *getChildren(){for(let child of this.node.querySelectorAll('div>a')) yield new ImageData(child);}
-  get title(){return cache(this, 'title', this.node.querySelector('h3.r').textContent);}
-}
+var ImageContainerData = NodeData.cache(class extends NodeData {
+  *children(){for(let child of this.node.querySelectorAll('div>a')) yield new ImageData(child);}
+  title(){return this.node.querySelector('h3.r').textContent;}
+});
 
-class ImageData extends NodeData {
-  get url(){return cache(this, 'url', this.node.href);}
-}
+var ImageData = NodeData.cache(class extends NodeData {
+  url(){return this.node.href;}
+});
 
-class NewsContainerData extends NodeData {
-  *getChildren(){for(let child of this.node.querySelectorAll('li.w0>div')) yield new NewsData(child);}
-  get title(){return cache(this, 'title', this.node.querySelector('h3.r').textContent);}
-}
+var NewsContainerData = NodeData.cache(class extends NodeData {
+  *children(){for(let child of this.node.querySelectorAll('li.w0>div')) yield new NewsData(child);}
+  title(){return this.node.querySelector('h3.r').textContent;}
+});
 
-class NewsData extends NodeData {
-  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('.gl'));}
-  get url(){return cache(this, 'url', this.node.querySelector('a.l').href);}
-  get title(){return cache(this, 'title', this.node.querySelector('a.l').textContent);}
-  get summary(){return cache(this, 'summary', this.node.querySelector('div[style]').textContent);}
-}
+var NewsData = NodeData.cache(class extends NodeData {
+  linkArea(){return this.node.querySelector('.gl');}
+  url(){return this.node.querySelector('a.l').href;}
+  title(){return this.node.querySelector('a.l').textContent;}
+  summary(){return this.node.querySelector('div[style]').textContent;}
+});
 
 export class SearchGui {
   constructor(){
