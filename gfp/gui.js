@@ -140,7 +140,7 @@ export class SearchGui {
     showLink.textContent = showLink.classList.contains('hide') ? 'hide' : 'show';
   }
 
-  hideResult(nodeData, filter){
+  hideResult(nodeData, filter=null){
     if(this.allowHidden && filter.collapse){
       nodeData.node.classList.add('hide');
       nodeData.undo = () => nodeData.node.classList.remove('hide');
@@ -153,7 +153,8 @@ export class SearchGui {
       nodeData.node.appendChild(showTitle);
     }
     let showLink = this.showLink.cloneNode(true);
-    showLink.title = filter.text;
+    if(filter)
+      showLink.title = filter.text;
     nodeData.node.appendChild(showLink);
     this.toggleResult(nodeData, showTitle, showLink, true);
     showLink.onclick = () => {
@@ -205,21 +206,25 @@ export class SearchGui {
     if(filter){
       filter.hitCount++;
       filter.lastHit = new Date().getTime();
-      if(filter instanceof BlockingFilter)
+      if(filter instanceof BlockingFilter){
         this.hideResult(nodeData, filter);
-      else
+        return true;
+      }else{
         this.addFilterLink(nodeData, filter);
-      return true;
+        return false;
+      }
     }
-    if(NodeData.attrs.some((attr) => nodeData.attr !== null))
-      this.addFilterLink(nodeData);
     if(nodeData.children === undefined)
       nodeData.children = Array.from(nodeData.getChildren());
-    let filtered = true;
+    let filtered = !!nodeData.children.length;
     for(let childData of nodeData.children){
       if(!this._filterResults(childData))
         filtered = false;
     }
+    if(filtered)
+      this.hideResult(nodeData);
+    else if(NodeData.attrs.some((attr) => nodeData[attr] !== null))
+      this.addFilterLink(nodeData);
     return filtered;
   }
 
