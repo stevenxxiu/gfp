@@ -6,12 +6,13 @@ import {CombinedMultiMatcher} from 'gfp/matcher';
 import {guiStyle} from 'gfp/resource';
 import {cache} from 'gfp/utils';
 
-class NodeData {
+export class NodeData {
   constructor(node){
     this.node = node;
   }
 
   *getChildren(){}
+  undo(){}
 }
 
 NodeData.attrs = ['url', 'title', 'summary'];
@@ -20,7 +21,7 @@ NodeData.prototype.url = null;
 NodeData.prototype.title = null;
 NodeData.prototype.summary = null;
 
-class ResultsData extends NodeData {
+export class ResultsData extends NodeData {
   *getChildren(){
     for(let child of this.node.querySelectorAll('li.g')){
       switch(child.id){
@@ -92,7 +93,6 @@ export class SearchGui {
     // save to prevent pref modifications
     this.allowHidden = Config.allowHidden;
     this.nodeData = {children: []};
-    this.addResults();
     this.createNodes();
     GM_addStyle(guiStyle);
   }
@@ -143,6 +143,7 @@ export class SearchGui {
   hideResult(nodeData, filter){
     if(this.allowHidden && filter.collapse){
       nodeData.node.classList.add('hide');
+      nodeData.undo = () => nodeData.node.classList.remove('hide');
       return;
     }
     let showTitle;
@@ -159,23 +160,31 @@ export class SearchGui {
       this.toggleResult(nodeData, showTitle, showLink);
       return false;
     };
+    nodeData.undo = () => {
+      if(!showLink.classList.contains('hide'))
+        this.toggleResult(nodeData, showTitle, showLink);
+      nodeData.node.removeChild(showTitle);
+      nodeData.node.removeChild(showLink);
+    };
   }
 
-  createAddLink(nodeData){
+  addFilterLink(nodeData, filter=null){
     if(!nodeData.linkArea)
       return;
     let dash = this.dash.cloneNode(true);
     nodeData.linkArea.appendChild(dash);
     let addLink = this.addLink.cloneNode(true);
+    if(filter)
+      addLink.title = filter.text;
     nodeData.linkArea.appendChild(addLink);
-    addLink.onclick = () => {this.addFromResult(nodeData); return false;};
-  }
-
-  removeAddLink(nodeData){
-    if(!nodeData.linkArea)
-      return;
-    nodeData.linkArea.removeChild(nodeData.linkArea.lastChild);
-    nodeData.linkArea.removeChild(nodeData.linkArea.lastChild);
+    addLink.onclick = () => {
+      this.addFromResult(nodeData);
+      return false;
+    };
+    nodeData.undo = () => {
+      nodeData.linkArea.removeChild(dash);
+      nodeData.linkArea.removeChild(addLink);
+    };
   }
 
   addFromResult(nodeData){
@@ -189,46 +198,42 @@ export class SearchGui {
     this.filterResults(true);
   }
 
-  addResults(node=null){
-    this.nodeData.children.push(new ResultsData(node || this.constructor.getResults()));
-  }
-
   _filterResults(nodeData){
+    nodeData.undo();
+    delete nodeData.undo;
     let filter = this.matcher.matchesAny(nodeData, NodeData.attrs);
     if(filter){
       filter.hitCount++;
       filter.lastHit = new Date().getTime();
       if(filter instanceof BlockingFilter)
         this.hideResult(nodeData, filter);
+      else
+        this.addFilterLink(nodeData, filter);
       return true;
     }
-    this.createAddLink(nodeData);
+    if(NodeData.attrs.some((attr) => nodeData.attr !== null))
+      this.addFilterLink(nodeData);
+    if(nodeData.children === undefined)
+      nodeData.children = Array.from(nodeData.getChildren());
     let filtered = true;
-    if(nodeData.children === undefined){
-      nodeData.children = [];
-      for(let childData of nodeData.getChildren()){
-        if(!this._filterResults(childData)){
-          nodeData.children.push(childData);
-          filtered = false;
-        }
-      }
-    }else{
-      for(let i = 0; i < nodeData.children.length;){
-        if(this._filterResults(nodeData.children[i])){
-          nodeData.children.splice(i, 1);
-        }else{
-          filtered = false;
-          i++;
-        }
-      }
+    for(let childData of nodeData.children){
+      if(!this._filterResults(childData))
+        filtered = false;
     }
+    return filtered;
   }
 
-  filterResults(){
+  filterResults(node=null){
     let matched = false;
     let listener = (action) => {if(action == 'filter.hitCount') matched = true;};
     FilterNotifier.addListener(listener);
-    this._filterResults(this.nodeData);
+    if(node){
+      let nodeData = new ResultsData(node);
+      this.nodeData.children.push(nodeData);
+      this._filterResults(nodeData);
+    }else{
+      this._filterResults(this.nodeData);
+    }
     if(matched)
       Config.filters = this.filters;
     FilterNotifier.removeListener(listener);

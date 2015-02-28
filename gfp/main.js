@@ -12,7 +12,7 @@ function main(){
   let searchGui;
   if(SearchGui.isSearchPage()){
     searchGui = new SearchGui();
-    searchGui.filterResults();
+    searchGui.filterResults(SearchGui.getResults());
   }
   for(let pluginName of Config.plugins)
     plugins[pluginName]()(searchGui);
