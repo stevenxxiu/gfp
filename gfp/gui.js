@@ -1,6 +1,6 @@
 /* globals GM_addStyle */
 import Config from 'gfp/config';
-import {MultiRegExpFilter, WhitelistFilter} from 'gfp/filter';
+import {BlockingFilter, MultiRegExpFilter} from 'gfp/filter';
 import {FilterNotifier} from 'gfp/lib/filterNotifier';
 import {CombinedMultiMatcher} from 'gfp/matcher';
 import {guiStyle} from 'gfp/resource';
@@ -91,17 +91,14 @@ export class SearchGui {
       this.matcher.add(filter);
     // save to prevent pref modifications
     this.allowHidden = Config.allowHidden;
-    this.nodeDatas = [];
+    this.nodeData = {children: []};
+    this.addResults();
     this.createNodes();
     GM_addStyle(guiStyle);
   }
 
-  static isHomePage(){
-    return window.location.href.endsWith('/');
-  }
-
   static isSearchPage(){
-    return !this.isHomePage();
+    return window.location.href.indexOf('/search?') > -1;
   }
 
   static getResults(){
@@ -192,12 +189,16 @@ export class SearchGui {
     this.filterResults(true);
   }
 
+  addResults(node=null){
+    this.nodeData.children.push(new ResultsData(node || this.constructor.getResults()));
+  }
+
   _filterResults(nodeData){
     let filter = this.matcher.matchesAny(nodeData, NodeData.attrs);
     if(filter){
       filter.hitCount++;
       filter.lastHit = new Date().getTime();
-      if(!(filter instanceof WhitelistFilter))
+      if(filter instanceof BlockingFilter)
         this.hideResult(nodeData, filter);
       return true;
     }
@@ -213,7 +214,7 @@ export class SearchGui {
       }
     }else{
       for(let i = 0; i < nodeData.children.length;){
-        if(this._filterResults(nodeData[i])){
+        if(this._filterResults(nodeData.children[i])){
           nodeData.children.splice(i, 1);
         }else{
           filtered = false;
@@ -223,19 +224,11 @@ export class SearchGui {
     }
   }
 
-  filterResults(prev=false, node=null){
-    let nodeDatas;
-    if(prev){
-      nodeDatas = this.nodeDatas;
-    }else{
-      nodeDatas = [new ResultsData(node || this.constructor.getResults())];
-      this.nodeDatas.push(nodeDatas[0]);
-    }
+  filterResults(){
     let matched = false;
     let listener = (action) => {if(action == 'filter.hitCount') matched = true;};
     FilterNotifier.addListener(listener);
-    for(let nodeData of nodeDatas)
-      this._filterResults(nodeData);
+    this._filterResults(this.nodeData);
     if(matched)
       Config.filters = this.filters;
     FilterNotifier.removeListener(listener);

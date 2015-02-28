@@ -1,14 +1,17 @@
 import Config from 'gfp/config';
 import {SearchGui} from 'gfp/gui';
 import {Filter} from 'gfp/filter';
+import {clone} from 'gfp/tests/utils';
 
 suite('SearchGui', () => {
   let self = {};
-  let createSearchGui = (filters, nodeDatas) => {
-    self.filtersProp = sinon.stub(Config, 'filters', {get: () => filters, set: sinon.stub()});
+  let createSearchGui = (filters, nodeData) => {
+    self.filters = filters.map(Filter.fromObject);
+    self.nodeData = clone(nodeData);
+    self.filtersProp = sinon.stub(Config, 'filters', {get: () => self.filters, set: sinon.stub()});
     self.searchGui = new SearchGui();
-    self.searchGui.nodeDatas = nodeDatas;
-    self.searchGui.filterResults(true);
+    self.searchGui.nodeData = nodeData;
+    self.searchGui.filterResults();
   };
   setup(() => {
     window.GM_addStyle = () => {};
@@ -22,19 +25,60 @@ suite('SearchGui', () => {
       self.filtersProp.restore();
   });
   suite('filterResults', () => {
-    test('empty', () => {
-      createSearchGui([], []);
-      assert.deepEqual(self.searchGui.nodeDatas, []);
-      sinon.assert.notCalled(self.filtersProp.set);
+    suite('empty', () => {
+      test('new results', () => {
+        createSearchGui([], {*getChildren(){}, url: null, title: null, summary: null});
+        assert.deepEqual(self.searchGui.nodeData, Object.assign({}, self.nodeData, {children: []}));
+        sinon.assert.notCalled(self.filtersProp.set);
+      });
+      test('previous results', () => {
+        createSearchGui([], {children: [], url: null, title: null, summary: null});
+        assert.deepEqual(self.searchGui.nodeData, self.nodeData);
+        sinon.assert.notCalled(self.filtersProp.set);
+      });
     });
-    test('filtered', () => {
-      createSearchGui([{text: 'a$$b$$c'}].map(Filter.fromObject), [{children: [], url: 'a', title: 'b', summary: 'c'}]);
-      assert.deepEqual(self.searchGui.nodeDatas, []);
-      sinon.assert.called(self.filtersProp.set);
-    });
-    test('not filtered', () => {
-      // XXX
-
+    suite('non-empty', () => {
+      test('new results', () => {
+        createSearchGui([{text: 'a1$$b1$$c1'}], {
+          *getChildren(){
+            yield {children: [], url: 'a1', title: 'b1', summary: 'c1'};
+            yield {children: [], url: 'a2', title: 'b2', summary: 'c2'};
+          }, url: null, title: null, summary: null
+        });
+        assert.deepEqual(self.searchGui.nodeData, Object.assign({}, self.nodeData, {
+          children: [{children: [], url: 'a2', title: 'b2', summary: 'c2'}]
+        }));
+        sinon.assert.calledOnce(self.hideResult);
+        sinon.assert.calledWithExactly(self.hideResult, self.nodeData.getChildren().next().value, self.filters[0]);
+        sinon.assert.calledOnce(self.filtersProp.set);
+      });
+      test('previous results', () => {
+        createSearchGui([{text: 'a1$$b1$$c1'}], {
+          children: [
+            {children: [], url: 'a1', title: 'b1', summary: 'c1'},
+            {children: [], url: 'a2', title: 'b2', summary: 'c2'},
+          ], url: null, title: null, summary: null
+        });
+        assert.deepEqual(self.searchGui.nodeData, Object.assign({}, self.nodeData, {
+          children: [{children: [], url: 'a2', title: 'b2', summary: 'c2'}]
+        }));
+        sinon.assert.calledOnce(self.hideResult);
+        sinon.assert.calledWithExactly(self.hideResult, self.nodeData.children[0], self.filters[0]);
+        sinon.assert.calledOnce(self.filtersProp.set);
+      });
+      test('whitelist', () => {
+        createSearchGui([{text: '@@a1$$b1$$c1'}], {
+          children: [
+            {children: [], url: 'a1', title: 'b1', summary: 'c1'},
+            {children: [], url: 'a2', title: 'b2', summary: 'c2'},
+          ], url: null, title: null, summary: null
+        });
+        assert.deepEqual(self.searchGui.nodeData, Object.assign({}, self.nodeData, {
+          children: [{children: [], url: 'a2', title: 'b2', summary: 'c2'}]
+        }));
+        sinon.assert.notCalled(self.hideResult);
+        sinon.assert.calledOnce(self.filtersProp.set);
+      });
     });
   });
   test('addFromResult', () => {
