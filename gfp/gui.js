@@ -24,21 +24,14 @@ NodeData.prototype.summary = null;
 export class ResultsData extends NodeData {
   *getChildren(){
     for(let child of this.node.querySelectorAll('li.g')){
-      switch(child.id){
-        case 'imagebox':
-        case 'imagebox_bigimages':
-          yield new ImageContainerData(child); break;
-        case 'videobox':
-          yield new VideoContainerData(child); break;
-        case 'newsbox':
-          yield new NewsContainerData(child); break;
-        default:
-          if(child.firstElementChild.childElementCount == 2){
-            yield new TextData(child);
-          }else if(child.firstElementChild.childElementCount >= 1){
-            if(child.querySelector('div.th'))
-              yield new VideoData(child);
-          }
+      if(child.id == 'imagebox_bigimages'){
+        yield new ImageContainerData(child);
+      }else if(child.classList.contains('mnr-c')){
+        yield new KnowledgeData(child);
+      }else if(child.classList.contains('card-section')){
+        yield new NewsData(child);
+      }else if(!child.classList.contains('obcontainer')){
+        yield new TextData(child);
       }
     }
   }
@@ -51,37 +44,28 @@ class TextData extends NodeData {
   get summary(){return cache(this, 'summary', this.node.querySelector('div.s').textContent);}
 }
 
-class VideoContainerData extends NodeData {
-  *getChildren(){for(let child of this.node.querySelectorAll('div.vresult')) yield new VideoData(child);}
-  get title(){return cache(this, 'title', this.node.querySelector('h3.r').textContent);}
+class KnowledgeData extends NodeData {
+  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite').parentNode);}
+  get url(){return cache(this, 'url', this.node.querySelector('h3.r>a').href);}
+  get title(){return cache(this, 'title', this.node.querySelector('h2.r, h3.r').textContent);}
 }
 
-class VideoData extends NodeData {
-  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite'));}
-  get url(){return cache(this, 'url', this.node.querySelector('h3.r>a').href);}
-  get title(){return cache(this, 'title', this.node.querySelector('h3.r').textContent);}
-  get summary(){return cache(this, 'summary', this.node.querySelector('span.st').textContent);}
+class NewsData extends NodeData {
+  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite').parentNode);}
+  get url(){return cache(this, 'url', this.node.querySelector('a').href);}
+  get title(){return cache(this, 'title', this.node.querySelector('a').textContent);}
+  get summary(){
+    let node = this.node.querySelector('span.s');
+    return cache(this, 'summary', node ? node.textContent : null);
+  }
 }
 
 class ImageContainerData extends NodeData {
   *getChildren(){for(let child of this.node.querySelectorAll('div>a')) yield new ImageData(child);}
-  get title(){return cache(this, 'title', this.node.querySelector('h3.r').textContent);}
 }
 
 class ImageData extends NodeData {
   get url(){return cache(this, 'url', this.node.href);}
-}
-
-class NewsContainerData extends NodeData {
-  *getChildren(){for(let child of this.node.querySelectorAll('li.w0>div')) yield new NewsData(child);}
-  get title(){return cache(this, 'title', this.node.querySelector('h3.r').textContent);}
-}
-
-class NewsData extends NodeData {
-  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('.gl'));}
-  get url(){return cache(this, 'url', this.node.querySelector('a.l').href);}
-  get title(){return cache(this, 'title', this.node.querySelector('a.l').textContent);}
-  get summary(){return cache(this, 'summary', this.node.querySelector('div[style]').textContent);}
 }
 
 export class SearchGui {
