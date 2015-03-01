@@ -11,7 +11,20 @@ export class NodeData {
     this.node = node;
   }
 
+  checkAction(action, filter){
+    if(this.action == action){
+      this.redo(filter);
+      return true;
+    }else if(this.action !== null){
+      this.undo();
+      delete this.redo;
+      delete this.undo;
+    }
+    this.action = action;
+  }
+
   *getChildren(){}
+  redo(){}
   undo(){}
 }
 
@@ -20,6 +33,7 @@ NodeData.prototype.linkArea = null;
 NodeData.prototype.url = null;
 NodeData.prototype.title = null;
 NodeData.prototype.summary = null;
+NodeData.prototype.action = null;
 
 export class ResultsData extends NodeData {
   *getChildren(){
@@ -125,12 +139,14 @@ export class SearchGui {
   }
 
   hideResult(nodeData, filter=null){
+    if(nodeData.checkAction(this.hideResult, filter))
+      return;
     if(this.allowHidden && filter.collapse){
       nodeData.node.classList.add('hide');
       nodeData.undo = () => nodeData.node.classList.remove('hide');
       return;
     }
-    let showTitle;
+    let showTitle = null;
     if(nodeData.title !== null){
       showTitle = this.showTitle.cloneNode(false);
       showTitle.textContent = nodeData.title;
@@ -145,15 +161,22 @@ export class SearchGui {
       this.toggleResult(nodeData, showTitle, showLink);
       return false;
     };
+    nodeData.redo = (filter) => {
+      if(filter)
+        showLink.title = filter.text;
+    };
     nodeData.undo = () => {
       if(!showLink.classList.contains('hide'))
         this.toggleResult(nodeData, showTitle, showLink);
-      nodeData.node.removeChild(showTitle);
+      if(showTitle)
+        nodeData.node.removeChild(showTitle);
       nodeData.node.removeChild(showLink);
     };
   }
 
   addFilterLink(nodeData, filter=null){
+    if(nodeData.checkAction(this.addFilterLink, filter))
+      return;
     if(!nodeData.linkArea)
       return;
     let dash = this.dash.cloneNode(true);
@@ -165,6 +188,10 @@ export class SearchGui {
     addLink.onclick = () => {
       this.addFromResult(nodeData);
       return false;
+    };
+    nodeData.redo = (filter) => {
+      if(filter)
+        addLink.title = filter.text;
     };
     nodeData.undo = () => {
       nodeData.linkArea.removeChild(dash);
@@ -184,8 +211,6 @@ export class SearchGui {
   }
 
   _filterResults(nodeData){
-    nodeData.undo();
-    delete nodeData.undo;
     let filter = this.matcher.matchesAny(nodeData, NodeData.attrs);
     if(filter){
       filter.hitCount++;
