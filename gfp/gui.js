@@ -75,7 +75,7 @@ class NewsData extends NodeData {
 }
 
 class ImageContainerData extends NodeData {
-  *getChildren(){for(let child of this.node.querySelectorAll('div>a')) yield new ImageData(child);}
+  *getChildren(){for(let child of this.node.querySelectorAll('.bia')) yield new ImageData(child);}
 }
 
 class ImageData extends NodeData {
