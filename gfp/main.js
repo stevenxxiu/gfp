@@ -1,6 +1,7 @@
 import Config from 'gfp/config';
 import {LogTime} from 'gfp/logger';
 import {SearchGui} from 'gfp/gui';
+import {Pref} from 'gfp/pref';
 
 let plugins = {
   customSearch: () => require('gfp/plugin/customsearch'),
@@ -9,6 +10,7 @@ let plugins = {
 
 function main(){
   LogTime.start();
+  new Pref();
   let searchGui;
   if(SearchGui.isSearchPage()){
     searchGui = new SearchGui();

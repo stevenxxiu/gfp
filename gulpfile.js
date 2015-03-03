@@ -4,9 +4,11 @@ var istanbul = require('browserify-istanbul');
 var FirefoxProfile = require('firefox-profile');
 var glob = require('glob');
 var gulp = require('gulp');
-var addsrc = require('gulp-add-src');
 var concat = require('gulp-concat-util');
+var inline = require('gulp-inline');
+var gulpMerge = require('gulp-merge');
 var minifyCSS = require('gulp-minify-css');
+var minifyHTML = require('gulp-minify-html');
 var isparta = require('isparta');
 var merge = require('merge');
 var path = require('path');
@@ -49,10 +51,10 @@ function bundle(config, pipe){
 function build(cb){
   var fileName = 'google_search_filter_plus.user.js';
   bundle({entries: 'gfp/main.js'}, function(){
-    var sr = this
-      .pipe(source(fileName))
-      .pipe(buffer())
-      .pipe(addsrc('gfp/header.js'))
+    var sr = gulpMerge(
+      gulp.src('gfp/header.js'),
+      this.pipe(source(fileName)).pipe(buffer())
+    )
       .pipe(concat(fileName))
       .pipe(gulp.dest('dist'));
     cb(sr);
@@ -60,18 +62,20 @@ function build(cb){
 }
 
 gulp.task('_resources', function(){
-  gulp.src('gfp/css/gui.css')
-    .pipe(minifyCSS())
+  gulpMerge(
+    gulp.src('gfp/css/*').pipe(minifyCSS()),
+    gulp.src('gfp/html/*').pipe(inline({base: '.',})).pipe(minifyHTML())
+  )
     .pipe(concat('resource.js', {process: function(src){
       var ext = path.extname(this.path);
       var name = path.basename(this.path, ext);
-      return 'export let ' + name + {'.css': 'Style'}[ext] + ' = ' + JSON.stringify(src) + ';';
+      return 'export let ' + name + {'.css': 'Style', '.html': 'HTML'}[ext] + ' = ' + JSON.stringify(src) + ';';
     }}))
     .pipe(gulp.dest('gfp'));
 });
 
 gulp.task('resources', ['_resources'], function(){
-  gulp.watch('gfp/css/*.css', ['_resources']);
+  gulp.watch(['gfp/css/*', 'gfp/html/*', 'gfp/img/*'], ['_resources']);
 });
 
 gulp.task('greasemonkey', ['resources'], function(){

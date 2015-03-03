@@ -16,9 +16,17 @@ export default {
     GM_setValue('allowHidden', value);
   },
 
+  get filtersObject(){
+    return JSON.parse(GM_getValue('filters', '[]'));
+  },
+
+  set filtersObject(res){
+    GM_setValue('filters', JSON.stringify(res));
+  },
+
   get filters(){
     let res = [];
-    for(let obj of JSON.parse(GM_getValue('filters', '[]')))
+    for(let obj of this.filtersObject)
       res.push(Filter.fromObject(obj));
     return res;
   },
@@ -27,6 +35,6 @@ export default {
     let res = [];
     for(let filter of filters)
       res.push(filter.toObject());
-    GM_setValue('filters', JSON.stringify(res));
+    this.filtersObject = res;
   },
 };
