@@ -25,9 +25,22 @@ export class Pref {
 
 class PrefDialog {
   constructor(){
-    this.dialog = $(prefHTML)
-      .dialog(Object.assign({title: 'Google Search Filter +'}, this.dialogConfig));
-    $('#gfp-import').click(() => {
+    this.dialog = $(prefHTML).dialog(Object.assign({title: 'Google Search Filter +'}, this.dialogConfig));
+    this.bindImport();
+    this.bindExport();
+    this.addGrid();
+  }
+
+  get dialogConfig(){
+    return {
+      width: $(window).width()*0.5,
+      height: $(window).height()*0.5,
+      close(){$(this).remove();}
+    };
+  }
+
+  bindImport(){
+    $('#gfp-import').click((e) => {
       $('<textarea></textarea>')
         .dialog(Object.assign({
           title: 'Import',
@@ -37,8 +50,12 @@ class PrefDialog {
           ],
           create(){setTimeout(() => this.select(), 0);}
         }, this.dialogConfig));
+      return false;
     });
-    $('#gfp-export').click(() => {
+  }
+
+  bindExport(){
+    $('#gfp-export').click((e) => {
       $('<textarea></textarea>')
         .attr('readonly', 'readonly')
         .val(JSON.stringify(Config.filtersObject, null, 2))
@@ -47,15 +64,12 @@ class PrefDialog {
           buttons: [{text: 'Close', click(){$(this).dialog('close');}}],
           create(){setTimeout(() => {this.focus(); this.setSelectionRange(0, this.value.length, 'backward');}, 0);}
         }, this.dialogConfig));
+      return false;
     });
   }
 
-  get dialogConfig(){
-    return {
-      width: $(window).width()*0.5,
-      height: $(window).height()*0.5,
-      close(){$(this).remove();}
-    };
+  addGrid(){
+
   }
 
   on(){
