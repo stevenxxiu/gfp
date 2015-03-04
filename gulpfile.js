@@ -5,12 +5,21 @@ var addsrc = require('gulp-add-src');
 var concat = require('gulp-continuous-concat');
 var gulpWebpack = require('gulp-webpack');
 var karma = require('karma');
-var merge = require('merge');
+var merge = require('merge').recursive;
 var open = require('open');
 var path = require('path');
 var webpack = require('webpack');
 
-var webpackConfig = {resolve: {root: [path.resolve('.'), path.resolve('gfp/lib')]}};
+var webpackConfig = {
+  resolve: {root: [path.resolve('.'), path.resolve('gfp/lib')]},
+  module: {
+    loaders: [
+      {test: /\.html$/, loader: 'html?minimize&attrs=img:src&root=' + path.resolve('.')},
+      {test: /\.css$/, loader: 'css?minimize&root=' + path.resolve('.')},
+      {test: /\.png$/, loader: 'url?mimetype=image/png'},
+    ]
+  }
+};
 
 gulp.task('greasemonkey', function(){
   new FirefoxProfile.Finder().getPath('default', function(err, profilePath){
@@ -20,11 +29,11 @@ gulp.task('greasemonkey', function(){
         module: {
           loaders: [{
             test: /\.js$/, exclude: /[\\/](gfp[\\/]lib|node_modules)[\\/]/,
-            loader: 'babel-loader?blacklist=regenerator&optional=spec.protoToAssign'
+            loader: 'babel?blacklist=regenerator&optional=spec.protoToAssign'
           }, {
             test: /\.js$/, include: /[\\/]gfp[\\/]lib[\\/]/, exclude: /[\\/]node_modules[\\/]/,
-            loader: 'babel-loader?blacklist=regenerator'
-          }]
+            loader: 'babel?blacklist=regenerator'
+          }].concat(webpackConfig.module.loaders)
         },
         watch: true,
         output: {filename: fileName},
@@ -52,9 +61,11 @@ gulp.task('test', function(){
     preprocessors: {'gfp/test.js': ['webpack', 'sourcemap']},
     webpack: merge(true, webpackConfig, {
       devtool: '#inline-source-map',
-      module: {loaders: [{
-        test: /\.js$/, exclude: /[\\/]node_modules[\\/]/, loader: 'babel-loader?blacklist=regenerator'
-      }]},
+      module: {
+        loaders: [
+          {test: /\.js$/, exclude: /[\\/]node_modules[\\/]/, loader: 'babel?blacklist=regenerator'}
+        ].concat(webpackConfig.module.loaders)
+      },
     }),
   }));
   open('http://localhost:9876');
@@ -68,13 +79,10 @@ gulp.task('cover', function(){
     preprocessors: {'gfp/test.js': ['webpack']},
     webpack: merge(true, webpackConfig, {
       module: {
-        preLoaders: [{
-          test: /\.js$/, exclude: /[\\/](gfp[\\/]lib|tests|node_modules)[\\/]/, loader: 'isparta-instrumenter-loader'
-        }],
-        loaders: [{
-          test: /\.js$/, include: /[\\/](gfp[\\/]lib|tests)[\\/]/, exclude: /[\\/]node_modules[\\/]/,
-          loader: 'babel-loader'
-        }],
+        loaders: [
+          {test: /\.js$/, exclude: /[\\/](gfp[\\/]lib|tests|node_modules)[\\/]/, loader: 'isparta-instrumenter'},
+          {test: /\.js$/, include: /[\\/](gfp[\\/]lib|tests)[\\/]/, exclude: /[\\/]node_modules[\\/]/, loader: 'babel'}
+        ].concat(webpackConfig.module.loaders),
       },
     }),
   }));

@@ -1,6 +1,7 @@
 /* global $, GM_addStyle, GM_getResourceText, GM_getResourceURL, GM_registerMenuCommand*/
 import Config from 'gfp/config';
-import {prefHTML, prefStyle} from 'gfp/resource';
+import prefStyle from 'gfp/css/pref.css';
+import prefHTML from 'gfp/html/pref.html';
 
 export class Pref {
   constructor(){
@@ -16,7 +17,7 @@ export class Pref {
   }
 
   addResources(){
-    GM_addStyle(prefStyle);
+    GM_addStyle(prefStyle.toString());
     GM_addStyle(GM_getResourceText('jquery-ui-css').replace(
       /url\("([^":]+)"\)/g, (match, url) => `url("${GM_getResourceURL('jquery-ui-css/' + url)}")`
     ));

@@ -1,9 +1,9 @@
 /* globals GM_addStyle */
 import Config from 'gfp/config';
+import guiStyle from 'gfp/css/gui.css';
 import {BlockingFilter, MultiRegExpFilter} from 'gfp/filter';
 import {FilterNotifier} from 'gfp/lib/filterNotifier';
 import {CombinedMultiMatcher} from 'gfp/matcher';
-import {guiStyle} from 'gfp/resource';
 import {cache} from 'gfp/utils';
 
 export class NodeData {
@@ -99,7 +99,7 @@ export class SearchGui {
     this.allowHidden = Config.allowHidden;
     this.nodeData = {children: []};
     this.createNodes();
-    GM_addStyle(guiStyle);
+    GM_addStyle(guiStyle.toString());
   }
 
   static isSearchPage(){

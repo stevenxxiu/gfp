@@ -5,11 +5,13 @@
     "babel-core": "^4.6.6",
     "babel-loader": "^4.0.0",
     "chai": "^2.1.0",
+    "css-loader": "^0.9.1",
     "firefox-profile": "^0.3.6",
     "gulp": "^3.8.11",
     "gulp-add-src": "^0.2.0",
     "gulp-continuous-concat": "^0.1.1",
     "gulp-webpack": "^1.2.0",
+    "html-loader": "^0.2.3",
     "isparta": "^2.2.0",
     "isparta-instrumenter-loader": "git://github.com/ColCh/isparta-instrumenter-loader",
     "karma": "^0.12.31",
@@ -23,6 +25,7 @@
     "mocha": "^2.1.0",
     "open": "0.0.5",
     "sinon": "https://github.com/simonzack/Sinon.JS/releases/download/master/sinon-1.12.2.tar.gz",
+    "url-loader": "^0.5.5",
     "webpack": "git://github.com/webpack/webpack#harmony"
   }
 }
