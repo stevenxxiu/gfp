@@ -2,10 +2,6 @@ import {WhitelistFilter} from 'gfp/filter';
 import {Matcher} from 'gfp/lib/matcher';
 
 export class SubMatcher extends Matcher {
-  clear(){
-    this.filterByKeyword = new Map();
-  }
-
   static _findCandidates(filter){
     if(filter.regexpSource === null)
       return null;
@@ -19,14 +15,13 @@ export class SubMatcher extends Matcher {
   findKeyword(filter){
     let res = '';
     let candidates = this.constructor._findCandidates(filter);
-    if (!candidates)
+    if(candidates === null)
       return res;
-    let hash = this.filterByKeyword;
     let resCount = 0xFFFFFF;
     let resLength = 0;
-    for(let i = 0, l = candidates.length; i < l; i++){
-      let candidate = candidates[i].substr(1);
-      let count = (candidate in hash ? hash[candidate].length : 0);
+    for(let candidate of candidates){
+      candidate = candidate.substr(1);
+      let count = (this.filterByKeyword.has(candidate) ? this.filterByKeyword.get(candidate).length : 0);
       if(count < resCount || (count == resCount && candidate.length > resLength)){
         res = candidate;
         resCount = count;
@@ -37,20 +32,48 @@ export class SubMatcher extends Matcher {
   }
 
   add(filter){
-    // duplicates are ignored for memory efficiency, otherwise we need to store subFilter text maps.
+    // Duplicates are rare and not checked for efficiency, otherwise we need to store sub filter text maps, and multiple
+    // parents per sub filter.
     let keyword = this.findKeyword(filter);
-    let oldEntry = this.filterByKeyword.get(keyword);
-    if(oldEntry === undefined){
+    let prevEntry = this.filterByKeyword.get(keyword);
+    if(prevEntry === undefined){
       this.filterByKeyword.set(keyword, filter);
-    }else if(oldEntry.length == 1){
-      this.filterByKeyword.set(keyword, [oldEntry, filter]);
+    }else if(prevEntry.length == 1){
+      this.filterByKeyword.set(keyword, [prevEntry, filter]);
     }else{
-      oldEntry.push(filter);
+      prevEntry.push(filter);
     }
   }
 
-  remove(){
-    throw 'not implemented';
+  remove(filter){
+    // only used by pref, doesn't need to be efficient
+    let candidates = this.constructor._findCandidates(filter);
+    if(candidates === null)
+      candidates = [''];
+    for(let candidate of candidates){
+      candidate = candidate.substr(1);
+      let prevEntry = this.filterByKeyword.get(candidate);
+      if(prevEntry === undefined){
+      }else if(prevEntry.length == 1){
+        if(prevEntry == filter){
+          this.filterByKeyword.delete(candidate);
+          break;
+        }
+      }else{
+        let i = prevEntry.indexOf(filter);
+        if(i > -1){
+          if(prevEntry.length == 2)
+            this.filterByKeyword.set(candidate, prevEntry[1-i]);
+          else
+            prevEntry.splice(i, 1);
+          break;
+        }
+      }
+    }
+  }
+
+  clear(){
+    this.filterByKeyword = new Map();
   }
 
   hasFilter(){
@@ -58,7 +81,7 @@ export class SubMatcher extends Matcher {
   }
 
   getKeywordForFilter(){
-    throw 'use findKeyword() instead';
+    throw 'not implemented';
   }
 
   *_iterMatches(filters, data, parents){
@@ -98,11 +121,6 @@ export class MultiMatcher {
       this.matchers.push(new SubMatcher());
   }
 
-  clear(){
-    for(let matcher of this.matchers)
-      matcher.clear();
-  }
-
   static isSlowFilter(filter){
     for(let subFilter of filter.filters){
       if(SubMatcher.isSlowFilter(subFilter))
@@ -112,23 +130,30 @@ export class MultiMatcher {
   }
 
   add(filter){
-    // duplicates are ignored for memory efficiency
     for(let subFilter of filter.filters)
       this.matchers[subFilter.index].add(subFilter);
+  }
+
+  remove(filter){
+    for(let subFilter of filter.filters)
+      this.matchers[subFilter.index].remove(subFilter);
+  }
+
+  clear(){
+    for(let matcher of this.matchers)
+      matcher.clear();
   }
 
   matchesAny(data, attrs){
     // {filter: nextNullNum}
     let [prevFilters, curFilters] = [new Map(), new Map()];
     for(let i = 0; i < this.n; i++){
-      let hasNext = i != this.n - 1;
       for(let subFilter of this.matchers[i].iterMatches(data[attrs[i]], prevFilters)){
         if(subFilter.dataIndex == subFilter.parent.filters.length - 1)
           return subFilter.parent;
-        if(hasNext)
-          curFilters.set(subFilter.parent, subFilter.parent.filters[subFilter.dataIndex + 1].index - i);
+        curFilters.set(subFilter.parent, subFilter.parent.filters[subFilter.dataIndex + 1].index - i);
       }
-      if(hasNext){
+      if(i != this.n - 1){
         // include null subFilters whose parents have so far matched
         for(let [filter, nextNullNum] of prevFilters.entries()){
           if(nextNullNum > 0)
@@ -148,11 +173,6 @@ export class CombinedMultiMatcher {
     this.whitelist = new MultiMatcher(n);
   }
 
-  clear(){
-    this.blacklist.clear();
-    this.whitelist.clear();
-  }
-
   static isSlowFilter(filter){
     return MultiMatcher.isSlowFilter(filter);
   }
@@ -163,6 +183,19 @@ export class CombinedMultiMatcher {
     }else{
       this.blacklist.add(filter);
     }
+  }
+
+  remove(filter){
+    if(filter instanceof WhitelistFilter){
+      this.whitelist.remove(filter);
+    }else{
+      this.blacklist.remove(filter);
+    }
+  }
+
+  clear(){
+    this.blacklist.clear();
+    this.whitelist.clear();
   }
 
   matchesAny(data, attrs){
