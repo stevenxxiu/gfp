@@ -29,7 +29,9 @@ gulp.task('greasemonkey', function(){
         module: {
           loaders: [{
             test: /\.js$/, exclude: /[\\/](gfp[\\/]lib|node_modules)[\\/]/,
-            loader: 'babel?blacklist=regenerator&optional=spec.protoToAssign'
+            loader:
+              'babel?blacklist[]=es6.forOf&blacklist[]=es6.arrowFunctions&blacklist[]=es6.blockScoping&' +
+              'blacklist[]=regenerator&optional=spec.protoToAssign'
           }, {
             test: /\.js$/, include: /[\\/]gfp[\\/]lib[\\/]/, exclude: /[\\/]node_modules[\\/]/,
             loader: 'babel?blacklist=regenerator'
