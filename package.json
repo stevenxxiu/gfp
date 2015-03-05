@@ -26,6 +26,6 @@
     "open": "0.0.5",
     "sinon": "https://github.com/simonzack/Sinon.JS/releases/download/master/sinon-1.12.2.tar.gz",
     "url-loader": "^0.5.5",
-    "webpack": "git://github.com/webpack/webpack#harmony"
+    "webpack": "git://github.com/simonzack/webpack"
   }
 }
