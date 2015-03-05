@@ -3,11 +3,6 @@ import {LogTime} from 'gfp/logger';
 import {SearchGui} from 'gfp/gui';
 import {Pref} from 'gfp/pref';
 
-let plugins = {
-  customSearch: () => require('gfp/plugin/customsearch'),
-  instant: () => require('gfp/plugin/instant'),
-};
-
 function main(){
   LogTime.start();
   new Pref();
@@ -17,7 +12,7 @@ function main(){
     searchGui.filterResults(SearchGui.getResults());
   }
   for(let pluginName of Config.plugins)
-    plugins[pluginName]()(searchGui);
+    require(`gfp/plugin/${pluginName.toLowerCase()}`)(searchGui);
   LogTime.snap('Total init time');
 }
 
