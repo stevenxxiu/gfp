@@ -65,7 +65,7 @@ export class SubMatcher extends Matcher {
           if(prevEntry.length == 2)
             this.filterByKeyword.set(candidate, prevEntry[1-i]);
           else
-            prevEntry.splice(i, 1);
+            prevEntry.pop(i);
           break;
         }
       }
