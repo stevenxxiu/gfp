@@ -94,6 +94,12 @@ export class SearchGui {
     this.matcher = new CombinedMultiMatcher(3);
     for(let filter of Config.filters)
       this.matcher.add(filter);
+    Config.filters.observe((type, value) => {
+      switch(type){
+        case 'push': this.matcher.add(value); break;
+        case 'remove': this.matcher.remove(value); break;
+      }
+    });
     this.nodeData = {children: []};
     this.createNodes();
     GM_addStyle(guiStyle.toString());

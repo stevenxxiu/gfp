@@ -51,15 +51,9 @@ class Config {
     this.filters = new Filters(filters);
     this.filters.observe((type, value) => {
       switch(type){
-        case 'push':
-          this.filtersObject[value.text] = value.toObject();
-          break;
-        case 'remove':
-          delete this.filtersObject[value.text];
-          break;
-        case 'update':
-          this.filtersObject[value.text] = value.toObject();
-          break;
+        case 'push': this.filtersObject[value.text] = value.toObject(); break;
+        case 'remove': delete this.filtersObject[value.text]; break;
+        case 'update': this.filtersObject[value.text] = value.toObject(); break;
       }
     });
   }
