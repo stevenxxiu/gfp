@@ -34,6 +34,10 @@ class Filters {
     this._callbacks.push(cb);
   }
 
+  unobserve(cb){
+    this._callbacks.pop(this._callbacks.indexOf(cb));
+  }
+
   [Symbol.iterator](){
     return this._filters[Symbol.iterator]();
   }

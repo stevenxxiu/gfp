@@ -1,8 +1,7 @@
 /* globals GM_addStyle */
-import Config from 'gfp/config';
+import config from 'gfp/config';
 import guiStyle from 'gfp/css/gui.css';
 import {BlockingFilter, MultiRegExpFilter} from 'gfp/filter';
-import {FilterNotifier} from 'gfp/lib/filterNotifier';
 import {CombinedMultiMatcher} from 'gfp/matcher';
 import {cache} from 'gfp/utils';
 
@@ -92,9 +91,9 @@ class ImageData extends NodeData {
 export class SearchGui {
   constructor(){
     this.matcher = new CombinedMultiMatcher(3);
-    for(let filter of Config.filters)
+    for(let filter of config.filters)
       this.matcher.add(filter);
-    Config.filters.observe((type, value) => {
+    config.filters.observe((type, value) => {
       switch(type){
         case 'push': this.matcher.add(value); break;
         case 'remove': this.matcher.remove(value); break;
@@ -151,7 +150,7 @@ export class SearchGui {
   hideResult(nodeData, filter=null){
     if(nodeData.checkAction(this.hideResult, filter))
       return;
-    if(Config.allowHidden && filter.collapse){
+    if(config.allowHidden && filter.collapse){
       nodeData.node.classList.add('hide');
       nodeData.undo = () => nodeData.node.classList.remove('hide');
       return;
@@ -214,7 +213,7 @@ export class SearchGui {
     let text = prompt('Filter: ', domainUrl);
     if(text === null)
       return;
-    Config.filters.push(MultiRegExpFilter.fromText(text));
+    config.filters.push(MultiRegExpFilter.fromText(text));
     this.filterResults();
   }
 
@@ -223,6 +222,7 @@ export class SearchGui {
     if(filter){
       filter.hitCount++;
       filter.lastHit = new Date().getTime();
+      config.filters.update(filter);
       if(filter instanceof BlockingFilter){
         this.hideResult(nodeData, filter);
         return true;
@@ -247,8 +247,8 @@ export class SearchGui {
 
   filterResults(node=null){
     let matched = false;
-    let listener = (action) => {if(action == 'filter.hitCount') matched = true;};
-    FilterNotifier.addListener(listener);
+    let listener = (type, value) => {if(type == 'update') matched = true;};
+    config.filters.observe(listener);
     if(node){
       let nodeData = new ResultsData(node);
       this.nodeData.children.push(nodeData);
@@ -257,7 +257,7 @@ export class SearchGui {
       this._filterResults(this.nodeData);
     }
     if(matched)
-      Config.flushFilters();
-    FilterNotifier.removeListener(listener);
+      config.flushFilters();
+    config.filters.unobserve(listener);
   }
 }
