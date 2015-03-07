@@ -23,18 +23,17 @@ var webpackConfig = {
 
 function build(){
   var fileName = 'google_search_filter_plus.user.js';
+  var babelOptions =
+    'babel?blacklist[]=es6.forOf&blacklist[]=es6.arrowFunctions&blacklist[]=es6.blockScoping&blacklist[]=regenerator';
   return gulp.src('gfp/main.js')
     .pipe(gulpWebpack(merge(true, webpackConfig, {
       module: {
-        loaders: [{
-          test: /\.js$/, exclude: /[\\/](gfp[\\/]lib|node_modules)[\\/]/,
-          loader:
-            'babel?blacklist[]=es6.forOf&blacklist[]=es6.arrowFunctions&blacklist[]=es6.blockScoping&' +
-            'blacklist[]=regenerator&optional=spec.protoToAssign'
-        }, {
-          test: /\.js$/, include: /[\\/]gfp[\\/]lib[\\/]/, exclude: /[\\/]node_modules[\\/]/,
-          loader: 'babel?blacklist=regenerator'
-        }].concat(webpackConfig.module.loaders)
+        loaders: [
+          {
+            test: /\.js$/, exclude: /[\\/](gfp[\\/]lib|node_modules)[\\/]/,
+            loader: babelOptions + '&optional=spec.protoToAssign'
+          }, {test: /\.js$/, include: /[\\/]gfp[\\/]lib[\\/]/, exclude: /[\\/]node_modules[\\/]/, loader: babelOptions}
+        ].concat(webpackConfig.module.loaders)
       },
       watch: true,
       output: {filename: fileName},
