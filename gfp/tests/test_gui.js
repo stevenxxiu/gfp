@@ -64,16 +64,21 @@ suite('SearchGui', () => {
     });
     test('config is not updated if there is no match', () => {
       createSearchGui({'a0$$b0$$c0': {}}, self.existingData);
-      self.sandbox.stub(config, 'flushFilters');
+      self.sandbox.spy(config.filters, 'update');
+      self.sandbox.spy(config, 'flushFilters');
       self.searchGui.filterResults();
+      assert.notCalled(config.filters.update);
       assert.notCalled(config.flushFilters);
     });
     test('config is updated on match', () => {
       createSearchGui({'a1$$b1$$c1': {}}, self.existingData);
-      self.sandbox.stub(config, 'flushFilters');
+      self.sandbox.spy(config.filters, 'update');
+      self.sandbox.spy(config, 'flushFilters');
       self.searchGui.filterResults();
       assert.equal(config.filters.get(0).hitCount, 1);
       assert.isAbove(config.filters.get(0).lastHit, 0);
+      assert.calledOnce(config.filters.update);
+      assert.calledWithExactly(config.filters.update, config.filters.get(0));
       assert.calledOnce(config.flushFilters);
     });
     test('blacklist matches hide results', () => {
