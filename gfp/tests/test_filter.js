@@ -1,7 +1,18 @@
 import {BlockingFilter, MultiRegExpFilter, RegExpFilter, WhitelistFilter} from 'gfp/filter';
-import {ActiveFilter, InvalidFilter} from 'gfp/lib/filterClasses';
+import {ActiveFilter, Filter, InvalidFilter} from 'gfp/lib/filterClasses';
 
 suite('Filter', () => {
+  suite('fromObject', () => {
+    test('ActiveFilter', () => {
+      let filter = Filter.fromObject('a', {disabled: true, hitCount: 1, lastHit: 1});
+      assert.isTrue(filter.disabled);
+      assert.equal(filter.hitCount, 1);
+      assert.equal(filter.lastHit, 1);
+    });
+    test('InvalidFilter', () => {
+      assert.instanceOf(Filter.fromObject('a$invalid'), InvalidFilter);
+    });
+  });
   suite('toObject', () => {
     test('ActiveFilter', () => {
       let filter = new ActiveFilter('text');
@@ -38,7 +49,7 @@ suite('RegExpFilter', () => {
       });
     });
     test('types', () => {
-      assert.instanceOf(RegExpFilter.fromParts('a', 'INVALID'), InvalidFilter);
+      assert.instanceOf(RegExpFilter.fromParts('a', 'invalid'), InvalidFilter);
     });
   });
   test('matches', () => {
@@ -87,7 +98,7 @@ suite('MultiRegExpFilter', () => {
     test('types', () => {
       assert.instanceOf(MultiRegExpFilter.fromText('a'), BlockingFilter);
       assert.instanceOf(MultiRegExpFilter.fromText('@@a'), WhitelistFilter);
-      assert.instanceOf(MultiRegExpFilter.fromText('a$INVALID'), InvalidFilter);
+      assert.instanceOf(MultiRegExpFilter.fromText('a$invalid'), InvalidFilter);
     });
   });
 });

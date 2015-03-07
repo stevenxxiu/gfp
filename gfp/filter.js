@@ -95,7 +95,7 @@ Filter.fromObject = function(text, obj){
   let res = Filter.fromText(text);
   if(res instanceof ActiveFilter){
     if('disabled' in obj)
-      res._disabled = (obj.disabled == 'true');
+      res._disabled = obj.disabled === true;
     if('hitCount' in obj)
       res._hitCount = parseInt(obj.hitCount) || 0;
     if('lastHit' in obj)
