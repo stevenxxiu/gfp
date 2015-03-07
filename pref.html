@@ -4,7 +4,13 @@
   <meta charset="utf-8"/>
   <script type="application/javascript;version=1.8">
   let store = {filters: JSON.stringify({'a': {}})};
-  window.GM_addStyle = () => null;
+  window.GM_addStyle = (text) => {
+    if(text == '')
+      return;
+    let style = document.createElement('style');
+    style.textContent = text;
+    document.head.appendChild(style);
+  };
   window.GM_getResourceText = () => '';
   window.GM_getResourceURL = () => '';
   window.GM_registerMenuCommand = (name, cb) => $(cb);
