@@ -58,7 +58,7 @@ class Config {
           delete this.filtersObject[value.text];
           break;
         case 'update':
-          this.filtersObject[value.text] = value;
+          this.filtersObject[value.text] = value.toObject();
           break;
       }
     });
