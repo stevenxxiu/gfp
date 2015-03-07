@@ -23,7 +23,7 @@ export let LogTime = {
 };
 
 if(!Config.logTime){
-  for(let key of Object.keys(LogTime)){
+  for(let key in LogTime){
     if(LogTime[key].constructor == Function)
       LogTime[key] = () => null;
   }

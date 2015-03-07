@@ -8,11 +8,11 @@ suite('Filter', () => {
       filter._disabled = true;
       filter._hitCount = 1;
       filter._lastHit = 1;
-      assert.deepEqual(filter.toObject(), {text: 'text', disabled: true, hitCount: 1, lastHit: 1});
+      assert.deepEqual(filter.toObject(), {disabled: true, hitCount: 1, lastHit: 1});
     });
     test('InvalidFilter', () => {
       let filter = new InvalidFilter('text');
-      assert.deepEqual(filter.toObject(), {text: 'text'});
+      assert.deepEqual(filter.toObject(), {});
     });
   });
 });
@@ -72,22 +72,16 @@ suite('MultiRegExpFilter', () => {
   });
   suite('fromText', () => {
     test('plain', () => {
-      assert.deepEqual(MultiRegExpFilter.fromText('').toTestObject(), {text: '', filters: []});
-      assert.deepEqual(MultiRegExpFilter.fromText('a').toTestObject(), {text: 'a', filters: [{}]});
-      assert.deepEqual(MultiRegExpFilter.fromText('a$$').toTestObject(), {text: 'a$$', filters: [{}]});
-      assert.deepEqual(MultiRegExpFilter.fromText('a$$$$b').toTestObject(), {
-        text: 'a$$$$b', filters: [{}, {index: 2, dataIndex: 1}]
-      });
+      assert.deepEqual(MultiRegExpFilter.fromText('').toTestObject(), {filters: []});
+      assert.deepEqual(MultiRegExpFilter.fromText('a').toTestObject(), {filters: [{}]});
+      assert.deepEqual(MultiRegExpFilter.fromText('a$$').toTestObject(), {filters: [{}]});
+      assert.deepEqual(MultiRegExpFilter.fromText('a$$$$b').toTestObject(), {filters: [{}, {index: 2, dataIndex: 1}]});
     });
     test('options', () => {
-      assert.deepEqual(MultiRegExpFilter.fromText('$MATCH_CASE').toTestObject(), {
-        text: '$MATCH_CASE', filters: []
-      });
-      assert.deepEqual(MultiRegExpFilter.fromText('a$MATCH_CASE').toTestObject(), {
-        text: 'a$MATCH_CASE', filters: [{matchCase: true}]
-      });
+      assert.deepEqual(MultiRegExpFilter.fromText('$MATCH_CASE').toTestObject(), {filters: []});
+      assert.deepEqual(MultiRegExpFilter.fromText('a$MATCH_CASE').toTestObject(), {filters: [{matchCase: true}]});
       assert.deepEqual(MultiRegExpFilter.fromText('a$$b$MATCH_CASE').toTestObject(), {
-        text: 'a$$b$MATCH_CASE', filters: [{}, {index: 1, dataIndex: 1, matchCase: true}]
+        filters: [{}, {index: 1, dataIndex: 1, matchCase: true}]
       });
     });
     test('types', () => {

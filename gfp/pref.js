@@ -1,9 +1,9 @@
 /* global $, GM_addStyle, GM_getResourceText, GM_getResourceURL, GM_registerMenuCommand*/
-import Config from 'gfp/config';
+import config from 'gfp/config';
 import prefStyle from 'gfp/css/pref.css';
 import prefHTML from 'gfp/html/pref.html';
 
-export class Pref {
+class Pref {
   constructor(){
     let dialog = null;
     let resourcesAdded = false;
@@ -46,7 +46,7 @@ class PrefDialog {
         .dialog(Object.assign({
           title: 'Import',
           buttons: [
-            {text: 'OK', click(){Config.filtersObject = JSON.parse($(this).val()); $(this).dialog('close');}},
+            {text: 'OK', click(){config.filtersObject = JSON.parse($(this).val()); $(this).dialog('close');}},
             {text: 'Cancel', click(){$(this).dialog('close');}}
           ],
           create(){setTimeout(() => this.select(), 0);}
@@ -59,7 +59,7 @@ class PrefDialog {
     $('#gfp-export').click((e) => {
       $('<textarea></textarea>')
         .attr('readonly', 'readonly')
-        .val(JSON.stringify(Config.filtersObject, null, 2))
+        .val(JSON.stringify(config.filtersObject, null, 2))
         .dialog(Object.assign({
           title: 'Export',
           buttons: [{text: 'Close', click(){$(this).dialog('close');}}],
@@ -77,3 +77,5 @@ class PrefDialog {
     return this.dialog.on.apply(this.dialog, arguments);
   }
 }
+
+export default new Pref();

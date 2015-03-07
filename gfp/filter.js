@@ -91,8 +91,21 @@ export class MultiRegExpFilter extends ActiveFilter {
 
 export let Filter = Filter_;
 
+Filter.fromObject = function(text, obj){
+  let res = Filter.fromText(text);
+  if(res instanceof ActiveFilter){
+    if('disabled' in obj)
+      res._disabled = (obj.disabled == 'true');
+    if('hitCount' in obj)
+      res._hitCount = parseInt(obj.hitCount) || 0;
+    if('lastHit' in obj)
+      res._lastHit = parseInt(obj.lastHit) || 0;
+  }
+  return res;
+};
+
 Filter.prototype.toObject = function(){
-  let res = {text: this.text};
+  let res = {};
   if(this instanceof ActiveFilter){
     if(this._disabled)
       res.disabled = true;

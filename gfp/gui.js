@@ -91,12 +91,9 @@ class ImageData extends NodeData {
 
 export class SearchGui {
   constructor(){
-    this.filters = Config.filters;
     this.matcher = new CombinedMultiMatcher(3);
-    for(let filter of this.filters)
+    for(let filter of Config.filters)
       this.matcher.add(filter);
-    // save to prevent pref modifications
-    this.allowHidden = Config.allowHidden;
     this.nodeData = {children: []};
     this.createNodes();
     GM_addStyle(guiStyle.toString());
@@ -148,7 +145,7 @@ export class SearchGui {
   hideResult(nodeData, filter=null){
     if(nodeData.checkAction(this.hideResult, filter))
       return;
-    if(this.allowHidden && filter.collapse){
+    if(Config.allowHidden && filter.collapse){
       nodeData.node.classList.add('hide');
       nodeData.undo = () => nodeData.node.classList.remove('hide');
       return;
@@ -212,7 +209,7 @@ export class SearchGui {
     if(text === null)
       return;
     let filter = MultiRegExpFilter.fromText(text);
-    this.filters.push(filter);
+    Config.filters.push(filter);
     this.matcher.add(filter);
     this.filterResults(true);
   }
@@ -256,7 +253,7 @@ export class SearchGui {
       this._filterResults(this.nodeData);
     }
     if(matched)
-      Config.filters = this.filters;
+      Config.flushFilters();
     FilterNotifier.removeListener(listener);
   }
 }

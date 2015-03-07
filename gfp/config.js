@@ -1,40 +1,76 @@
 /* globals GM_getValue, GM_setValue */
 import {Filter} from 'gfp/filter';
 
-export default {
-  // enabled plugins
-  plugins: ['customSearch', 'instant'],
-  // log component times
-  logTime: true,
+class Filters {
+  constructor(filters){
+    this._filters = filters;
+    this._callbacks = [];
+  }
 
-  get allowHidden(){
-    // allow hiding of filter results
-    return GM_getValue('allowHidden', true);
-  },
+  get(i){
+    return this._filters[i];
+  }
 
-  set allowHidden(value){
-    GM_setValue('allowHidden', value);
-  },
+  trigger(type, value){
+    for(let cb of this._callbacks)
+      cb(type, value);
+  }
 
-  get filtersObject(){
-    return JSON.parse(GM_getValue('filters', '[]'));
-  },
+  push(filter){
+    this._filters.push(filter);
+    this.trigger('push', filter);
+  }
 
-  set filtersObject(res){
-    GM_setValue('filters', JSON.stringify(res));
-  },
+  remove(filter){
+    this._filters.pop(this._filters.indexOf(filter));
+    this.trigger('remove', filter);
+  }
 
-  get filters(){
-    let res = [];
-    for(let obj of this.filtersObject)
-      res.push(Filter.fromObject(obj));
-    return res;
-  },
+  update(filter){
+    this.trigger('update', filter);
+  }
 
-  set filters(filters){
-    let res = [];
-    for(let filter of filters)
-      res.push(filter.toObject());
-    this.filtersObject = res;
-  },
-};
+  observe(cb){
+    this._callbacks.push(cb);
+  }
+
+  [Symbol.iterator](){
+    return this._filters[Symbol.iterator]();
+  }
+}
+
+class Config {
+  constructor(){
+    this.plugins = ['customSearch', 'instant'];
+    this.logTime = true;
+    this.allowHidden = GM_getValue('allowHidden', true);
+    this.filtersObject = JSON.parse(GM_getValue('filters', '{}'));
+    let filters = [];
+    for(let key in this.filtersObject)
+      filters.push(Filter.fromObject(key, this.filtersObject[key]));
+    this.filters = new Filters(filters);
+    this.filters.observe((type, value) => {
+      switch(type){
+        case 'push':
+          this.filtersObject[value.text] = value.toObject();
+          break;
+        case 'remove':
+          delete this.filtersObject[value.text];
+          break;
+        case 'update':
+          this.filtersObject[value.text] = value;
+          break;
+      }
+    });
+  }
+
+  flushAllowHidden(){
+    GM_setValue('allowHidden', this.allowHidden);
+  }
+
+  flushFilters(){
+    GM_setValue('filters', JSON.stringify(this.filtersObject));
+  }
+}
+
+export default new Config();
