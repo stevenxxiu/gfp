@@ -45,9 +45,15 @@ class PrefDialog {
       $('<textarea></textarea>')
         .dialog(Object.assign({
           title: 'Import',
-          buttons: [
-            {text: 'OK', click(){config.filtersObject = JSON.parse($(this).val()); $(this).dialog('close');}},
-            {text: 'Cancel', click(){$(this).dialog('close');}}
+          buttons: [{
+              text: 'OK',
+              click(){
+                config.filtersObject = JSON.parse($(this).val());
+                config.flushFilters();
+                config.constructor.call(config);
+                $(this).dialog('close');
+              }
+            }, {text: 'Cancel', click(){$(this).dialog('close');}}
           ],
           create(){setTimeout(() => this.select(), 0);}
         }, this.dialogConfig));
