@@ -21,29 +21,35 @@ var webpackConfig = {
   }
 };
 
+function build(){
+  var fileName = 'google_search_filter_plus.user.js';
+  return gulp.src('gfp/main.js')
+    .pipe(gulpWebpack(merge(true, webpackConfig, {
+      module: {
+        loaders: [{
+          test: /\.js$/, exclude: /[\\/](gfp[\\/]lib|node_modules)[\\/]/,
+          loader:
+            'babel?blacklist[]=es6.forOf&blacklist[]=es6.arrowFunctions&blacklist[]=es6.blockScoping&' +
+            'blacklist[]=regenerator&optional=spec.protoToAssign'
+        }, {
+          test: /\.js$/, include: /[\\/]gfp[\\/]lib[\\/]/, exclude: /[\\/]node_modules[\\/]/,
+          loader: 'babel?blacklist=regenerator'
+        }].concat(webpackConfig.module.loaders)
+      },
+      watch: true,
+      output: {filename: fileName},
+    }), webpack))
+    .pipe(addsrc('gfp/header.js'))
+    .pipe(concat(fileName));
+}
+
+gulp.task('build', function(){
+  build().pipe(gulp.dest('dist'));
+});
+
 gulp.task('greasemonkey', function(){
   new FirefoxProfile.Finder().getPath('default', function(err, profilePath){
-    var fileName = 'google_search_filter_plus.user.js';
-    gulp.src('gfp/main.js')
-      .pipe(gulpWebpack(merge(true, webpackConfig, {
-        module: {
-          loaders: [{
-            test: /\.js$/, exclude: /[\\/](gfp[\\/]lib|node_modules)[\\/]/,
-            loader:
-              'babel?blacklist[]=es6.forOf&blacklist[]=es6.arrowFunctions&blacklist[]=es6.blockScoping&' +
-              'blacklist[]=regenerator&optional=spec.protoToAssign'
-          }, {
-            test: /\.js$/, include: /[\\/]gfp[\\/]lib[\\/]/, exclude: /[\\/]node_modules[\\/]/,
-            loader: 'babel?blacklist=regenerator'
-          }].concat(webpackConfig.module.loaders)
-        },
-        watch: true,
-        output: {filename: fileName},
-      }), webpack))
-      .pipe(addsrc('gfp/header.js'))
-      .pipe(concat(fileName))
-      .pipe(gulp.dest('dist'))
-      .pipe(gulp.dest(path.join(profilePath, 'gm_scripts/Google_Search_Filter_Plus')));
+      build().pipe(gulp.dest(path.join(profilePath, 'gm_scripts/Google_Search_Filter_Plus')));
   });
 });
 
