@@ -26,6 +26,8 @@
 // @grant       GM_setValue
 // @require     https://code.jquery.com/jquery-2.1.3.min.js
 // @require     https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
+// @require     https://js.cybozu.com/jqgrid/v4.7.1/jquery.jqGrid.min.js
+// @require     https://js.cybozu.com/jqgrid/v4.7.1/i18n/grid.locale-en.js
 // @resource    jquery-ui-css https://code.jquery.com/ui/1.11.3/themes/smoothness/jquery-ui.css
 // @resource    jquery-ui-css/images/ui-bg_flat_0_aaaaaa_40x100.png https://code.jquery.com/ui/1.11.3/themes/smoothness/images/ui-bg_flat_0_aaaaaa_40x100.png
 // @resource    jquery-ui-css/images/ui-bg_flat_75_ffffff_40x100.png https://code.jquery.com/ui/1.11.3/themes/smoothness/images/ui-bg_flat_75_ffffff_40x100.png
@@ -40,4 +42,5 @@
 // @resource    jquery-ui-css/images/ui-icons_454545_256x240.png https://code.jquery.com/ui/1.11.3/themes/smoothness/images/ui-icons_454545_256x240.png
 // @resource    jquery-ui-css/images/ui-icons_888888_256x240.png https://code.jquery.com/ui/1.11.3/themes/smoothness/images/ui-icons_888888_256x240.png
 // @resource    jquery-ui-css/images/ui-icons_cd0a0a_256x240.png https://code.jquery.com/ui/1.11.3/themes/smoothness/images/ui-icons_cd0a0a_256x240.png
+// @resource    jqgrid-css https://js.cybozu.com/jqgrid/v4.7.1/css/ui.jqgrid.css
 // ==/UserScript==
