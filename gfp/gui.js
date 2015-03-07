@@ -214,10 +214,8 @@ export class SearchGui {
     let text = prompt('Filter: ', domainUrl);
     if(text === null)
       return;
-    let filter = MultiRegExpFilter.fromText(text);
-    Config.filters.push(filter);
-    this.matcher.add(filter);
-    this.filterResults(true);
+    Config.filters.push(MultiRegExpFilter.fromText(text));
+    this.filterResults();
   }
 
   _filterResults(nodeData){
