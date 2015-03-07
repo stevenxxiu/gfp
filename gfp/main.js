@@ -1,10 +1,10 @@
-import 'gfp/pref';
-import config from 'gfp/config';
 import {LogTime} from 'gfp/logger';
-import {SearchGui} from 'gfp/gui';
 
 function main(){
   LogTime.start();
+  require('gfp/pref');
+  let config = require('gfp/config');
+  let SearchGui = require('gfp/gui').SearchGui;
   let searchGui;
   if(SearchGui.isSearchPage()){
     searchGui = new SearchGui();

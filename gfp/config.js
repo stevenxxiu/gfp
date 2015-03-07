@@ -42,7 +42,6 @@ class Filters {
 class Config {
   constructor(){
     this.plugins = ['customSearch', 'instant'];
-    this.logTime = true;
     this.allowHidden = GM_getValue('allowHidden', true);
     this.filtersObject = JSON.parse(GM_getValue('filters', '{}'));
     let filters = [];
