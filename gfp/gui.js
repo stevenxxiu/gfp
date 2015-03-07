@@ -10,7 +10,7 @@ export class NodeData {
     this.node = node;
   }
 
-  checkAction(action, filter){
+  act(action, filter){
     if(this.action == action){
       this.redo(filter);
       return true;
@@ -148,7 +148,7 @@ export class SearchGui {
   }
 
   hideResult(nodeData, filter=null){
-    if(nodeData.checkAction(this.hideResult, filter))
+    if(nodeData.act(this.hideResult, filter))
       return;
     if(config.allowHidden && filter.collapse){
       nodeData.node.classList.add('hide');
@@ -184,7 +184,7 @@ export class SearchGui {
   }
 
   addFilterLink(nodeData, filter=null){
-    if(nodeData.checkAction(this.addFilterLink, filter))
+    if(nodeData.act(this.addFilterLink, filter))
       return;
     if(!nodeData.linkArea)
       return;
