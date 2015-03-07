@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <script type="application/javascript;version=1.8">
+  window.GM_addStyle = () => null;
+  window.GM_getResourceText = () => '';
+  window.GM_getResourceURL = () => '';
+  window.GM_registerMenuCommand = (name, cb) => $(cb);
+  window.GM_getValue = (name, value) => name == 'filters'? JSON.stringify({'a': {}}) : value;
+  window.GM_setValue = () => null;
+  </script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.3/themes/smoothness/jquery-ui.css"></link>
+  <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.11.3/jquery-ui.min.js"></script>
+  <script type="application/javascript;version=1.8" src="dist/google_search_filter_plus.user.js"></script>
+</head>
+</html>
