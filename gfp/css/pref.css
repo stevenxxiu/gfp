@@ -1,12 +1,16 @@
 
-.gfp .button-icon {
-  border-style: none;
-  height: 16px;
-  width: 16px;
+.ui-front {
+  z-index: 1000 !important;
 }
 
 .ui-dialog textarea {
   box-sizing: border-box;
   width: 100% !important;
   resize: none;
+}
+
+.gfp .button-icon {
+  border-style: none;
+  height: 16px;
+  width: 16px;
 }
