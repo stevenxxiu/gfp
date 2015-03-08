@@ -9,6 +9,15 @@
   resize: none;
 }
 
+.gfp {
+  display: flex !important;
+  flex-direction: column;
+}
+
+.gfp .row:last-child {
+  flex-grow: 1;
+}
+
 .gfp a {
   outline: 0;
 }
