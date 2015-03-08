@@ -4,6 +4,7 @@
 // @namespace   smk
 // @license     MPL 1.1; http://www.mozilla.org/MPL/MPL-1.1.html
 // @include     http://www.google.tld/
+// @include     http://www.google.tld/?*
 // @include     http://www.google.tld/#*&q=*
 // @include     http://www.google.tld/#q=*
 // @include     http://www.google.tld/cse?*
@@ -13,6 +14,7 @@
 // @include     https://encrypted.google.com/#*&q=*
 // @include     https://encrypted.google.com/search?*
 // @include     https://www.google.tld/
+// @include     https://www.google.tld/?*
 // @include     https://www.google.tld/#*&q=*
 // @include     https://www.google.tld/#q=*
 // @include     https://www.google.tld/cse?*
