@@ -1,9 +1,9 @@
-/* global $, GM_addStyle, GM_getResourceText, GM_getResourceURL, GM_registerMenuCommand*/
+/* global $, GM_addStyle, GM_registerMenuCommand, Slick*/
 import config from 'gfp/config';
 import prefStyle from 'gfp/css/pref.css';
 import prefHTML from 'gfp/html/pref.html';
 import {CombinedMultiMatcher} from 'gfp/matcher';
-import {pad} from 'gfp/utils';
+import {addStyleResolve, pad} from 'gfp/utils';
 
 class Pref {
   constructor(){
@@ -19,11 +19,9 @@ class Pref {
   }
 
   addResources(){
+    addStyleResolve('jquery-ui-css');
+    addStyleResolve('slickgrid-css');
     GM_addStyle(prefStyle.toString());
-    GM_addStyle(GM_getResourceText('jquery-ui-css').replace(
-      /url\("([^":]+)"\)/g, (match, url) => `url("${GM_getResourceURL('jquery-ui-css/' + url)}")`
-    ));
-    GM_addStyle(GM_getResourceText('jqgrid-css'));
   }
 }
 
@@ -83,7 +81,6 @@ class PrefDialog {
     let data = [];
     for(let filter of config.filters){
       data.push({
-        id: filter.text,
         text: filter.text,
         slow: CombinedMultiMatcher.isSlowFilter(filter),
         enabled: !filter.disabled,
@@ -91,39 +88,37 @@ class PrefDialog {
         lastHit: filter.lastHit,
       });
     }
-    this.grid.jqGrid({
-      colNames: ['Filter rule', '!', 'Enabled', 'Hits', 'Last hit'],
-      colModel: [
-        {name: 'text', width: 10, editable: true},
-        {name: 'slow', width: 1, align: 'right'},
-        {name: 'enabled', width: 1, align: 'right'},
-        {name: 'hitCount', width: 1, align: 'right'},
-        {name: 'lastHit', width: 3, align: 'right', formatter: (value, options, rowObject) => {
+    let slickGrid = new Slick.Grid(this.grid, data, [
+      {id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true},
+      {id: 'slow', field: 'slow', name: '!', width: 1, sortable: true},
+      {id: 'enabled', field: 'enabled', name: 'Enabled', width: 40, sortable: true},
+      {id: 'hitCount', field: 'hitCount', name: 'Hits', width: 1, sortable: true}, {
+        id: 'lastHit', field: 'lastHit', name: 'Last hit', width: 110, sortable: true,
+        formatter: (row, cell, value, columnDef, dataContext) => {
           let date = new Date(value);
-          return rowObject.hitCount > 0 ? (
+          return dataContext.hitCount > 0 ? (
             `${date.getFullYear()}-${pad(date.getMonth() + 1, 2)}-${pad(date.getDate(), 2)} ` +
             `${pad(date.getHours() + 1, 2)}:${pad(date.getMinutes(), 2)}:${pad(date.getSeconds(), 2)}:` +
             `${pad(date.getMilliseconds(), 3)}`
           ) : '';
-        }},
-      ],
-      data: data,
-      datatype: 'local',
-      sortname: 'text',
-      loadonce: true,
-      rowNum: 20,
-      scroll: 1,
-      autowidth: true,
-      forceFit: true,
-      gridview: true,
-      editCell: true,
+        }
+      },
+    ], {
+      enableCellNavigation: true,
+      enableColumnReorder: false,
+      forceFitColumns: true,
     });
-    let width = this.dialog.find('.ui-jqgrid').width();
-    let height = this.grid.parents('.row').height() - this.dialog.find('.ui-jqgrid-hdiv').height();
-    this.grid.jqGrid('setGridHeight', height);
+    slickGrid.onSort.subscribe((e, args) => {
+      let field = args.sortCol.field;
+      let res = args.sortAsc ? 1 : -1;
+      data.sort((x, y) => x[field] > y[field] ? res : x[field] < y[field] ? -res : 0);
+      slickGrid.invalidateAllRows();
+      slickGrid.render();
+    });
+    let height = this.grid.height();
     this.dialog.on('dialogresize', (e, ui) => {
-      this.grid.jqGrid('setGridWidth', width + (ui.size.width - ui.originalSize.width));
-      this.grid.jqGrid('setGridHeight', height + (ui.size.height - ui.originalSize.height));
+      this.grid.css('height', `${height + (ui.size.height - ui.originalSize.height)}px`);
+      slickGrid.resizeCanvas();
     });
   }
 }

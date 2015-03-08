@@ -1,6 +1,6 @@
 
 .ui-front {
-  z-index: 1000 !important;
+  z-index: 1000;
 }
 
 .ui-dialog textarea {
@@ -9,13 +9,13 @@
   resize: none;
 }
 
+.slick-sort-indicator {
+  float: none;
+}
+
 .gfp {
   display: flex !important;
   flex-direction: column;
-}
-
-.gfp .row:last-child {
-  flex-grow: 1;
 }
 
 .gfp a {
@@ -25,4 +25,20 @@
 .gfp .button-icon {
   height: 16px;
   width: 16px;
+}
+
+.gfp .row:last-child {
+  flex-grow: 1;
+}
+
+.gfp .grid {
+  height: 100%;
+}
+
+.gfp .slick-cell:first-child {
+  white-space: pre;
+}
+
+.gfp .slick-header-column:not(:first-child), .gfp .slick-cell:not(:first-child) {
+  text-align: right;
 }
