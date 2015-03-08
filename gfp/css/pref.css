@@ -9,8 +9,11 @@
   resize: none;
 }
 
+.gfp a {
+  outline: 0;
+}
+
 .gfp .button-icon {
-  border-style: none;
   height: 16px;
   width: 16px;
 }
