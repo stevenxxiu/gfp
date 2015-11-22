@@ -11,6 +11,7 @@ export class NodeData {
   }
 
   act(action, filter){
+    // action: function which modifies the node
     if(this.action == action){
       this.redo(filter);
       return true;
@@ -23,8 +24,8 @@ export class NodeData {
   }
 
   *getChildren(){}
-  redo(){}
-  undo(){}
+  redo(){}  // re-hide node using a different filter
+  undo(){}  // unhide node
 }
 
 NodeData.attrs = ['url', 'title', 'summary'];
@@ -246,6 +247,10 @@ export class SearchGui {
   }
 
   filterResults(node=null){
+    /**
+    args:
+      node: Used when additional search results pop up.
+    */
     let matched = false;
     let listener = (type, value) => {if(type == 'update') matched = true;};
     config.filters.observe(listener);

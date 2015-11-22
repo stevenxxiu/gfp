@@ -94,7 +94,7 @@ export class SubMatcher extends Matcher {
 
   *iterMatches(data, parents){
     /**
-    Args:
+    args:
       parents: All parent filters matched so far, excluding the ones whose subFilters have so far been null.
     */
     if(data === null)
@@ -145,6 +145,7 @@ export class MultiMatcher {
   }
 
   matchesAny(data, attrs){
+    // for each filter, nextNullNum counts how many subfilters there are left until the next non-null subfilter
     // {filter: nextNullNum}
     let [prevFilters, curFilters] = [new Map(), new Map()];
     for(let i = 0; i < this.n; i++){

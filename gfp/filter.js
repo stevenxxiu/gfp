@@ -43,7 +43,9 @@ export class RegExpFilter extends RegExpFilter_ {
 
 RegExpFilter.prototype.matchCase = false;
 RegExpFilter.prototype.collapse = false;
+// index to all subfilters
 RegExpFilter.prototype.index = 0;
+// index to all non-null subfilters
 RegExpFilter.prototype.dataIndex = 0;
 
 export class MultiRegExpFilter extends ActiveFilter {
