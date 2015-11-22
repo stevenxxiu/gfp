@@ -1,18 +1,19 @@
-import {LogTime} from 'gfp/logger';
+import {LogTime} from 'gfp/logger'
 
 function main(){
-  LogTime.start();
-  require('gfp/pref');
-  let config = require('gfp/config');
-  let SearchGui = require('gfp/gui').SearchGui;
-  let searchGui;
+  LogTime.start()
+  require('gfp/pref')
+  let config = require('gfp/config').default
+  let SearchGui = require('gfp/gui').SearchGui
+  let searchGui
   if(SearchGui.isSearchPage()){
-    searchGui = new SearchGui();
-    searchGui.filterResults(SearchGui.getResults());
+    searchGui = new SearchGui()
+    searchGui.filterResults(SearchGui.getResults())
   }
-  for(let pluginName of config.plugins)
-    require(`gfp/plugin/${pluginName.toLowerCase()}`)(searchGui);
-  LogTime.snap('Total init time');
+  // es5 to allow webpack to parse requires
+  for(let i=0; i<config.plugins.length; i++)
+    require('gfp/plugin/' + config.plugins[i].toLowerCase()).default(searchGui)
+  LogTime.snap('Total init time')
 }
 
-main();
+main()

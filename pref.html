@@ -4,28 +4,28 @@
   <meta charset="utf-8"/>
   <script type="application/javascript;version=1.8">
   window.store = (() => {
-    let pad = (num, size) => Array(Math.max(size - num.toString().length + 1, 0)).join(0) + num;
+    let pad = (num, size) => Array(Math.max(size - num.toString().length + 1, 0)).join(0) + num
     let filters = {
       'slow filter': {},
       ' fast filter ': {},
       ' matched ': {hitCount: 1, lastHit: new Date(2000, 0, 2, 2, 4, 5, 6).getTime()},
-    };
+    }
     for(let i = 0; i < 50; i++)
-      filters[' filler ' + pad(i, 2) + ' '] = {};
-    return {filters: JSON.stringify(filters)};
-  })();
+      filters[' filler ' + pad(i, 2) + ' '] = {}
+    return {filters: JSON.stringify(filters)}
+  })()
   window.GM_addStyle = (text) => {
     if(text == '')
-      return;
-    let style = document.createElement('style');
-    style.textContent = text;
-    document.head.appendChild(style);
-  };
-  window.GM_getResourceText = () => '';
-  window.GM_getResourceURL = () => '';
-  window.GM_registerMenuCommand = (name, cb) => $(cb);
-  window.GM_getValue = (name, value) => name in window.store ? window.store[name]: value;
-  window.GM_setValue = (name, value) => window.store[name] = value;
+      return
+    let style = document.createElement('style')
+    style.textContent = text
+    document.head.appendChild(style)
+  }
+  window.GM_getResourceText = () => ''
+  window.GM_getResourceURL = () => ''
+  window.GM_registerMenuCommand = (name, cb) => $(cb)
+  window.GM_getValue = (name, value) => name in window.store ? window.store[name]: value
+  window.GM_setValue = (name, value) => window.store[name] = value
   </script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/jquery.ui/1.11.3/themes/smoothness/jquery-ui.min.css"></link>
   <link rel="stylesheet" href="https://rawgit.com/mleibman/SlickGrid/2.1.0/slick.grid.css"></link>
