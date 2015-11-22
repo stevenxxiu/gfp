@@ -37,7 +37,7 @@ NodeData.prototype.action = null;
 
 export class ResultsData extends NodeData {
   *getChildren(){
-    for(let child of this.node.querySelectorAll('li.g')){
+    for(let child of this.node.querySelectorAll('.g')){
       if(child.id == 'imagebox_bigimages'){
         yield new ImageContainerData(child);
       }else if(child.id == 'lclbox'){
@@ -100,7 +100,8 @@ export class SearchGui {
         case 'remove': this.matcher.remove(value); break;
       }
     });
-    this.nodeData = {children: []};
+    this.nodeData = new NodeData();
+    this.nodeData.children = [];
     this.createNodes();
     GM_addStyle(guiStyle.toString());
   }
@@ -255,6 +256,7 @@ export class SearchGui {
     let listener = (type, value) => {if(type == 'update') matched = true;};
     config.filters.observe(listener);
     if(node){
+      // only need to filter the new node
       let nodeData = new ResultsData(node);
       this.nodeData.children.push(nodeData);
       this._filterResults(nodeData);
