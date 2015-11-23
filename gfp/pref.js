@@ -31,14 +31,6 @@ class Pref {
   }
 }
 
-function trigger(evt, args, e){
-  // from slickgrid source
-  e = e || new Slick.EventData()
-  args = args || {}
-  args.grid = self
-  return evt.notify(args, e, self)
-}
-
 class PrefDialog {
   constructor(){
     this.dialog = $(prefHtml).dialog(Object.assign({
@@ -155,6 +147,13 @@ class PrefDialog {
       editable: true,
       autoEdit: false,
     })
+    function trigger(evt, args, e){
+      // adapted from slickgrid source
+      e = e || new Slick.EventData()
+      args = args || {}
+      args.grid = grid
+      return evt.notify(args, e, grid)
+    }
     grid.onSort.subscribe((e, args) => {
       let field = args.sortCol.field
       let res = args.sortAsc ? 1 : -1
