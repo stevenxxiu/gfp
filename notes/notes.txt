@@ -2,7 +2,3 @@
 +add 'hide results completely' to pref
 
 +see if saving the shortcuts & regexp will decrease filter load time (everything else will need to be loaded)
-
-+fix white-list not working:
-	@@|www.crystal-product.com
-	||crystal-product.com
