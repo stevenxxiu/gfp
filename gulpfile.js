@@ -1,13 +1,13 @@
-var FirefoxProfile = require('firefox-profile')
-var gulp = require('gulp')
 var addsrc = require('gulp-add-src')
 var concat = require('gulp-continuous-concat')
-var gulpWebpack = require('gulp-webpack')
+var FirefoxProfile = require('firefox-profile')
+var gulp = require('gulp')
 var karma = require('karma')
 var merge = require('merge').recursive
 var open_ = require('open')
 var path = require('path')
 var webpack = require('webpack')
+var webpackStream = require('webpack-stream')
 
 var webpackConfig = {
   resolve: {root: [path.resolve('.'), path.resolve('gfp/lib')]},
@@ -21,30 +21,40 @@ var webpackConfig = {
 }
 
 var babelConfig = {
-  'plugins': [
-    'transform-es2015-block-scoped-functions',
-    'transform-es2015-classes',
-    'transform-es2015-constants',
-    'transform-es2015-destructuring',
-    'transform-es2015-function-name',
-    'transform-es2015-modules-commonjs',
-    'transform-es2015-object-super',
-    'transform-es2015-parameters',
-    'transform-es2015-unicode-regex',
-  ],
+  build: {
+    plugins: [
+      'transform-es2015-block-scoped-functions',
+      'transform-es2015-classes',
+      'transform-es2015-constants',
+      'transform-es2015-destructuring',
+      'transform-es2015-function-name',
+      'transform-es2015-modules-commonjs',
+      'transform-es2015-object-super',
+      'transform-es2015-parameters',
+      'transform-es2015-unicode-regex',
+    ],
+  },
+  test: {
+    presets: ['es2015-without-regenerator'],
+  },
+}
+
+var karmaConfig = {
+  frameworks: ['mocha', 'chai', 'sinon'],
+  client: {
+    captureConsole: true,
+    mocha: {reporter: 'html', ui: 'tdd'},
+  },
 }
 
 function build(){
   var fileName = 'google_search_filter_plus.user.js'
   return gulp.src('gfp/main.js')
-    .pipe(gulpWebpack(merge(true, webpackConfig, {
+    .pipe(webpackStream(merge(true, webpackConfig, {
       module: {
         loaders: [{
-          test: /\.js$/, exclude: /[\\/](gfp[\\/]lib|node_modules)[\\/]/,
-          loader: 'babel', query: merge(true, babelConfig, {}),
-        }, {
-          test: /\.js$/, include: /[\\/]gfp[\\/]lib[\\/]/, exclude: /[\\/]node_modules[\\/]/,
-          loader: 'babel', query: babelConfig,
+          test: /\.js$/, exclude: /[\\/]node_modules[\\/]/,
+          loader: 'babel', query: babelConfig.build,
         }].concat(webpackConfig.module.loaders),
       },
       watch: true,
@@ -64,16 +74,8 @@ gulp.task('greasemonkey', function(){
   })
 })
 
-var karmaConfig = {
-  frameworks: ['mocha', 'chai', 'sinon'],
-  client: {
-    captureConsole: true,
-    mocha: {reporter: 'html', ui: 'tdd'},
-  },
-}
-
 gulp.task('test', function(){
-  karma.server.start(merge(true, karmaConfig, {
+  new karma.Server(merge(true, karmaConfig, {
     port: 9876,
     reporters: ['progress'],
     files: ['gfp/test.js'],
@@ -81,30 +83,30 @@ gulp.task('test', function(){
     webpack: merge(true, webpackConfig, {
       devtool: '#inline-source-map',
       module: {
-        loaders: [
-          {test: /\.js$/, exclude: /[\\/]node_modules[\\/]/, loader: 'babel'},
-        ].concat(webpackConfig.module.loaders),
+        loaders: [{
+          test: /\.js$/, exclude: /[\\/]node_modules[\\/]/, loader: 'babel', query: babelConfig.test,
+        }].concat(webpackConfig.module.loaders),
       },
     }),
-  }))
+  })).start()
   open_('http://localhost:9876')
 })
 
 gulp.task('cover', function(){
-  karma.server.start(merge(true, karmaConfig, {
+  new karma.Server(merge(true, karmaConfig, {
     port: 9877,
     reporters: ['coverage'],
-    files: [{pattern: 'node_modules/babel-core/browser-polyfill.js', watched: false}, 'gfp/test.js'],
+    files: ['gfp/test.js'],
     preprocessors: {'gfp/test.js': ['webpack']},
     webpack: merge(true, webpackConfig, {
       module: {
-        loaders: [
-          {test: /\.js$/, exclude: /[\\/](gfp[\\/]lib|tests|node_modules)[\\/]/, loader: 'isparta-instrumenter'},
-          {test: /\.js$/, include: /[\\/](gfp[\\/]lib|tests)[\\/]/, exclude: /[\\/]node_modules[\\/]/, loader: 'babel'},
-        ].concat(webpackConfig.module.loaders),
+        loaders: [{
+          test: /\.js$/, exclude: /[\\/](node_modules)[\\/]/,
+          loader: 'isparta-instrumenter', query: {babel: babelConfig.test},
+        }].concat(webpackConfig.module.loaders),
       },
     }),
-  }))
+  })).start()
   open_('http://localhost:9877')
 })
 
