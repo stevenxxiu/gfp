@@ -36,10 +36,15 @@ class PrefDialog {
     this.dialog = $(prefHtml).dialog(Object.assign({
       title: 'Google Search Filter +', 'closeOnEscape': false,
     }, this.dialogConfig))
-    this.grid = this.dialog.find('.grid')
+    this.data = []
+    this.dataToFilter = new Map()
+    this.filterToData = new Map()
+    this.grid = null
     this.bindImport()
     this.bindExport()
+    this.observeFilters()
     this.addGrid()
+    this.addGridListeners()
   }
 
   get dialogConfig(){
@@ -84,23 +89,46 @@ class PrefDialog {
     })
   }
 
-  addGrid(){
-    let data = []
-    let dataToFilter = new Map()
-    let filterToData = new Map()
-    for(let filter of config.filters){
-      let entry = {
-        text: filter.text,
-        slow: CombinedMultiMatcher.isSlowFilter(filter),
-        enabled: !filter.disabled,
-        hitCount: filter.hitCount,
-        lastHit: filter.lastHit,
+  observeFilters(){
+    // XXX update grid
+    let filterToNewData = (filter) => {return {
+      text: filter.text,
+      slow: CombinedMultiMatcher.isSlowFilter(filter),
+      enabled: !filter.disabled,
+      hitCount: filter.hitCount,
+      lastHit: filter.lastHit,
+    }}
+    let observer = (type, filter) => {
+      let entry
+      switch(type){
+        case 'push':
+          entry = filterToNewData(filter)
+          this.data.push(entry)
+          this.dataToFilter.set(entry, filter)
+          this.filterToData.set(filter, entry)
+          break
+        case 'remove':
+          entry = this.dataToFilter.delete(filter)
+          this.data.splice(this.data.indexOf(entry), 1)
+          this.filterToData.delete(entry)
+          break
+        case 'construct':
+          for(let filter of config.filters){
+            let entry = filterToNewData(filter)
+            this.data.push(entry)
+            this.dataToFilter.set(entry, filter)
+            this.filterToData.set(filter, entry)
+          }
+          break
       }
-      data.push(entry)
-      dataToFilter.set(filter, entry)
-      filterToData.set(entry, filter)
     }
-    let grid = new Slick.Grid(this.grid, data, [
+    observer('construct')
+    config.filters.observe(observer)
+  }
+
+  addGrid(){
+    let gridDom = this.dialog.find('.grid')
+    this.grid = new Slick.Grid(gridDom, this.data, [
       {
         id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true,
         editor: Slick.Editors.Text, validator: (text) => {
@@ -151,52 +179,61 @@ class PrefDialog {
       editable: true,
       autoEdit: false,
     })
-    function trigger(evt, args, e){
+    let height = gridDom.height()
+    this.dialog.on('dialogresize', (e, ui) => {
+      gridDom.css('height', `${height + (ui.size.height - ui.originalSize.height)}px`)
+      this.grid.resizeCanvas()
+    })
+  }
+
+  addGridListeners(){
+    let trigger = (evt, args, e) => {
       // adapted from slickgrid source
       e = e || new Slick.EventData()
       args = args || {}
-      args.grid = grid
-      return evt.notify(args, e, grid)
+      args.grid = this.grid
+      return evt.notify(args, e, this.grid)
     }
-    grid.onSort.subscribe((e, args) => {
+    this.grid.onSort.subscribe((e, args) => {
       let field = args.sortCol.field
       let res = args.sortAsc ? 1 : -1
-      data.sort((x, y) => x[field] > y[field] ? res : x[field] < y[field] ? -res : 0)
-      grid.invalidateAllRows()
-      grid.render()
+      this.data.sort((x, y) => x[field] > y[field] ? res : x[field] < y[field] ? -res : 0)
+      this.grid.invalidateAllRows()
+      this.grid.render()
     })
-    grid.setSortColumn('text', true)
-    trigger(grid.onSort, {sortCol: {field: 'text'}, sortAsc: true})
-    grid.onClick.subscribe((e, args) => {
+    this.grid.setSortColumn('text', true)
+    trigger(this.grid.onSort, {sortCol: {field: 'text'}, sortAsc: true})
+    this.grid.onClick.subscribe((e, args) => {
       if($(e.target).is(':checkbox')){
         let column = args.grid.getColumns()[args.cell]
         if(column.editable === false || column.autoEdit === false)
           return
-        data[args.row][column.field] = !data[args.row][column.field]
-        trigger(grid.onCellChange, {row: args.row, cell: args.cell, item: data[args.row]})
+        this.data[args.row][column.field] = !this.data[args.row][column.field]
+        trigger(this.grid.onCellChange, {row: args.row, cell: args.cell, item: this.data[args.row]})
       }
     })
-    grid.onValidationError.subscribe((e, args) => {
+    this.grid.onValidationError.subscribe((e, args) => {
       alert(args.validationResults.msg)
     })
-    grid.onCellChange.subscribe((e, args) => {
-      // XXX update filters
+    this.grid.onCellChange.subscribe((e, args) => {
       let column = args.grid.getColumns()[args.cell]
+      let entry = this.data[args.row]
       switch(column.field){
         case 'hitCount':
-          data[args.row][column.field] = parseInt(data[args.row][column.field])
+          entry[column.field] = parseInt(entry[column.field])
           break
         case 'lastHit':
-          data[args.row][column.field] = parseInt(data[args.row][column.field])
-          grid.invalidateRow(args.row)
-          grid.render()
+          entry[column.field] = parseInt(entry[column.field])
+          this.grid.invalidateRow(args.row)
+          this.grid.render()
           break
       }
-    })
-    let height = this.grid.height()
-    this.dialog.on('dialogresize', (e, ui) => {
-      this.grid.css('height', `${height + (ui.size.height - ui.originalSize.height)}px`)
-      grid.resizeCanvas()
+      if(column.field == 'text'){
+        config.filters.remove(this.dataToFilter.get(entry))
+        config.filters.push(Filter.fromText(entry[column.field]))
+      }else{
+        config.filters.update(this.dataToFilter.get(entry))
+      }
     })
   }
 }

@@ -91,18 +91,19 @@ class ImageData extends NodeData {
 
 export class SearchGui {
   constructor(){
-    config.filters.observe((type, value) => {
+    let observer = (type, filter) => {
       switch(type){
-        case 'push': this.matcher.add(value); break
-        case 'remove': this.matcher.remove(value); break
+        case 'push': this.matcher.add(filter); break
+        case 'remove': this.matcher.remove(filter); break
         case 'construct':
           this.matcher = new CombinedMultiMatcher(3)
           for(let filter of config.filters)
             this.matcher.add(filter)
           break
       }
-    })
-    config.filters.trigger('construct')
+    }
+    observer('construct')
+    config.filters.observe(observer)
     this.nodeData = new NodeData()
     this.nodeData.children = []
     this.createNodes()
@@ -256,8 +257,8 @@ export class SearchGui {
       node: Used when additional search results pop up.
     */
     let matched = false
-    let listener = (type, _value) => {if(type == 'update') matched = true}
-    config.filters.observe(listener)
+    let observer = (type, _filter) => {if(type == 'update') matched = true}
+    config.filters.observe(observer)
     if(node){
       // only need to filter the new node
       let nodeData = new ResultsData(node)
@@ -268,6 +269,6 @@ export class SearchGui {
     }
     if(matched)
       config.flushFilters()
-    config.filters.unobserve(listener)
+    config.filters.unobserve(observer)
   }
 }
