@@ -159,6 +159,8 @@ class PrefDialog {
       grid.invalidateAllRows()
       grid.render()
     })
+    grid.setSortColumn('text', true)
+    trigger(grid.onSort, {sortCol: {field: 'text'}, sortAsc: true})
     grid.onClick.subscribe((e, args) => {
       if($(e.target).is(':checkbox')){
         let column = args.grid.getColumns()[args.cell]
