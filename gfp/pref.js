@@ -2,6 +2,8 @@
 import config from 'gfp/config'
 import prefStyle from 'gfp/css/pref.scss'
 import prefHTML from 'gfp/html/pref.html'
+import {InvalidFilter} from 'gfp/lib/filterClasses'
+import {Filter} from 'gfp/filter'
 import {CombinedMultiMatcher} from 'gfp/matcher'
 import {addStyleResolve, pad} from 'gfp/utils'
 
@@ -29,9 +31,19 @@ class Pref {
   }
 }
 
+function trigger(evt, args, e){
+  // from slickgrid source
+  e = e || new Slick.EventData()
+  args = args || {}
+  args.grid = self
+  return evt.notify(args, e, self)
+}
+
 class PrefDialog {
   constructor(){
-    this.dialog = $(prefHTML).dialog(Object.assign({title: 'Google Search Filter +'}, this.dialogConfig))
+    this.dialog = $(prefHTML).dialog(Object.assign({
+      title: 'Google Search Filter +', 'closeOnEscape': false,
+    }, this.dialogConfig))
     this.grid = this.dialog.find('.grid')
     this.bindImport()
     this.bindExport()
@@ -84,6 +96,7 @@ class PrefDialog {
     let data = []
     for(let filter of config.filters){
       data.push({
+        _filter: filter,
         text: filter.text,
         slow: CombinedMultiMatcher.isSlowFilter(filter),
         enabled: !filter.disabled,
@@ -91,9 +104,17 @@ class PrefDialog {
         lastHit: filter.lastHit,
       })
     }
-    let slickGrid = new Slick.Grid(this.grid, data, [
+    let grid = new Slick.Grid(this.grid, data, [
       {
-        id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true, editor: Slick.Editors.Text,
+        id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true,
+        editor: Slick.Editors.Text, validator: (text) => {
+          // spaces only don't count as being empty, since they can exist in urls
+          if(!text)
+            return {valid: false, msg: 'Empty filter'}
+          if(Filter.fromText(text) instanceof InvalidFilter)
+            return {valid: false, msg: 'Invalid filter'}
+          return {valid: true, msg: null}
+        },
       }, {
         id: 'slow', field: 'slow', name: '!', width: 1, sortable: true,
       }, {
@@ -101,7 +122,13 @@ class PrefDialog {
         formatter: (row, cell, value, columnDef, _dataContext) =>
           `<input type="checkbox" name="" value="${value}" ${value ? 'checked' : ''} />`,
       }, {
-        id: 'hitCount', field: 'hitCount', name: 'Hits', width: 1, sortable: true, editor: Slick.Editors.Text,
+        id: 'hitCount', field: 'hitCount', name: 'Hits', width: 1, sortable: true,
+        editor: Slick.Editors.Text, validator: (text) => {
+          let val = parseInt(text)
+          if(isNaN(val) || val < 0)
+            return {valid: false, msg: 'must be a number >= 0'}
+          return {valid: true, msg: null}
+        },
       }, {
         id: 'lastHit', field: 'lastHit', name: 'Last hit', width: 110, sortable: true,
         formatter: (row, cell, value, columnDef, dataContext) => {
@@ -111,7 +138,12 @@ class PrefDialog {
             `${pad(date.getHours() + 1, 2)}:${pad(date.getMinutes(), 2)}:${pad(date.getSeconds(), 2)}:` +
             `${pad(date.getMilliseconds(), 3)}`
           ) : ''
-        }, editor: Slick.Editors.Text,
+        }, editor: Slick.Editors.Text, validator: (text) => {
+          let val = parseInt(text)
+          if(isNaN(val))
+            return {valid: false, msg: 'must be a number'}
+          return {valid: true, msg: null}
+        },
       },
     ], {
       enableCellNavigation: true,
@@ -120,25 +152,43 @@ class PrefDialog {
       editable: true,
       autoEdit: false,
     })
-    slickGrid.onSort.subscribe((e, args) => {
+    grid.onSort.subscribe((e, args) => {
       let field = args.sortCol.field
       let res = args.sortAsc ? 1 : -1
       data.sort((x, y) => x[field] > y[field] ? res : x[field] < y[field] ? -res : 0)
-      slickGrid.invalidateAllRows()
-      slickGrid.render()
+      grid.invalidateAllRows()
+      grid.render()
     })
-    slickGrid.onClick.subscribe((e, args) => {
+    grid.onClick.subscribe((e, args) => {
       if($(e.target).is(':checkbox')){
-        var column = args.grid.getColumns()[args.cell]
-        if (column.editable === false || column.autoEdit === false)
+        let column = args.grid.getColumns()[args.cell]
+        if(column.editable === false || column.autoEdit === false)
           return
         data[args.row][column.field] = !data[args.row][column.field]
+        trigger(grid.onCellChange, {row: args.row, cell: args.cell, item: data[args.row]})
+      }
+    })
+    grid.onValidationError.subscribe((e, args) => {
+      alert(args.validationResults.msg)
+    })
+    grid.onCellChange.subscribe((e, args) => {
+      // XXX update filters
+      let column = args.grid.getColumns()[args.cell]
+      switch(column.field){
+        case 'hitCount':
+          data[args.row][column.field] = parseInt(data[args.row][column.field])
+          break
+        case 'lastHit':
+          data[args.row][column.field] = parseInt(data[args.row][column.field])
+          grid.invalidateRow(args.row)
+          grid.render()
+          break
       }
     })
     let height = this.grid.height()
     this.dialog.on('dialogresize', (e, ui) => {
       this.grid.css('height', `${height + (ui.size.height - ui.originalSize.height)}px`)
-      slickGrid.resizeCanvas()
+      grid.resizeCanvas()
     })
   }
 }
