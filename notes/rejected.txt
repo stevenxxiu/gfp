@@ -1,4 +1,0 @@
-
--remove link tracking
-	gfp should only handle filtering, not removing link tracking
-	this can be done by other scripts running before gfp
