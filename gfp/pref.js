@@ -92,10 +92,17 @@ class PrefDialog {
       })
     }
     let slickGrid = new Slick.Grid(this.grid, data, [
-      {id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true},
-      {id: 'slow', field: 'slow', name: '!', width: 1, sortable: true},
-      {id: 'enabled', field: 'enabled', name: 'Enabled', width: 40, sortable: true},
-      {id: 'hitCount', field: 'hitCount', name: 'Hits', width: 1, sortable: true}, {
+      {
+        id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true, editor: Slick.Editors.Text,
+      }, {
+        id: 'slow', field: 'slow', name: '!', width: 1, sortable: true,
+      }, {
+        id: 'enabled', field: 'enabled', name: 'Enabled', width: 40, sortable: true,
+        formatter: (row, cell, value, columnDef, _dataContext) =>
+          `<input type="checkbox" name="" value="${value}" ${value ? 'checked' : ''} />`,
+      }, {
+        id: 'hitCount', field: 'hitCount', name: 'Hits', width: 1, sortable: true, editor: Slick.Editors.Text,
+      }, {
         id: 'lastHit', field: 'lastHit', name: 'Last hit', width: 110, sortable: true,
         formatter: (row, cell, value, columnDef, dataContext) => {
           let date = new Date(value)
@@ -104,12 +111,14 @@ class PrefDialog {
             `${pad(date.getHours() + 1, 2)}:${pad(date.getMinutes(), 2)}:${pad(date.getSeconds(), 2)}:` +
             `${pad(date.getMilliseconds(), 3)}`
           ) : ''
-        },
+        }, editor: Slick.Editors.Text,
       },
     ], {
       enableCellNavigation: true,
       enableColumnReorder: false,
       forceFitColumns: true,
+      editable: true,
+      autoEdit: false,
     })
     slickGrid.onSort.subscribe((e, args) => {
       let field = args.sortCol.field
@@ -117,6 +126,14 @@ class PrefDialog {
       data.sort((x, y) => x[field] > y[field] ? res : x[field] < y[field] ? -res : 0)
       slickGrid.invalidateAllRows()
       slickGrid.render()
+    })
+    slickGrid.onClick.subscribe((e, args) => {
+      if($(e.target).is(':checkbox')){
+        var column = args.grid.getColumns()[args.cell]
+        if (column.editable === false || column.autoEdit === false)
+          return
+        data[args.row][column.field] = !data[args.row][column.field]
+      }
     })
     let height = this.grid.height()
     this.dialog.on('dialogresize', (e, ui) => {

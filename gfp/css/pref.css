@@ -35,6 +35,15 @@
   height: 100%;
 }
 
+.gfp .slick-cell {
+  display: flex;
+}
+
+.gfp .slick-cell input {
+  flex: 2;
+  min-width: 0;
+}
+
 .gfp .slick-cell:first-child {
   white-space: pre;
 }
