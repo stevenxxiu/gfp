@@ -86,15 +86,19 @@ class PrefDialog {
 
   addGrid(){
     let data = []
+    let dataToFilter = new Map()
+    let filterToData = new Map()
     for(let filter of config.filters){
-      data.push({
-        _filter: filter,
+      let entry = {
         text: filter.text,
         slow: CombinedMultiMatcher.isSlowFilter(filter),
         enabled: !filter.disabled,
         hitCount: filter.hitCount,
         lastHit: filter.lastHit,
-      })
+      }
+      data.push(entry)
+      dataToFilter.set(filter, entry)
+      filterToData.set(entry, filter)
     }
     let grid = new Slick.Grid(this.grid, data, [
       {
