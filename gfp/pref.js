@@ -1,7 +1,7 @@
 /* global $, GM_addStyle, GM_registerMenuCommand, Slick*/
 import config from 'gfp/config'
 import prefStyle from 'gfp/css/pref.scss'
-import prefHTML from 'gfp/html/pref.html'
+import prefHtml from 'gfp/html/pref.html'
 import {InvalidFilter} from 'gfp/lib/filterClasses'
 import {Filter} from 'gfp/filter'
 import {CombinedMultiMatcher} from 'gfp/matcher'
@@ -41,7 +41,7 @@ function trigger(evt, args, e){
 
 class PrefDialog {
   constructor(){
-    this.dialog = $(prefHTML).dialog(Object.assign({
+    this.dialog = $(prefHtml).dialog(Object.assign({
       title: 'Google Search Filter +', 'closeOnEscape': false,
     }, this.dialogConfig))
     this.grid = this.dialog.find('.grid')
@@ -116,7 +116,10 @@ class PrefDialog {
           return {valid: true, msg: null}
         },
       }, {
+        // use css for the image since there can be many slow filters
         id: 'slow', field: 'slow', name: '!', width: 1, sortable: true,
+        formatter: (row, cell, value, columnDef, dataContext) =>
+          dataContext.slow ? '<img class="slow-image"></img>' : '',
       }, {
         id: 'enabled', field: 'enabled', name: 'Enabled', width: 40, sortable: true,
         formatter: (row, cell, value, columnDef, _dataContext) =>

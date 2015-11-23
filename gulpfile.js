@@ -15,8 +15,8 @@ let webpackConfig = {
   module: {
     loaders: [
       {test: /\.html$/, loader: `html?minimize=true&attrs=img:src&root=${path.resolve('.')}`},
-      {test: /\.scss$/, loader: 'css?minimize!sass?indentedSyntax'},
-      {test: /\.png$/, loader: 'url?mimetype=image/png'},
+      {test: /\.scss$/, loader: `css?minimize&root=${path.resolve('.').replace(/\\/g, '/')}!sass?indentedSyntax`},
+      {test: /\.png$/, loader: 'url?mimetype=image/png&limit=10000'},
     ],
   },
 }

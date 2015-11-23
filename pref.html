@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <script type="application/javascript;version=1.8">
+  /* globals $ */
   window.store = (() => {
     let pad = (num, size) => Array(Math.max(size - num.toString().length + 1, 0)).join(0) + num
     let filters = {
