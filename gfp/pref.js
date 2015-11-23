@@ -7,21 +7,25 @@ import {addStyleResolve, pad} from 'gfp/utils'
 
 class Pref {
   constructor(){
-    let dialog = null
-    let resourcesAdded = false
-    GM_registerMenuCommand('Google Search Filter +', () => {
-      if(!resourcesAdded)
-        this.addResources()
-      if(dialog)
-        return
-      dialog = new PrefDialog().dialog.on('dialogclose', () => dialog = null)
-    }, null)
+    this.dialog = null
+    this.resourcesAdded = false
+    GM_registerMenuCommand('Google Search Filter +', this.openDialog.bind(this), null)
+  }
+
+  openDialog(){
+    if(this.dialog)
+      return
+    this.addResources()
+    this.dialog = new PrefDialog().dialog.on('dialogclose', () => this.dialog = null)
   }
 
   addResources(){
+    if(this.resourcesAdded)
+      return
     addStyleResolve('jquery-ui-css')
     addStyleResolve('slickgrid-css')
     GM_addStyle(prefStyle.toString())
+    this.resourcesAdded = true
   }
 }
 
