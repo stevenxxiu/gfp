@@ -1,0 +1,26 @@
+
+.hide
+  display: none
+
+.dash
+  padding: 0 3px
+
+.filter-add
+  color: #12C !important
+  font-size: 90%
+  text-decoration: none
+  &:hover
+    text-decoration: underline
+
+.show-title
+  padding-right: 5px
+  color: #999
+  font-size: 90%
+
+.show-link
+  color: #999 !important
+  font-size: 90%
+  text-decoration: none
+  &.hide
+    display: inline
+    color: #12C !important

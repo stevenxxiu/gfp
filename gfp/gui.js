@@ -1,6 +1,6 @@
 /* globals GM_addStyle */
 import config from 'gfp/config'
-import guiStyle from 'gfp/css/gui.css'
+import guiStyle from 'gfp/css/gui.scss'
 import {BlockingFilter, MultiRegExpFilter} from 'gfp/filter'
 import {CombinedMultiMatcher} from 'gfp/matcher'
 import {cache} from 'gfp/utils'

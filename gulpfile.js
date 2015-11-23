@@ -1,26 +1,27 @@
-var addsrc = require('gulp-add-src')
-var concat = require('gulp-continuous-concat')
-var FirefoxProfile = require('firefox-profile')
-var gulp = require('gulp')
-var karma = require('karma')
-var merge = require('merge').recursive
-var open_ = require('open')
-var path = require('path')
-var webpack = require('webpack')
-var webpackStream = require('webpack-stream')
+'use strict'
+let addsrc = require('gulp-add-src')
+let concat = require('gulp-continuous-concat')
+let FirefoxProfile = require('firefox-profile')
+let gulp = require('gulp')
+let karma = require('karma')
+let merge = require('merge').recursive
+let open_ = require('open')
+let path = require('path')
+let webpack = require('webpack')
+let webpackStream = require('webpack-stream')
 
-var webpackConfig = {
+let webpackConfig = {
   resolve: {root: [path.resolve('.'), path.resolve('gfp/lib')]},
   module: {
     loaders: [
-      {test: /\.html$/, loader: 'html', query: {minimize: true, attrs: 'img:src', root: path.resolve('.')}},
-      {test: /\.css$/, loader: 'css', query: {minimize: true, root: path.resolve('.')}},
-      {test: /\.png$/, loader: 'url', query: {mimetype: 'image/png'}},
+      {test: /\.html$/, loader: `html?minimize=true&attrs=img:src&root=${path.resolve('.')}`},
+      {test: /\.scss$/, loader: 'css?minimize!sass?indentedSyntax'},
+      {test: /\.png$/, loader: 'url?mimetype=image/png'},
     ],
   },
 }
 
-var babelConfig = {
+let babelConfig = {
   build: {
     plugins: [
       'transform-es2015-block-scoped-functions',
@@ -39,7 +40,7 @@ var babelConfig = {
   },
 }
 
-var karmaConfig = {
+let karmaConfig = {
   frameworks: ['mocha', 'chai', 'sinon'],
   client: {
     captureConsole: true,
@@ -48,7 +49,7 @@ var karmaConfig = {
 }
 
 function build(){
-  var fileName = 'google_search_filter_plus.user.js'
+  let fileName = 'google_search_filter_plus.user.js'
   return gulp.src('gfp/main.js')
     .pipe(webpackStream(merge(true, webpackConfig, {
       module: {

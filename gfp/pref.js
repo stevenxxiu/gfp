@@ -1,6 +1,6 @@
 /* global $, GM_addStyle, GM_registerMenuCommand, Slick*/
 import config from 'gfp/config'
-import prefStyle from 'gfp/css/pref.css'
+import prefStyle from 'gfp/css/pref.scss'
 import prefHTML from 'gfp/html/pref.html'
 import {CombinedMultiMatcher} from 'gfp/matcher'
 import {addStyleResolve, pad} from 'gfp/utils'
