@@ -5,6 +5,7 @@ class Filters {
   constructor(filters){
     this._filters = filters
     this._callbacks = []
+    this.trigger('construct')
   }
 
   get(i){
