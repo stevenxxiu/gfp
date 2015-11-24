@@ -65,8 +65,11 @@ class PrefDialog {
             text: 'OK',
             click(){
               config.filtersObject = JSON.parse($(this).val())
+              let filters = []
+              for(let key in config.filtersObject)
+                filters.push(Filter.fromObject(key, config.filtersObject[key]))
+              config.filters.setValue(filters)
               config.flushFilters()
-              config.constructor.call(config)
               $(this).dialog('close')
             },
           }, {text: 'Cancel', click(){$(this).dialog('close')}}],
@@ -138,7 +141,8 @@ class PrefDialog {
           entry = this.filterToEntry(filter)
           Object.assign(this.filterToEntryMap.get(filter), entry)
           break
-        case 'construct':
+        case 'setValue':
+          this.data.length = 0
           for(let filter of config.filters){
             let entry = this.filterToEntry(filter)
             this.data.push(entry)
@@ -151,7 +155,7 @@ class PrefDialog {
           break
       }
     }
-    observer('construct')
+    observer('setValue')
     config.filters.observe(observer)
   }
 

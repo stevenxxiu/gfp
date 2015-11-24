@@ -95,14 +95,14 @@ export class SearchGui {
       switch(type){
         case 'push': this.matcher.add(filter); break
         case 'remove': this.matcher.remove(filter); break
-        case 'construct':
+        case 'setValue':
           this.matcher = new CombinedMultiMatcher(3)
           for(let filter of config.filters)
             this.matcher.add(filter)
           break
       }
     }
-    observer('construct')
+    observer('setValue')
     config.filters.observe(observer)
     this.nodeData = new NodeData()
     this.nodeData.children = []

@@ -5,7 +5,6 @@ class Filters {
   constructor(filters){
     this._filters = filters
     this._callbacks = []
-    this.trigger('construct')
   }
 
   get(i){
@@ -29,6 +28,11 @@ class Filters {
 
   update(filter){
     this.trigger('update', filter)
+  }
+
+  setValue(filters){
+    this._filters = filters
+    this.trigger('setValue')
   }
 
   observe(cb){
