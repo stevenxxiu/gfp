@@ -137,7 +137,7 @@ class PrefDialog {
       {
         id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true,
         formatter: (row, cell, value, columnDef, _dataContext) =>
-          `<span class="${value.indexOf('@@') == -1 ? 'blocking' : 'whitelist'}-filter">${value}</span>`,
+          `<span class="${value.startsWith('@@') ? 'whitelist' : 'blocking'}-filter">${value}</span>`,
         editor: Slick.Editors.Text, validator: (text) => {
           // spaces only don't count as being empty, since they can exist in urls
           if(!text)
