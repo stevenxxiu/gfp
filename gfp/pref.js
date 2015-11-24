@@ -239,6 +239,7 @@ class PrefDialog {
         this.afterEdit = true
         config.filters.update(filter)
       }
+      // XXX reapply filters
     })
   }
 
@@ -260,6 +261,7 @@ class PrefDialog {
             this.data.push(entry)
             this.triggerGrid(this.grid.onSort, {sortCol: {field: sortCol.columnId}, sortAsc: sortCol.sortAsc})
           }
+          // XXX scroll to focus on added filter
           break
         case 'remove':
           entry = this.filterToEntryMap.get(filter)
