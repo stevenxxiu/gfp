@@ -48,13 +48,13 @@ let karmaConfig = {
   },
 }
 
-function build(){
+function build(path){
   let fileName = 'google_search_filter_plus.user.js'
-  return gulp.src('gfp/main.js')
+  return gulp.src(path)
     .pipe(webpackStream(merge(true, webpackConfig, {
       module: {
         loaders: [{
-          test: /\.js$/, exclude: /[\\/]node_modules[\\/]/,
+          test: /\.js$/, exclude: /\/node_modules\//,
           loader: 'babel', query: babelConfig.build,
         }].concat(webpackConfig.module.loaders),
       },
@@ -66,12 +66,12 @@ function build(){
 }
 
 gulp.task('build', function(){
-  build().pipe(gulp.dest('dist'))
+  build('gfp/bin/pref.js').pipe(gulp.dest('dist'))
 })
 
 gulp.task('greasemonkey', function(){
   new FirefoxProfile.Finder().getPath('default', function(err, profilePath){
-    build().pipe(gulp.dest(path.join(profilePath, 'gm_scripts/Google_Search_Filter_Plus')))
+    build('gfp/bin/main.js').pipe(gulp.dest(path.join(profilePath, 'gm_scripts/Google_Search_Filter_Plus')))
   })
 })
 
@@ -79,13 +79,13 @@ gulp.task('test', function(){
   new karma.Server(merge(true, karmaConfig, {
     port: 9876,
     reporters: ['progress'],
-    files: ['gfp/test.js'],
-    preprocessors: {'gfp/test.js': ['webpack', 'sourcemap']},
+    files: ['gfp/bin/test.js'],
+    preprocessors: {'gfp/bin/test.js': ['webpack', 'sourcemap']},
     webpack: merge(true, webpackConfig, {
       devtool: '#inline-source-map',
       module: {
         loaders: [{
-          test: /\.js$/, exclude: /[\\/]node_modules[\\/]/, loader: 'babel', query: babelConfig.test,
+          test: /\.js$/, exclude: /\/node_modules\//, loader: 'babel', query: babelConfig.test,
         }].concat(webpackConfig.module.loaders),
       },
     }),
@@ -97,12 +97,12 @@ gulp.task('cover', function(){
   new karma.Server(merge(true, karmaConfig, {
     port: 9877,
     reporters: ['coverage'],
-    files: ['gfp/test.js'],
-    preprocessors: {'gfp/test.js': ['webpack']},
+    files: ['gfp/bin/test.js'],
+    preprocessors: {'gfp/bin/test.js': ['webpack']},
     webpack: merge(true, webpackConfig, {
       module: {
         loaders: [{
-          test: /\.js$/, exclude: /[\\/](node_modules)[\\/]/,
+          test: /\.js$/, exclude: /\/node_modules\//,
           loader: 'isparta-instrumenter', query: {babel: babelConfig.test},
         }].concat(webpackConfig.module.loaders),
       },
