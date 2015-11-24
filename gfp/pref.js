@@ -5,7 +5,7 @@ import prefHtml from 'gfp/html/pref.html'
 import {InvalidFilter} from 'gfp/lib/filterClasses'
 import {Filter} from 'gfp/filter'
 import {CombinedMultiMatcher} from 'gfp/matcher'
-import {addStyleResolve, pad} from 'gfp/utils'
+import {addStyleResolve, bisect, pad} from 'gfp/utils'
 
 class Pref {
   constructor(){
@@ -41,6 +41,7 @@ class PrefDialog {
     this.filterObserver = null
     this.entryToFilterMap = new Map()
     this.filterToEntryMap = new Map()
+    this.afterEdit = false
     this.bindImport()
     this.bindExport()
     this.addGrid()
@@ -125,48 +126,9 @@ class PrefDialog {
     })
   }
 
-  observeFilters(){
-    this.filterObserver = (type, filter) => {
-      let entry
-      switch(type){
-        case 'push':
-          // XXX update grid if entry does not already exist
-          entry = this.filterToEntry(filter)
-          this.data.push(entry)
-          this.entryToFilterMap.set(entry, filter)
-          this.filterToEntryMap.set(filter, entry)
-          break
-        case 'remove':
-          // XXX update grid if entry does not already exist
-          entry = this.entryToFilterMap.delete(filter)
-          this.data.splice(this.data.indexOf(entry), 1)
-          this.filterToEntryMap.delete(entry)
-          break
-        case 'update':
-          // XXX update grid if entry does not already exist
-          entry = this.filterToEntry(filter)
-          Object.assign(this.filterToEntryMap.get(filter), entry)
-          break
-        case 'setValue':
-          this.data.length = 0
-          for(let filter of config.filters){
-            let entry = this.filterToEntry(filter)
-            this.data.push(entry)
-            this.entryToFilterMap.set(entry, filter)
-            this.filterToEntryMap.set(filter, entry)
-          }
-          this.grid.updateRowCount()
-          this.triggerGrid(this.grid.onSort, {sortCol: {field: 'text'}, sortAsc: true})
-          this.grid.setSortColumn('text', true)
-          break
-      }
-    }
-    this.filterObserver('setValue')
-    config.filters.observe(this.filterObserver)
-  }
-
-  unobserveFilters(){
-    config.filters.unobserve(this.filterObserver)
+  static comparer(field, sortAsc){
+    let res = sortAsc ? 1 : -1
+    return (x, y) => x[field] > y[field] ? res : x[field] < y[field] ? -res : 0
   }
 
   addGrid(){
@@ -225,6 +187,7 @@ class PrefDialog {
       editable: true,
       autoEdit: false,
     })
+    this.grid.setSortColumn('text', true)
     let height = gridDom.height()
     this.dialog.on('dialogresize', (e, ui) => {
       gridDom.css('height', `${height + (ui.size.height - ui.originalSize.height)}px`)
@@ -234,9 +197,7 @@ class PrefDialog {
 
   addGridListeners(){
     this.grid.onSort.subscribe((e, args) => {
-      let field = args.sortCol.field
-      let res = args.sortAsc ? 1 : -1
-      this.data.sort((x, y) => x[field] > y[field] ? res : x[field] < y[field] ? -res : 0)
+      this.data.sort(PrefDialog.comparer(args.sortCol.field, args.sortAsc ? 1 : -1))
       this.grid.invalidateAllRows()
       this.grid.render()
     })
@@ -267,13 +228,77 @@ class PrefDialog {
       }
       if(column.field == 'text'){
         config.filters.remove(this.entryToFilterMap.get(entry))
+        this.afterEdit = true
         config.filters.push(Filter.fromText(entry[column.field]))
+        this.afterEdit = true
       }else{
         let filter = this.entryToFilterMap.get(entry)
         Object.assign(filter, this.entryToFilter(entry))
+        this.afterEdit = true
         config.filters.update(filter)
       }
     })
+  }
+
+  observeFilters(){
+    this.filterObserver = (type, filter) => {
+      let entry
+      let sortCol = this.grid.getSortColumns()[0]
+      switch(type){
+        case 'push':
+          entry = this.filterToEntry(filter)
+          this.entryToFilterMap.set(entry, filter)
+          this.filterToEntryMap.set(filter, entry)
+          if(!this.afterEdit){
+            this.data.splice(bisect(this.data, entry, PrefDialog.comparer(sortCol.columnId, sortCol.sortAsc)), 0, entry)
+            this.grid.invalidateAllRows()
+            this.grid.updateRowCount()
+            this.grid.render()
+          }else{
+            this.data.push(entry)
+            this.triggerGrid(this.grid.onSort, {sortCol: {field: sortCol.columnId}, sortAsc: sortCol.sortAsc})
+          }
+          break
+        case 'remove':
+          entry = this.entryToFilterMap.delete(filter)
+          this.data.splice(this.data.indexOf(entry), 1)
+          this.filterToEntryMap.delete(entry)
+          if(!this.afterEdit){
+            this.grid.invalidateAllRows()
+            this.grid.updateRowCount()
+            this.grid.render()
+          }
+          break
+        case 'update':
+          entry = this.filterToEntryMap.get(filter)
+          Object.assign(entry, this.filterToEntry(filter))
+          if(!this.afterEdit){
+            this.grid.invalidateRow(this.data.indexOf(entry))
+            this.grid.render()
+          }
+          break
+        case 'setValue':
+          this.data.length = 0
+          for(let filter of config.filters){
+            let entry = this.filterToEntry(filter)
+            this.data.push(entry)
+            this.entryToFilterMap.set(entry, filter)
+            this.filterToEntryMap.set(filter, entry)
+          }
+          if(!this.afterEdit){
+            this.grid.updateRowCount()
+            this.triggerGrid(this.grid.onSort, {sortCol: {field: sortCol.columnId}, sortAsc: sortCol.sortAsc})
+          }
+          break
+      }
+      this.afterEdit = false
+    }
+    this.filterObserver('setValue')
+    config.filters.observe(this.filterObserver)
+  }
+
+  unobserveFilters(){
+    config.filters.unobserve(this.filterObserver)
   }
 }
 

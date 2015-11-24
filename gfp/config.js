@@ -11,6 +11,10 @@ class Filters {
     return this._filters[i]
   }
 
+  get length(){
+    return this._filters.length
+  }
+
   trigger(type, value){
     for(let cb of this._callbacks)
       cb(type, value)
