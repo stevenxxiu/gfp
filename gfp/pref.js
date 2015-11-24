@@ -33,19 +33,25 @@ class Pref {
 
 class PrefDialog {
   constructor(){
-    this.dialog = $(prefHtml).dialog(Object.assign({
-      title: 'Google Search Filter +', 'closeOnEscape': false,
-    }, this.dialogConfig))
+    this.dialog = $(prefHtml).dialog(this.dialogConfig, Object.assign({
+      title: 'Google Search Filter +', 'closeOnEscape': false, close: this.destructor.bind(this),
+    }))
     this.data = []
+    this.grid = null
+    this.filterObserver = null
     this.entryToFilterMap = new Map()
     this.filterToEntryMap = new Map()
-    this.grid = null
     this.bindImport()
     this.bindExport()
     this.addGrid()
     this.addGridListeners()
     // observe last to populate grid
     this.observeFilters()
+  }
+
+  destructor(){
+    this.unobserveFilters()
+    this.dialog.remove()
   }
 
   get dialogConfig(){
@@ -120,7 +126,7 @@ class PrefDialog {
   }
 
   observeFilters(){
-    let observer = (type, filter) => {
+    this.filterObserver = (type, filter) => {
       let entry
       switch(type){
         case 'push':
@@ -155,8 +161,12 @@ class PrefDialog {
           break
       }
     }
-    observer('setValue')
-    config.filters.observe(observer)
+    this.filterObserver('setValue')
+    config.filters.observe(this.filterObserver)
+  }
+
+  unobserveFilters(){
+    config.filters.unobserve(this.filterObserver)
   }
 
   addGrid(){
