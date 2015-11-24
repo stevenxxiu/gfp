@@ -1,8 +1,8 @@
 /* globals $ */
+import {pad} from 'gfp/utils'
 
 function main(){
   window.store = (() => {
-    let pad = (num, size) => Array(Math.max(size - num.toString().length + 1, 0)).join(0) + num
     let filters = {
       'slow filter': {},
       ' fast filter ': {},
