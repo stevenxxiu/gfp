@@ -180,6 +180,9 @@ class PrefDialog {
             return {valid: false, msg: 'Empty filter'}
           if(Filter.fromText(text) instanceof InvalidFilter)
             return {valid: false, msg: 'Invalid filter'}
+          for(let entry of this.data)
+            if(entry.text == text)
+              return {valid: false, msg: 'Duplicate filter'}
           return {valid: true, msg: null}
         },
       }, {
