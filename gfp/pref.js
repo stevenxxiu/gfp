@@ -37,14 +37,15 @@ class PrefDialog {
       title: 'Google Search Filter +', 'closeOnEscape': false,
     }, this.dialogConfig))
     this.data = []
-    this.dataToFilter = new Map()
-    this.filterToData = new Map()
+    this.entryToFilterMap = new Map()
+    this.filterToEntryMap = new Map()
     this.grid = null
     this.bindImport()
     this.bindExport()
-    this.observeFilters()
     this.addGrid()
     this.addGridListeners()
+    // observe last to populate grid
+    this.observeFilters()
   }
 
   get dialogConfig(){
@@ -89,36 +90,64 @@ class PrefDialog {
     })
   }
 
-  observeFilters(){
-    // XXX update grid
-    let filterToNewData = (filter) => {return {
+  triggerGrid(evt, args, e){
+    // adapted from slickgrid source
+    e = e || new Slick.EventData()
+    args = args || {}
+    args.grid = this.grid
+    return evt.notify(args, e, this.grid)
+  }
+
+  filterToEntry(filter){
+    return {
       text: filter.text,
       slow: CombinedMultiMatcher.isSlowFilter(filter),
       enabled: !filter.disabled,
       hitCount: filter.hitCount,
       lastHit: filter.lastHit,
-    }}
+    }
+  }
+
+  entryToFilter(data){
+    return Filter.fromObject(data.text, {
+      disabled: !data.enabled,
+      hitCount: data.hitCount,
+      lastHit: data.lastHit,
+    })
+  }
+
+  observeFilters(){
     let observer = (type, filter) => {
       let entry
       switch(type){
         case 'push':
-          entry = filterToNewData(filter)
+          // XXX update grid if entry does not already exist
+          entry = this.filterToEntry(filter)
           this.data.push(entry)
-          this.dataToFilter.set(entry, filter)
-          this.filterToData.set(filter, entry)
+          this.entryToFilterMap.set(entry, filter)
+          this.filterToEntryMap.set(filter, entry)
           break
         case 'remove':
-          entry = this.dataToFilter.delete(filter)
+          // XXX update grid if entry does not already exist
+          entry = this.entryToFilterMap.delete(filter)
           this.data.splice(this.data.indexOf(entry), 1)
-          this.filterToData.delete(entry)
+          this.filterToEntryMap.delete(entry)
+          break
+        case 'update':
+          // XXX update grid if entry does not already exist
+          entry = this.filterToEntry(filter)
+          Object.assign(this.filterToEntryMap.get(filter), entry)
           break
         case 'construct':
           for(let filter of config.filters){
-            let entry = filterToNewData(filter)
+            let entry = this.filterToEntry(filter)
             this.data.push(entry)
-            this.dataToFilter.set(entry, filter)
-            this.filterToData.set(filter, entry)
+            this.entryToFilterMap.set(entry, filter)
+            this.filterToEntryMap.set(filter, entry)
           }
+          this.grid.updateRowCount()
+          this.triggerGrid(this.grid.onSort, {sortCol: {field: 'text'}, sortAsc: true})
+          this.grid.setSortColumn('text', true)
           break
       }
     }
@@ -187,13 +216,6 @@ class PrefDialog {
   }
 
   addGridListeners(){
-    let trigger = (evt, args, e) => {
-      // adapted from slickgrid source
-      e = e || new Slick.EventData()
-      args = args || {}
-      args.grid = this.grid
-      return evt.notify(args, e, this.grid)
-    }
     this.grid.onSort.subscribe((e, args) => {
       let field = args.sortCol.field
       let res = args.sortAsc ? 1 : -1
@@ -201,15 +223,13 @@ class PrefDialog {
       this.grid.invalidateAllRows()
       this.grid.render()
     })
-    this.grid.setSortColumn('text', true)
-    trigger(this.grid.onSort, {sortCol: {field: 'text'}, sortAsc: true})
     this.grid.onClick.subscribe((e, args) => {
       if($(e.target).is(':checkbox')){
         let column = args.grid.getColumns()[args.cell]
         if(column.editable === false || column.autoEdit === false)
           return
         this.data[args.row][column.field] = !this.data[args.row][column.field]
-        trigger(this.grid.onCellChange, {row: args.row, cell: args.cell, item: this.data[args.row]})
+        this.triggerGrid(this.grid.onCellChange, {row: args.row, cell: args.cell, item: this.data[args.row]})
       }
     })
     this.grid.onValidationError.subscribe((e, args) => {
@@ -229,10 +249,12 @@ class PrefDialog {
           break
       }
       if(column.field == 'text'){
-        config.filters.remove(this.dataToFilter.get(entry))
+        config.filters.remove(this.entryToFilterMap.get(entry))
         config.filters.push(Filter.fromText(entry[column.field]))
       }else{
-        config.filters.update(this.dataToFilter.get(entry))
+        let filter = this.entryToFilterMap.get(entry)
+        Object.assign(filter, this.entryToFilter(entry))
+        config.filters.update(filter)
       }
     })
   }
