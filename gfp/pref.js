@@ -199,7 +199,7 @@ class PrefDialog {
 
   addGridListeners(){
     this.grid.onSort.subscribe((e, args) => {
-      this.data.sort(PrefDialog.comparer(args.sortCol.field, args.sortAsc ? 1 : -1))
+      this.data.sort(PrefDialog.comparer(args.sortCol.field, args.sortAsc))
       this.grid.invalidateAllRows()
       this.grid.render()
     })
