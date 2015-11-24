@@ -229,10 +229,10 @@ class PrefDialog {
           break
       }
       if(column.field == 'text'){
+        this.afterEdit = true
         config.filters.remove(this.entryToFilterMap.get(entry))
         this.afterEdit = true
         config.filters.push(Filter.fromText(entry[column.field]))
-        this.afterEdit = true
       }else{
         let filter = this.entryToFilterMap.get(entry)
         Object.assign(filter, this.entryToFilter(entry))
@@ -262,9 +262,10 @@ class PrefDialog {
           }
           break
         case 'remove':
-          entry = this.entryToFilterMap.delete(filter)
+          entry = this.filterToEntryMap.get(filter)
+          this.filterToEntryMap.delete(filter)
+          this.entryToFilterMap.delete(entry)
           this.data.splice(this.data.indexOf(entry), 1)
-          this.filterToEntryMap.delete(entry)
           if(!this.afterEdit){
             this.grid.invalidateAllRows()
             this.grid.updateRowCount()
