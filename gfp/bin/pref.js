@@ -6,6 +6,7 @@ function main(){
   window.store = (() => {
     let filters = {
       'slow filter': {},
+      ' @@whitelist filter ': {},
       ' fast filter ': {},
       ' matched ': {hitCount: 1, lastHit: new Date(2000, 0, 2, 2, 4, 5, 6).getTime()},
     }

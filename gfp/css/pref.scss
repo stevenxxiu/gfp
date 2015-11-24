@@ -28,6 +28,8 @@
       min-width: 0
     &:first-child
       white-space: pre
+    .whitelist-filter
+      color: #080
     .slow-image
       background: url('/gfp/img/slow.png') no-repeat;
       width: 26px

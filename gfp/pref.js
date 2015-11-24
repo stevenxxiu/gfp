@@ -136,6 +136,8 @@ class PrefDialog {
     this.grid = new Slick.Grid(gridDom, this.data, [
       {
         id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true,
+        formatter: (row, cell, value, columnDef, _dataContext) =>
+          `<span class="${value.indexOf('@@') == -1 ? 'blocking' : 'whitelist'}-filter">${value}</span>`,
         editor: Slick.Editors.Text, validator: (text) => {
           // spaces only don't count as being empty, since they can exist in urls
           if(!text)
@@ -150,8 +152,8 @@ class PrefDialog {
       }, {
         // use css for the image since there can be many slow filters
         id: 'slow', field: 'slow', name: '!', width: 1, sortable: true,
-        formatter: (row, cell, value, columnDef, dataContext) =>
-          dataContext.slow ? '<img class="slow-image"></img>' : '',
+        formatter: (row, cell, value, columnDef, _dataContext) =>
+          value ? '<img class="slow-image"></img>' : '',
       }, {
         id: 'enabled', field: 'enabled', name: 'Enabled', width: 40, sortable: true,
         formatter: (row, cell, value, columnDef, _dataContext) =>
