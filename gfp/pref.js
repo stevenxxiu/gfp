@@ -290,12 +290,33 @@ class PrefDialog {
         },
       },
     ], {
+      autoEdit: false,
+      editable: true,
       enableCellNavigation: true,
       enableColumnReorder: false,
       forceFitColumns: true,
-      editable: true,
-      autoEdit: false,
+      showHeaderRow: true,
+      explicitInitialization: true,
     })
+    // find bar
+    grid.onHeaderRowCellRendered.subscribe((e, args) => {
+      $(args.node).empty()
+      $('<input></input>').data('columnId', args.column.id).appendTo(args.node)
+    })
+    grid.init()
+    gridDom.find('.slick-headerrow').toggle()
+    this.dialog.attr('tabindex', 1)
+    this.dialog.keydown((e) => {
+      if((e.ctrlKey || e.metaKey) && e.keyCode == 70){
+        let findBar = gridDom.find('.slick-headerrow').toggle()
+        if(findBar.is(':visible'))
+          findBar.find('input:first').focus()
+        else
+          this.dialog.focus()
+        e.preventDefault()
+      }
+    })
+    // sorting
     this.dataView.grid = grid
     grid.onSort.subscribe((e, args) => {
       let field = args.sortCol.field
@@ -305,6 +326,7 @@ class PrefDialog {
     grid.setSortColumn('text', true)
     new grid.onSort.notify({sortCol: {field: 'text'}, sortAsc: true}, new Slick.EventData())
     this.dataView.setValue(Array.from(config.filters), false)
+    // editing
     grid.onClick.subscribe((e, args) => {
       if($(e.target).is(':checkbox')){
         let column = grid.getColumns()[args.cell]
