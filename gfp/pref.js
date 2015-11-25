@@ -183,11 +183,9 @@ class PrefDialog {
       title: 'Google Search Filter +', 'closeOnEscape': false, close: this.destructor.bind(this),
     }))
     this.dataView = null
-    this.grid = null
     this.bindImport()
     this.bindExport()
     this.addGrid()
-    this.addGridListeners()
   }
 
   destructor(){
@@ -240,15 +238,10 @@ class PrefDialog {
     })
   }
 
-  static comparer(field, sortAsc){
-    let res = sortAsc ? 1 : -1
-    return (x, y) => x[field] > y[field] ? res : x[field] < y[field] ? -res : 0
-  }
-
   addGrid(){
     let gridDom = this.dialog.find('.grid')
-    this.dataView = new DataView(null, this.constructor.comparer('text', true), () => true)
-    this.grid = new Slick.Grid(gridDom, this.dataView, [
+    this.dataView = new DataView(null, null, () => true)
+    let grid = new Slick.Grid(gridDom, this.dataView, [
       {
         id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true,
         formatter: (row, cell, value, columnDef, _dataContext) =>
@@ -303,33 +296,28 @@ class PrefDialog {
       editable: true,
       autoEdit: false,
     })
-    this.dataView.grid = this.grid
-    this.grid.setSortColumn('text', true)
-    this.dataView.setValue(Array.from(config.filters), null)
-    let height = gridDom.height()
-    this.dialog.on('dialogresize', (e, ui) => {
-      gridDom.css('height', `${height + (ui.size.height - ui.originalSize.height)}px`)
-      this.grid.resizeCanvas()
+    this.dataView.grid = grid
+    grid.onSort.subscribe((e, args) => {
+      let field = args.sortCol.field
+      let res = args.sortAsc ? 1 : -1
+      this.dataView.setComparer((x, y) => x[field] > y[field] ? res : x[field] < y[field] ? -res : 0)
     })
-  }
-
-  addGridListeners(){
-    this.grid.onSort.subscribe((e, args) =>
-      this.dataView.setComparer(this.constructor.comparer(args.sortCol.field, args.sortAsc))
-    )
-    this.grid.onClick.subscribe((e, args) => {
+    grid.setSortColumn('text', true)
+    new grid.onSort.notify({sortCol: {field: 'text'}, sortAsc: true}, new Slick.EventData())
+    this.dataView.setValue(Array.from(config.filters), false)
+    grid.onClick.subscribe((e, args) => {
       if($(e.target).is(':checkbox')){
-        let column = this.grid.getColumns()[args.cell]
+        let column = grid.getColumns()[args.cell]
         if(column.editable === false || column.autoEdit === false)
           return
         let item = this.dataView.getItem(args.row)
         item[column.field] = !item[column.field]
-        new this.grid.onCellChange.notify({row: args.row, cell: args.cell, item: item}, new Slick.EventData())
+        new grid.onCellChange.notify({row: args.row, cell: args.cell, item: item}, new Slick.EventData())
       }
     })
-    this.grid.onValidationError.subscribe((e, args) => alert(args.validationResults.msg))
-    this.grid.onCellChange.subscribe((e, args) => {
-      let column = this.grid.getColumns()[args.cell]
+    grid.onValidationError.subscribe((e, args) => alert(args.validationResults.msg))
+    grid.onCellChange.subscribe((e, args) => {
+      let column = grid.getColumns()[args.cell]
       switch(column.field){
         case 'hitCount': args.item[column.field] = parseInt(args.item[column.field]); break
         case 'lastHit': args.item[column.field] = parseInt(args.item[column.field]); break
@@ -337,6 +325,11 @@ class PrefDialog {
       this.dataView.update(DataView.itemToFilter(args.item), args.row)
       if(this.searchGui)
         this.searchGui.filterResults()
+    })
+    let height = gridDom.height()
+    this.dialog.on('dialogresize', (e, ui) => {
+      gridDom.css('height', `${height + (ui.size.height - ui.originalSize.height)}px`)
+      grid.resizeCanvas()
     })
   }
 }
