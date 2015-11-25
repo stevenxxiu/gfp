@@ -26,8 +26,9 @@ function main(){
   window.GM_registerMenuCommand = (name, cb) => $(cb)
   window.GM_getValue = (name, value) => name in window.store ? window.store[name]: value
   window.GM_setValue = (name, value) => window.store[name] = value
-  require('gfp/pref')
   let config = require('gfp/config').default
+  let pref = require('gfp/pref').default
+  new pref(null)
   $(() => {
     let controls = $(`<div style="text-align: center; position: absolute; left: 0; right: 0; bottom: 80px;">
       <div style="display: inline-block;">

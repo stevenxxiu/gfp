@@ -7,8 +7,9 @@ import {Filter} from 'gfp/filter'
 import {CombinedMultiMatcher} from 'gfp/matcher'
 import {addStyleResolve, bisect, pad} from 'gfp/utils'
 
-class Pref {
-  constructor(){
+export default class Pref {
+  constructor(searchGui){
+    this.searchGui = searchGui
     this.dialog = null
     this.resourcesAdded = false
     GM_registerMenuCommand('Google Search Filter +', this.openDialog.bind(this), null)
@@ -18,7 +19,7 @@ class Pref {
     if(this.dialog)
       return
     this.addResources()
-    this.dialog = new PrefDialog().dialog.on('dialogclose', () => this.dialog = null)
+    this.dialog = new PrefDialog(this.searchGui).dialog.on('dialogclose', () => this.dialog = null)
   }
 
   addResources(){
@@ -32,8 +33,9 @@ class Pref {
 }
 
 class PrefDialog {
-  constructor(){
-    this.dialog = $(prefHtml).dialog(this.dialogConfig, Object.assign({
+  constructor(searchGui){
+    this.searchGui = searchGui
+    this.dialog = $(prefHtml).dialog(Object.assign(this.dialogConfig, {
       title: 'Google Search Filter +', 'closeOnEscape': false, close: this.destructor.bind(this),
     }))
     this.data = []
@@ -66,7 +68,7 @@ class PrefDialog {
   bindImport(){
     this.dialog.find('.import').click((_e) => {
       $('<textarea></textarea>')
-        .dialog(Object.assign({
+        .dialog(Object.assign(this.dialogConfig, {
           title: 'Import',
           buttons: [{
             text: 'OK',
@@ -81,7 +83,7 @@ class PrefDialog {
             },
           }, {text: 'Cancel', click(){$(this).dialog('close')}}],
           create(){setTimeout(() => this.select(), 0)},
-        }, this.dialogConfig))
+        }))
       return false
     })
   }
@@ -91,11 +93,11 @@ class PrefDialog {
       $('<textarea></textarea>')
         .attr('readonly', 'readonly')
         .val(JSON.stringify(config.filtersObject, null, 2))
-        .dialog(Object.assign({
+        .dialog(Object.assign(this.dialogConfig, {
           title: 'Export',
           buttons: [{text: 'Close', click(){$(this).dialog('close')}}],
           create(){setTimeout(() => {this.focus(); this.setSelectionRange(0, this.value.length, 'backward')}, 0)},
-        }, this.dialogConfig))
+        }))
       return false
     })
   }
@@ -144,9 +146,8 @@ class PrefDialog {
             return {valid: false, msg: 'Empty filter'}
           if(Filter.fromText(text) instanceof InvalidFilter)
             return {valid: false, msg: 'Invalid filter'}
-          for(let entry of this.data)
-            if(entry.text == text)
-              return {valid: false, msg: 'Duplicate filter'}
+          if(this.data.some((entry) => entry.text == text))
+            return {valid: false, msg: 'Duplicate filter'}
           return {valid: true, msg: null}
         },
       }, {
@@ -228,18 +229,14 @@ class PrefDialog {
           this.grid.render()
           break
       }
-      if(column.field == 'text'){
-        this.afterEdit = true
-        config.filters.remove(this.entryToFilterMap.get(entry))
-        this.afterEdit = true
-        config.filters.push(Filter.fromText(entry[column.field]))
-      }else{
-        let filter = this.entryToFilterMap.get(entry)
-        Object.assign(filter, this.entryToFilter(entry))
-        this.afterEdit = true
-        config.filters.update(filter)
-      }
-      // XXX reapply filters
+      // remove & push since the subfilter parent references will be different
+      this.afterEdit = true
+      config.filters.remove(this.entryToFilterMap.get(entry))
+      this.afterEdit = true
+      config.filters.push(this.entryToFilter(entry))
+      if(this.searchGui)
+        this.searchGui.filterResults()
+      config.flushFilters()
     })
   }
 
@@ -308,5 +305,3 @@ class PrefDialog {
     config.filters.unobserve(this.filterObserver)
   }
 }
-
-export default new Pref()

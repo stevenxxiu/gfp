@@ -130,6 +130,8 @@ export class MultiMatcher {
   }
 
   add(filter){
+    if(filter.disabled)
+      return
     for(let subFilter of filter.filters)
       this.matchers[subFilter.index].add(subFilter)
   }

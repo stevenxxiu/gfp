@@ -15,7 +15,7 @@ export class NodeData {
     if(this.action == action){
       this.redo(filter)
       return true
-    }else if(this.action !== null){
+    }else{
       this.undo()
       delete this.redo
       delete this.undo
@@ -224,6 +224,9 @@ export class SearchGui {
   }
 
   _filterResults(nodeData){
+    // store all children so we can re-filter
+    if(nodeData.children === undefined)
+      nodeData.children = Array.from(nodeData.getChildren())
     let filter = this.matcher.matchesAny(nodeData, NodeData.attrs)
     if(filter){
       filter.hitCount++
@@ -237,8 +240,6 @@ export class SearchGui {
         return false
       }
     }
-    if(nodeData.children === undefined)
-      nodeData.children = Array.from(nodeData.getChildren())
     let filtered = !!nodeData.children.length
     for(let childData of nodeData.children){
       if(!this._filterResults(childData))
