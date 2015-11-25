@@ -259,8 +259,8 @@ class PrefDialog {
           }else{
             this.data.push(entry)
             this.triggerGrid(this.grid.onSort, {sortCol: {field: sortCol.columnId}, sortAsc: sortCol.sortAsc})
+            this.grid.scrollRowIntoView(this.data.indexOf(entry))
           }
-          // XXX scroll to focus on added filter
           break
         case 'remove':
           entry = this.filterToEntryMap.get(filter)
