@@ -327,9 +327,7 @@ class PrefDialog {
         new this.grid.onCellChange.notify({row: args.row, cell: args.cell, item: item}, new Slick.EventData())
       }
     })
-    this.grid.onValidationError.subscribe((e, args) => {
-      alert(args.validationResults.msg)
-    })
+    this.grid.onValidationError.subscribe((e, args) => alert(args.validationResults.msg))
     this.grid.onCellChange.subscribe((e, args) => {
       let column = this.grid.getColumns()[args.cell]
       switch(column.field){
