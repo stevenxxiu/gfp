@@ -199,7 +199,7 @@ class PrefDialog {
 
   addGridListeners(){
     this.grid.onSort.subscribe((e, args) => {
-      this.data.sort(PrefDialog.comparer(args.sortCol.field, args.sortAsc))
+      this.data.sort(this.constructor.comparer(args.sortCol.field, args.sortAsc))
       this.grid.invalidateAllRows()
       this.grid.render()
     })
@@ -253,7 +253,9 @@ class PrefDialog {
           this.entryToFilterMap.set(entry, filter)
           this.filterToEntryMap.set(filter, entry)
           if(!this.afterEdit){
-            this.data.splice(bisect(this.data, entry, PrefDialog.comparer(sortCol.columnId, sortCol.sortAsc)), 0, entry)
+            this.data.splice(bisect(
+              this.data, entry, this.constructor.comparer(sortCol.columnId, sortCol.sortAsc)
+            ), 0, entry)
             this.grid.invalidateAllRows()
             this.grid.updateRowCount()
             this.grid.render()
