@@ -24,8 +24,8 @@ export class NodeData {
   }
 
   *getChildren(){}
-  redo(){}  // re-hide node using a different filter
-  undo(){}  // unhide node
+  redo(){}  // re-apply action with different arguments
+  undo(){}  // undo action
 }
 
 NodeData.attrs = ['url', 'title', 'summary']
