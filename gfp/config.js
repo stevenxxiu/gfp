@@ -36,7 +36,7 @@ class Filters {
 
   setValue(filters){
     this._filters = filters
-    this.trigger('setValue')
+    this.trigger('setValue', filters)
   }
 
   observe(cb){
@@ -44,7 +44,7 @@ class Filters {
   }
 
   unobserve(cb){
-    this._callbacks.pop(this._callbacks.indexOf(cb))
+    this._callbacks.splice(this._callbacks.indexOf(cb), 1)
   }
 
   [Symbol.iterator](){
@@ -66,6 +66,11 @@ class Config {
         case 'push': this.filtersObject[value.text] = value.toObject(); break
         case 'remove': delete this.filtersObject[value.text]; break
         case 'update': this.filtersObject[value.text] = value.toObject(); break
+        case 'setValue':
+          this.filtersObject = {}
+          for(let filter of value)
+            this.filtersObject[filter.text] = filter.toObject()
+          break
       }
     })
   }
