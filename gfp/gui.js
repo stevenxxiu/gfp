@@ -91,10 +91,10 @@ class ImageData extends NodeData {
 
 export class SearchGui {
   constructor(){
-    let observer = (type, filter) => {
+    let observer = (type, value) => {
       switch(type){
-        case 'push': this.matcher.add(filter); break
-        case 'remove': this.matcher.remove(filter); break
+        case 'push': this.matcher.add(value); break
+        case 'remove': this.matcher.remove(value); break
         case 'setValue':
           this.matcher = new CombinedMultiMatcher(3)
           for(let filter of config.filters)
