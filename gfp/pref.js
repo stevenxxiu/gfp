@@ -32,28 +32,164 @@ export default class Pref {
   }
 }
 
+class DataView {
+  /**
+  Supports filtering & sorting.
+  config.filters is used as the actual data source.
+  */
+
+  constructor(grid, comparer, filterer){
+    this.grid = grid
+    this.filters = []
+    this.comparer = comparer
+    this.filterer = filterer
+    this._filterObserver = this.filterObserver.bind(this)
+    config.filters.observe(this._filterObserver)
+  }
+
+  destructor(){
+    config.filters.unobserve(this._filterObserver)
+  }
+
+  static filterToitem(filter){
+    return {
+      text: filter.text,
+      slow: CombinedMultiMatcher.isSlowFilter(filter),
+      enabled: !filter.disabled,
+      hitCount: filter.hitCount,
+      lastHit: filter.lastHit,
+    }
+  }
+
+  static itemToFilter(item){
+    return Filter.fromObject(item.text, {
+      disabled: !item.enabled,
+      hitCount: item.hitCount,
+      lastHit: item.lastHit,
+    })
+  }
+
+  getLength(){
+    return this.filters.length
+  }
+
+  _enterOnce(func){
+    if(this._enterLock)
+      return
+    this._enterLock = true
+    func()
+    this._enterLock = false
+  }
+
+  push(filter, call=true){
+    this._enterOnce(() => {
+      if(call){
+        config.filters.push(filter)
+      }else{
+        if(!this.filterer(filter))
+          return
+      }
+      let i = bisect(this.filters, filter, this.comparer)
+      this.filters.splice(i, 0, filter)
+      this.grid.invalidateAllRows()
+      this.grid.updateRowCount()
+      this.grid.render()
+      if(call)
+        this.grid.scrollRowIntoView(i)
+    })
+  }
+
+  remove(filter, i, call=true){
+    this._enterOnce(() => {
+      if(call){
+        config.filters.remove(filter)
+      }else{
+        i = this.filters.indexOf(filter)
+        if(!this.filterer(filter) || i == -1)
+          return
+      }
+      this.filters.splice(i, 1)
+      this.grid.invalidateAllRows()
+      this.grid.updateRowCount()
+      this.grid.render()
+    })
+  }
+
+  update(filter, i, call=true){
+    this._enterOnce(() => {
+      if(call){
+        // remove & push since the subfilter parent references will be different
+        config.filters.remove(this.filters[i])
+        config.filters.push(filter)
+      }else{
+        i = this.filters.indexOf(filter)
+        if(!this.filterer(filter) || i == -1)
+          return
+      }
+      this.filters.splice(i, 1)
+      i = bisect(this.filters, filter, this.comparer)
+      this.filters.splice(i, 0, filter)
+      this.grid.invalidateAllRows()
+      this.grid.render()
+      if(call)
+        this.grid.scrollRowIntoView(i)
+    })
+  }
+
+  setValue(filters, call=true){
+    if(call)
+      config.filters.setValue(filters)
+    this.filters = filters.filter(this.filterer).sort(this.comparer)
+    this.grid.invalidateAllRows()
+    this.grid.updateRowCount()
+    this.grid.render()
+  }
+
+  getItem(i){
+    return this.constructor.filterToitem(this.filters[i])
+  }
+
+  setComparer(comparer){
+    this.comparer = comparer
+    this.filters = this.filters.sort(this.comparer)
+    this.grid.invalidateAllRows()
+    this.grid.render()
+  }
+
+  setFilterer(filterer){
+    this.filterer = filterer
+    this.filters = this.filters.filter(this.filterer).sort(this.comparer)
+    this.grid.invalidateAllRows()
+    this.grid.updateRowCount()
+    this.grid.render()
+  }
+
+  filterObserver(type, value){
+    switch(type){
+      case 'push': this.push(value, false); break
+      case 'remove': this.remove(value, null, false); break
+      case 'update': this.update(value, null, false); break
+      case 'setValue': this.setValue(value, false); break
+    }
+  }
+}
+
 class PrefDialog {
   constructor(searchGui){
     this.searchGui = searchGui
     this.dialog = $(prefHtml).dialog(Object.assign(this.dialogConfig, {
       title: 'Google Search Filter +', 'closeOnEscape': false, close: this.destructor.bind(this),
     }))
-    this.data = []
+    this.dataView = null
     this.grid = null
-    this.filterObserver = null
-    this.entryToFilterMap = new Map()
-    this.filterToEntryMap = new Map()
-    this.afterEdit = false
     this.bindImport()
     this.bindExport()
     this.addGrid()
     this.addGridListeners()
-    // observe last to populate grid
-    this.observeFilters()
   }
 
   destructor(){
-    this.unobserveFilters()
+    this.dataView.destructor()
     this.dialog.remove()
   }
 
@@ -66,6 +202,7 @@ class PrefDialog {
   }
 
   bindImport(){
+    let self = this
     this.dialog.find('.import').click((_e) => {
       $('<textarea></textarea>')
         .dialog(Object.assign(this.dialogConfig, {
@@ -73,11 +210,11 @@ class PrefDialog {
           buttons: [{
             text: 'OK',
             click(){
-              config.filtersObject = JSON.parse($(this).val())
+              let filtersObject = JSON.parse($(this).val())
               let filters = []
-              for(let key in config.filtersObject)
-                filters.push(Filter.fromObject(key, config.filtersObject[key]))
-              config.filters.setValue(filters)
+              for(let key in filtersObject)
+                filters.push(Filter.fromObject(key, filtersObject[key]))
+              self.dataView.setValue(filters)
               config.flushFilters()
               $(this).dialog('close')
             },
@@ -102,32 +239,6 @@ class PrefDialog {
     })
   }
 
-  triggerGrid(evt, args, e){
-    // adapted from slickgrid source
-    e = e || new Slick.EventData()
-    args = args || {}
-    args.grid = this.grid
-    return evt.notify(args, e, this.grid)
-  }
-
-  filterToEntry(filter){
-    return {
-      text: filter.text,
-      slow: CombinedMultiMatcher.isSlowFilter(filter),
-      enabled: !filter.disabled,
-      hitCount: filter.hitCount,
-      lastHit: filter.lastHit,
-    }
-  }
-
-  entryToFilter(data){
-    return Filter.fromObject(data.text, {
-      disabled: !data.enabled,
-      hitCount: data.hitCount,
-      lastHit: data.lastHit,
-    })
-  }
-
   static comparer(field, sortAsc){
     let res = sortAsc ? 1 : -1
     return (x, y) => x[field] > y[field] ? res : x[field] < y[field] ? -res : 0
@@ -135,7 +246,8 @@ class PrefDialog {
 
   addGrid(){
     let gridDom = this.dialog.find('.grid')
-    this.grid = new Slick.Grid(gridDom, this.data, [
+    this.dataView = new DataView(null, this.constructor.comparer('text', true), () => true)
+    this.grid = new Slick.Grid(gridDom, this.dataView, [
       {
         id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true,
         formatter: (row, cell, value, columnDef, _dataContext) =>
@@ -146,7 +258,7 @@ class PrefDialog {
             return {valid: false, msg: 'Empty filter'}
           if(Filter.fromText(text) instanceof InvalidFilter)
             return {valid: false, msg: 'Invalid filter'}
-          if(this.data.some((entry) => entry.text == text))
+          if(Array.from(config.filters).some((filter) => filter.text == text))
             return {valid: false, msg: 'Duplicate filter'}
           return {valid: true, msg: null}
         },
@@ -190,7 +302,9 @@ class PrefDialog {
       editable: true,
       autoEdit: false,
     })
+    this.dataView.grid = this.grid
     this.grid.setSortColumn('text', true)
+    this.dataView.setValue(Array.from(config.filters), null)
     let height = gridDom.height()
     this.dialog.on('dialogresize', (e, ui) => {
       gridDom.css('height', `${height + (ui.size.height - ui.originalSize.height)}px`)
@@ -199,109 +313,32 @@ class PrefDialog {
   }
 
   addGridListeners(){
-    this.grid.onSort.subscribe((e, args) => {
-      this.data.sort(this.constructor.comparer(args.sortCol.field, args.sortAsc))
-      this.grid.invalidateAllRows()
-      this.grid.render()
-    })
+    this.grid.onSort.subscribe((e, args) =>
+      this.dataView.setComparer(this.constructor.comparer(args.sortCol.field, args.sortAsc))
+    )
     this.grid.onClick.subscribe((e, args) => {
       if($(e.target).is(':checkbox')){
-        let column = args.grid.getColumns()[args.cell]
+        let column = this.grid.getColumns()[args.cell]
         if(column.editable === false || column.autoEdit === false)
           return
-        this.data[args.row][column.field] = !this.data[args.row][column.field]
-        this.triggerGrid(this.grid.onCellChange, {row: args.row, cell: args.cell, item: this.data[args.row]})
+        let item = this.dataView.getItem(args.row)
+        item[column.field] = !item[column.field]
+        new this.grid.onCellChange.notify({row: args.row, cell: args.cell, item: item}, new Slick.EventData())
       }
     })
     this.grid.onValidationError.subscribe((e, args) => {
       alert(args.validationResults.msg)
     })
     this.grid.onCellChange.subscribe((e, args) => {
-      let column = args.grid.getColumns()[args.cell]
-      let entry = this.data[args.row]
+      let column = this.grid.getColumns()[args.cell]
       switch(column.field){
-        case 'hitCount':
-          entry[column.field] = parseInt(entry[column.field])
-          break
-        case 'lastHit':
-          entry[column.field] = parseInt(entry[column.field])
-          this.grid.invalidateRow(args.row)
-          this.grid.render()
-          break
+        case 'hitCount': args.item[column.field] = parseInt(args.item[column.field]); break
+        case 'lastHit': args.item[column.field] = parseInt(args.item[column.field]); break
       }
-      // remove & push since the subfilter parent references will be different
-      this.afterEdit = true
-      config.filters.remove(this.entryToFilterMap.get(entry))
-      this.afterEdit = true
-      config.filters.push(this.entryToFilter(entry))
+      this.dataView.update(DataView.itemToFilter(args.item), args.row)
+      config.flushFilters()
       if(this.searchGui)
         this.searchGui.filterResults()
-      config.flushFilters()
     })
-  }
-
-  observeFilters(){
-    this.filterObserver = (type, filter) => {
-      let entry
-      let sortCol = this.grid.getSortColumns()[0]
-      switch(type){
-        case 'push':
-          entry = this.filterToEntry(filter)
-          this.entryToFilterMap.set(entry, filter)
-          this.filterToEntryMap.set(filter, entry)
-          if(!this.afterEdit){
-            this.data.splice(bisect(
-              this.data, entry, this.constructor.comparer(sortCol.columnId, sortCol.sortAsc)
-            ), 0, entry)
-            this.grid.invalidateAllRows()
-            this.grid.updateRowCount()
-            this.grid.render()
-          }else{
-            this.data.push(entry)
-            this.triggerGrid(this.grid.onSort, {sortCol: {field: sortCol.columnId}, sortAsc: sortCol.sortAsc})
-            this.grid.scrollRowIntoView(this.data.indexOf(entry))
-          }
-          break
-        case 'remove':
-          entry = this.filterToEntryMap.get(filter)
-          this.filterToEntryMap.delete(filter)
-          this.entryToFilterMap.delete(entry)
-          this.data.splice(this.data.indexOf(entry), 1)
-          if(!this.afterEdit){
-            this.grid.invalidateAllRows()
-            this.grid.updateRowCount()
-            this.grid.render()
-          }
-          break
-        case 'update':
-          entry = this.filterToEntryMap.get(filter)
-          Object.assign(entry, this.filterToEntry(filter))
-          if(!this.afterEdit){
-            this.grid.invalidateRow(this.data.indexOf(entry))
-            this.grid.render()
-          }
-          break
-        case 'setValue':
-          this.data.length = 0
-          for(let filter of config.filters){
-            let entry = this.filterToEntry(filter)
-            this.data.push(entry)
-            this.entryToFilterMap.set(entry, filter)
-            this.filterToEntryMap.set(filter, entry)
-          }
-          if(!this.afterEdit){
-            this.grid.updateRowCount()
-            this.triggerGrid(this.grid.onSort, {sortCol: {field: sortCol.columnId}, sortAsc: sortCol.sortAsc})
-          }
-          break
-      }
-      this.afterEdit = false
-    }
-    this.filterObserver('setValue')
-    config.filters.observe(this.filterObserver)
-  }
-
-  unobserveFilters(){
-    config.filters.unobserve(this.filterObserver)
   }
 }
