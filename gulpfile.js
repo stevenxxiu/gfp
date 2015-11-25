@@ -48,25 +48,24 @@ let karmaConfig = {
   },
 }
 
-function build(path){
+function build(path, webPackConfig_){
   let fileName = 'google_search_filter_plus.user.js'
   return gulp.src(path)
     .pipe(webpackStream(merge(true, webpackConfig, {
       module: {
         loaders: [{
-          test: /\.js$/, exclude: /\/node_modules\//,
-          loader: 'babel', query: babelConfig.build,
+          test: /\.js$/, exclude: /\/node_modules\//, loader: 'babel', query: babelConfig.build,
         }].concat(webpackConfig.module.loaders),
       },
       watch: true,
       output: {filename: fileName},
-    }), webpack))
+    }, webPackConfig_ || {}), webpack))
     .pipe(addsrc('gfp/header.js'))
     .pipe(concat(fileName))
 }
 
 gulp.task('build', function(){
-  build('gfp/bin/pref.js').pipe(gulp.dest('dist'))
+  build('gfp/bin/pref.js', {devtool: '#inline-source-map'}).pipe(gulp.dest('dist'))
 })
 
 gulp.task('greasemonkey', function(){
