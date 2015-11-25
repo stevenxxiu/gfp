@@ -73,16 +73,18 @@ class DataView {
     return this.filters.length
   }
 
-  _enterOnce(func){
+  _editOp(call, func){
     if(this._enterLock)
       return
     this._enterLock = true
     func()
+    if(call)
+      config.flushFilters()
     this._enterLock = false
   }
 
   push(filter, call=true){
-    this._enterOnce(() => {
+    this._editOp(call, () => {
       if(call){
         config.filters.push(filter)
       }else{
@@ -100,7 +102,7 @@ class DataView {
   }
 
   remove(filter, i, call=true){
-    this._enterOnce(() => {
+    this._editOp(call, () => {
       if(call){
         config.filters.remove(filter)
       }else{
@@ -116,7 +118,7 @@ class DataView {
   }
 
   update(filter, i, call=true){
-    this._enterOnce(() => {
+    this._editOp(call, () => {
       if(call){
         // remove & push since the subfilter parent references will be different
         config.filters.remove(this.filters[i])
@@ -215,7 +217,6 @@ class PrefDialog {
               for(let key in filtersObject)
                 filters.push(Filter.fromObject(key, filtersObject[key]))
               self.dataView.setValue(filters)
-              config.flushFilters()
               $(this).dialog('close')
             },
           }, {text: 'Cancel', click(){$(this).dialog('close')}}],
@@ -336,7 +337,6 @@ class PrefDialog {
         case 'lastHit': args.item[column.field] = parseInt(args.item[column.field]); break
       }
       this.dataView.update(DataView.itemToFilter(args.item), args.row)
-      config.flushFilters()
       if(this.searchGui)
         this.searchGui.filterResults()
     })
