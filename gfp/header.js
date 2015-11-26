@@ -32,6 +32,7 @@
 // @require     https://rawgit.com/mleibman/SlickGrid/2.1.0/slick.core.js
 // @require     https://rawgit.com/mleibman/SlickGrid/2.1.0/slick.editors.js
 // @require     https://rawgit.com/mleibman/SlickGrid/2.1.0/slick.grid.js
+// @require     https://rawgit.com/mleibman/SlickGrid/2.1.0/plugins/slick.rowselectionmodel.js
 // @resource    jquery-ui-css https://cdn.jsdelivr.net/jquery.ui/1.11.3/themes/smoothness/jquery-ui.min.css
 // @resource    jquery-ui-css/images/ui-bg_glass_55_fbf9ee_1x400.png https://cdn.jsdelivr.net/jquery.ui/1.11.3/themes/smoothness/images/ui-bg_glass_55_fbf9ee_1x400.png
 // @resource    jquery-ui-css/images/ui-bg_glass_65_ffffff_1x400.png https://cdn.jsdelivr.net/jquery.ui/1.11.3/themes/smoothness/images/ui-bg_glass_65_ffffff_1x400.png

@@ -384,6 +384,7 @@ class PrefDialog {
       if(this.searchGui)
         this.searchGui.filterResults()
     })
+    grid.setSelectionModel(new Slick.RowSelectionModel())
 
     /* Dialog */
     let height = gridDom.height()

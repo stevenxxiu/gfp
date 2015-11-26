@@ -1,5 +1,6 @@
 'use strict'
 let addsrc = require('gulp-add-src')
+let autoprefixer = require('autoprefixer')
 let concat = require('gulp-continuous-concat')
 let FirefoxProfile = require('firefox-profile')
 let gulp = require('gulp')
@@ -13,12 +14,15 @@ let webpackStream = require('webpack-stream')
 let webpackConfig = {
   resolve: {root: [path.resolve('.'), path.resolve('gfp/lib')]},
   module: {
-    loaders: [
-      {test: /\.html$/, loader: `html?minimize=true&attrs=img:src&root=${path.resolve('.')}`},
-      {test: /\.scss$/, loader: `css?minimize&root=${path.resolve('.').replace(/\\/g, '/')}!sass?indentedSyntax`},
-      {test: /\.png$/, loader: 'url?mimetype=image/png&limit=10000'},
-    ],
+    loaders: [{
+      test: /\.html$/, loader: `html?minimize=true&attrs=img:src&root=${path.resolve('.').replace(/\\/g, '/')}`,
+    }, {
+      test: /\.scss$/, loader: `css?minimize&root=${path.resolve('.').replace(/\\/g, '/')}!postcss!sass?indentedSyntax`,
+    }, {
+      test: /\.png$/, loader: 'url?mimetype=image/png&limit=10000',
+    }],
   },
+  postcss: () => [autoprefixer({browsers: ['last 2 versions']})],
 }
 
 let babelConfig = {
