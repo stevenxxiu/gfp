@@ -138,8 +138,14 @@ class DataView {
     })
   }
 
-  setValue(filters, call=true){
-    if(call)
+  getValue(){
+    return config.filters
+  }
+
+  setValue(filters=null, call=true){
+    if(filters === null)
+      filters = Array.from(config.filters)
+    else if(call)
       config.filters.setValue(filters)
     this.filters = filters.filter(this.filterer).sort(this.comparer)
     this.grid.invalidateAllRows()
@@ -224,9 +230,12 @@ class PrefDialog {
 
   bindExport(){
     this.dialog.find('.export').click((_e) => {
+      let filtersObject = {}
+      for(let filter of this.dataView.getValue())
+        filtersObject[filter.text] = filter.toObject()
       $('<textarea></textarea>')
         .attr('readonly', 'readonly')
-        .val(JSON.stringify(config.filtersObject, null, 2))
+        .val(JSON.stringify(filtersObject, null, 2))
         .dialog(Object.assign(this.dialogConfig, {
           title: 'Export',
           buttons: [{text: 'Close', click(){$(this).dialog('close')}}],
@@ -250,7 +259,7 @@ class PrefDialog {
             return {valid: false, msg: 'Empty filter'}
           if(Filter.fromText(text) instanceof InvalidFilter)
             return {valid: false, msg: 'Invalid filter'}
-          if(Array.from(config.filters).some((filter) => filter.text == text))
+          if(Array.from(this.dataView.getValue()).some((filter) => filter.text == text))
             return {valid: false, msg: 'Duplicate filter'}
           return {valid: true, msg: null}
         },
@@ -351,7 +360,7 @@ class PrefDialog {
     /* Initialize grid & dataView */
     grid.init()
     this.dataView.grid = grid
-    this.dataView.setValue(Array.from(config.filters))
+    this.dataView.setValue()
 
     /* Editing */
     grid.onClick.subscribe((e, args) => {
