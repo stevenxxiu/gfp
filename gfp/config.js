@@ -26,7 +26,7 @@ class Filters {
   }
 
   remove(filter){
-    this._filters.pop(this._filters.indexOf(filter))
+    this._filters.splice(this._filters.indexOf(filter), 1)
     this.trigger('remove', filter)
   }
 
