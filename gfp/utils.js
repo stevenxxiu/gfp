@@ -13,7 +13,7 @@ export function bisect(a, x, comparer, lo=0, hi=null){
     hi = a.length
   while(lo < hi){
     let mid = (lo + hi) >> 1
-    if(comparer(x, a[mid]) == -1)
+    if(comparer(x, a[mid]) < 0)
       hi = mid
     else
       lo = mid + 1
@@ -29,4 +29,14 @@ export function addStyleResolve(name){
   GM_addStyle(GM_getResourceText(name).replace(
     /url\("?([^":]+)"?\)/g, (match, url) => `url("${GM_getResourceURL(`${name}/${url}`)}")`
   ))
+}
+
+export function indexOfSorted(xs, ys, comparer){
+  let res = []
+  let i = 0
+  for(let y of ys){
+    i = bisect(xs, y, comparer, i + 1) - 1
+    res.push(xs[i] == y ? i : -1)
+  }
+  return res
 }

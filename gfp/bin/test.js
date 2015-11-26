@@ -1,6 +1,8 @@
 
 function main(){
   window.GM_addStyle = () => null
+  window.GM_getResourceText = () => null
+  window.GM_getResourceURL = () => null
   window.GM_getValue = (name, value) => value
   window.GM_setValue = () => null
   sinon.assert.expose(assert, {prefix: ''})
