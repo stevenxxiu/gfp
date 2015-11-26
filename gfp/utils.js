@@ -1,5 +1,15 @@
 /* global GM_addStyle, GM_getResourceText, GM_getResourceURL */
 
+export function addStyleResolve(name){
+  GM_addStyle(GM_getResourceText(name).replace(
+    /url\("?([^":]+)"?\)/g, (match, url) => `url("${GM_getResourceURL(`${name}/${url}`)}")`
+  ))
+}
+
+export function pad(num, size){
+  return Array(Math.max(size - num.toString().length + 1, 0)).join(0) + num
+}
+
 export function cache(obj, prop, value){
   Object.defineProperty(obj, prop, {value: value})
   return value
@@ -21,16 +31,6 @@ export function bisect(a, x, comparer, lo=0, hi=null){
   return lo
 }
 
-export function pad(num, size){
-  return Array(Math.max(size - num.toString().length + 1, 0)).join(0) + num
-}
-
-export function addStyleResolve(name){
-  GM_addStyle(GM_getResourceText(name).replace(
-    /url\("?([^":]+)"?\)/g, (match, url) => `url("${GM_getResourceURL(`${name}/${url}`)}")`
-  ))
-}
-
 export function indexOfSorted(xs, ys, comparer){
   let res = []
   let i = 0
@@ -39,4 +39,20 @@ export function indexOfSorted(xs, ys, comparer){
     res.push(xs[i] == y ? i : -1)
   }
   return res
+}
+
+export function popMany(xs, is){
+  // O(n) time, mask is not'ed for speed
+  let mask = new Array(xs.length)
+  for(let i of is)
+    mask[i] = true
+  let offset = 0
+  for(let i=0; i<xs.length; i++){
+    if(mask[i] === undefined){
+      xs[offset] = xs[i]
+      offset++
+    }
+  }
+  xs.length = offset
+  return xs
 }
