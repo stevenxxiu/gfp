@@ -343,7 +343,10 @@ class PrefDialog {
     this.dataView.comparer = (x, y) =>
       x[sortField] > y[sortField] ? sortRes : x[sortField] < y[sortField] ? -sortRes : 0
     grid.setSortColumn(sortField, !!sortRes)
-    grid.onSort.subscribe((e, args) => [sortField, sortRes] = [args.sortCol.field, args.sortAsc ? 1 : -1])
+    grid.onSort.subscribe((e, args) => {
+      [sortField, sortRes] = [args.sortCol.field, args.sortAsc ? 1 : -1]
+      this.dataView.sort()
+    })
 
     /* Initialize grid & dataView */
     grid.init()
