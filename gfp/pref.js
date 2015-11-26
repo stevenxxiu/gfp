@@ -151,16 +151,14 @@ class DataView {
     return this.constructor.filterToitem(this.filters[i])
   }
 
-  setComparer(comparer){
-    this.comparer = comparer
+  sort(){
     this.filters = this.filters.sort(this.comparer)
     this.grid.invalidateAllRows()
     this.grid.render()
   }
 
-  setFilterer(filterer){
-    this.filterer = filterer
-    this.filters = this.filters.filter(this.filterer).sort(this.comparer)
+  filter(){
+    this.filters = Array.from(config.filters).filter(this.filterer).sort(this.comparer)
     this.grid.invalidateAllRows()
     this.grid.updateRowCount()
     this.grid.render()
@@ -240,7 +238,7 @@ class PrefDialog {
 
   addGrid(){
     let gridDom = this.dialog.find('.grid')
-    this.dataView = new DataView(null, null, () => true)
+    this.dataView = new DataView(null, null, null)
     let grid = new Slick.Grid(gridDom, this.dataView, [
       {
         id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true,
@@ -298,30 +296,61 @@ class PrefDialog {
       showHeaderRow: true,
       explicitInitialization: true,
     })
-    // find bar
+
+    /* Find bar */
+    let filterVals = {}
+    let binaryFilter = ['FN-', 'TY+']
+    window.grid = grid
+    let dateFormatter = grid.getColumns()[grid.getColumnIndex('lastHit')].formatter
+    this.dataView.filterer = (val) => {
+      val = DataView.filterToitem(val)
+      for(let key in filterVals){
+        switch(key){
+          case 'text': if(!val[key].includes(filterVals[key])) return false; break
+          case 'slow': if(!binaryFilter[+val[key]].toLowerCase().includes(filterVals[key])) return false; break
+          case 'enabled': if(!binaryFilter[+val[key]].toLowerCase().includes(filterVals[key])) return false; break
+          case 'hitCount': if(!val[key].toString().includes(filterVals[key])) return false; break
+          case 'lastHit': if(!dateFormatter(null, null, val[key], null, val).includes(filterVals[key]))
+            return false; break
+        }
+      }
+      return true
+    }
     let findBar = gridDom.find('.slick-headerrow')
-    let openFindBar = () => {findBar.show(); findBar.find('input:first').focus()}
-    let closeFindBar = () => {findBar.hide(); this.dialog.focus()}
+    let openFindBar = () => {
+      findBar.show()
+      findBar.find('input:first').focus()
+    }
+    let closeFindBar = () => {
+      findBar.hide()
+      findBar.find('input').val('')
+      filterVals = {}
+      this.dataView.filter()
+      this.dialog.focus()
+    }
     grid.onHeaderRowCellRendered.subscribe((e, args) => {
-      let searchField = $('<input></input>').data('columnId', args.column.id)
-      .keydown((e) => {if(e.keyCode == 27) closeFindBar()})
+      let searchField = $('<input></input>')
+        .keydown((e) => {if(e.keyCode == 27) closeFindBar()})
+        .on('input', (_e) => {filterVals[args.column.field] = searchField.val(); this.dataView.filter()})
       $(args.node).empty().append(searchField)
     })
+    findBar.hide()
     this.dialog.attr('tabindex', 1)
     this.dialog.keydown((e) => {if((e.ctrlKey || e.metaKey) && e.keyCode == 70){openFindBar(); e.preventDefault()}})
+
+    /* Sorting */
+    let [sortField, sortRes] = ['text', 1]
+    this.dataView.comparer = (x, y) =>
+      x[sortField] > y[sortField] ? sortRes : x[sortField] < y[sortField] ? -sortRes : 0
+    grid.setSortColumn(sortField, !!sortRes)
+    grid.onSort.subscribe((e, args) => [sortField, sortRes] = [args.sortCol.field, args.sortAsc ? 1 : -1])
+
+    /* Initialize grid & dataView */
     grid.init()
-    closeFindBar()
-    // sorting
     this.dataView.grid = grid
-    grid.onSort.subscribe((e, args) => {
-      let field = args.sortCol.field
-      let res = args.sortAsc ? 1 : -1
-      this.dataView.setComparer((x, y) => x[field] > y[field] ? res : x[field] < y[field] ? -res : 0)
-    })
-    grid.setSortColumn('text', true)
-    new grid.onSort.notify({sortCol: {field: 'text'}, sortAsc: true}, new Slick.EventData())
-    this.dataView.setValue(Array.from(config.filters), false)
-    // editing
+    this.dataView.setValue(Array.from(config.filters))
+
+    /* Editing */
     grid.onClick.subscribe((e, args) => {
       if($(e.target).is(':checkbox')){
         let column = grid.getColumns()[args.cell]
@@ -343,6 +372,8 @@ class PrefDialog {
       if(this.searchGui)
         this.searchGui.filterResults()
     })
+
+    /* Dialog */
     let height = gridDom.height()
     this.dialog.on('dialogresize', (e, ui) => {
       gridDom.css('height', `${height + (ui.size.height - ui.originalSize.height)}px`)
