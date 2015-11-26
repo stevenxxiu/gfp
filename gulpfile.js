@@ -58,7 +58,7 @@ function build(path, webPackConfig_){
     .pipe(webpackStream(merge(true, webpackConfig, {
       module: {
         loaders: [{
-          test: /\.js$/, exclude: /\/node_modules\//, loader: 'babel', query: babelConfig.build,
+          test: /\.js$/, exclude: /[/\\]node_modules[/\\]/, loader: 'babel', query: babelConfig.build,
         }].concat(webpackConfig.module.loaders),
       },
       watch: true,
@@ -88,7 +88,7 @@ gulp.task('test', function(){
       devtool: '#inline-source-map',
       module: {
         loaders: [{
-          test: /\.js$/, exclude: /\/node_modules\//, loader: 'babel', query: babelConfig.test,
+          test: /\.js$/, exclude: /[/\\]node_modules[/\\]/, loader: 'babel', query: babelConfig.test,
         }].concat(webpackConfig.module.loaders),
       },
     }),
@@ -105,7 +105,10 @@ gulp.task('cover', function(){
     webpack: merge(true, webpackConfig, {
       module: {
         loaders: [{
-          test: /\.js$/, exclude: /\/node_modules\//,
+          test: /\.js$/, include: /[/\\]gfp[/\\]lib[/\\]/, exclude: /[/\\]node_modules[/\\]/,
+          loader: 'babel', query: babelConfig.test,
+        }, {
+          test: /\.js$/, exclude: /[/\\](node_modules|gfp[/\\]lib)[/\\]/,
           loader: 'isparta-instrumenter', query: {babel: babelConfig.test},
         }].concat(webpackConfig.module.loaders),
       },
