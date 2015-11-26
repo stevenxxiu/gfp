@@ -299,23 +299,18 @@ class PrefDialog {
       explicitInitialization: true,
     })
     // find bar
+    let findBar = gridDom.find('.slick-headerrow')
+    let openFindBar = () => {findBar.show(); findBar.find('input:first').focus()}
+    let closeFindBar = () => {findBar.hide(); this.dialog.focus()}
     grid.onHeaderRowCellRendered.subscribe((e, args) => {
-      $(args.node).empty()
-      $('<input></input>').data('columnId', args.column.id).appendTo(args.node)
+      let searchField = $('<input></input>').data('columnId', args.column.id)
+      .keydown((e) => {if(e.keyCode == 27) closeFindBar()})
+      $(args.node).empty().append(searchField)
     })
-    grid.init()
-    gridDom.find('.slick-headerrow').toggle()
     this.dialog.attr('tabindex', 1)
-    this.dialog.keydown((e) => {
-      if((e.ctrlKey || e.metaKey) && e.keyCode == 70){
-        let findBar = gridDom.find('.slick-headerrow').toggle()
-        if(findBar.is(':visible'))
-          findBar.find('input:first').focus()
-        else
-          this.dialog.focus()
-        e.preventDefault()
-      }
-    })
+    this.dialog.keydown((e) => {if((e.ctrlKey || e.metaKey) && e.keyCode == 70){openFindBar(); e.preventDefault()}})
+    grid.init()
+    closeFindBar()
     // sorting
     this.dataView.grid = grid
     grid.onSort.subscribe((e, args) => {
