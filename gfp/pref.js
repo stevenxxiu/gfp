@@ -93,6 +93,8 @@ class DataView {
       }
       let i = bisect(this.filters, filter, this.comparer)
       this.filters.splice(i, 0, filter)
+      this.grid.resetActiveCell()
+      this.grid.setSelectedRows([])
       this.grid.invalidateAllRows()
       this.grid.updateRowCount()
       this.grid.render()
@@ -151,6 +153,8 @@ class DataView {
     else if(call)
       config.filters.setValue(filters)
     this.filters = filters.filter(this.filterer).sort(this.comparer)
+    this.grid.resetActiveCell()
+    this.grid.setSelectedRows([])
     this.grid.invalidateAllRows()
     this.grid.updateRowCount()
     this.grid.render()
@@ -304,9 +308,9 @@ class PrefDialog {
       editable: true,
       enableCellNavigation: true,
       enableColumnReorder: false,
+      explicitInitialization: true,
       forceFitColumns: true,
       showHeaderRow: true,
-      explicitInitialization: true,
     })
 
     /* Find bar */
@@ -360,11 +364,6 @@ class PrefDialog {
       this.dataView.sort()
     })
 
-    /* Initialize grid & dataView */
-    grid.init()
-    this.dataView.grid = grid
-    this.dataView.setValue()
-
     /* Editing */
     grid.onClick.subscribe((e, args) => {
       if($(e.target).is(':checkbox')){
@@ -389,6 +388,11 @@ class PrefDialog {
     })
     grid.setSelectionModel(new Slick.RowSelectionModel())
     this.dialog.keydown((e) => {if(e.keyCode == 46) this.dataView.remove(null, grid.getSelectedRows())})
+
+    /* Initialize grid & dataView */
+    grid.init()
+    this.dataView.grid = grid
+    this.dataView.setValue()
 
     /* Dialog */
     let height = gridDom.height()
