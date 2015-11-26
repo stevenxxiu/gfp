@@ -104,7 +104,7 @@ class DataView {
   remove(filters, is, call=true){
     this._editOp(call, () => {
       if(call){
-        config.filters.remove(filters)
+        config.filters.remove(is.map((i) => this.filters[i]))
       }else{
         // use unique comparer for speed
         let comparer = (x, y) => x['text'] > y['text'] ? 1 : x['text'] < y['text'] ? -1 : 0
@@ -112,6 +112,8 @@ class DataView {
         this.filters.sort(this.comparer)
       }
       popMany(this.filters, is)
+      this.grid.resetActiveCell()
+      this.grid.setSelectedRows([])
       this.grid.invalidateAllRows()
       this.grid.updateRowCount()
       this.grid.render()
@@ -386,6 +388,7 @@ class PrefDialog {
         this.searchGui.filterResults()
     })
     grid.setSelectionModel(new Slick.RowSelectionModel())
+    this.dialog.keydown((e) => {if(e.keyCode == 46) this.dataView.remove(null, grid.getSelectedRows())})
 
     /* Dialog */
     let height = gridDom.height()
