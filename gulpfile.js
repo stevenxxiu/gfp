@@ -45,7 +45,7 @@ let babelConfig = {
 }
 
 let karmaConfig = {
-  frameworks: ['mocha', 'chai', 'sinon'],
+  frameworks: ['source-map-support', 'mocha', 'chai', 'sinon'],
   client: {
     captureConsole: true,
     mocha: {reporter: 'html', ui: 'tdd'},
