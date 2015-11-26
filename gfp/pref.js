@@ -5,7 +5,7 @@ import prefHtml from 'gfp/html/pref.html'
 import {InvalidFilter} from 'gfp/lib/filterClasses'
 import {Filter} from 'gfp/filter'
 import {CombinedMultiMatcher} from 'gfp/matcher'
-import {addStyleResolve, bisect, pad} from 'gfp/utils'
+import {addStyleResolve, bisect, pad, indexOfSorted, popMany} from 'gfp/utils'
 
 export default class Pref {
   constructor(searchGui){
@@ -83,10 +83,10 @@ class DataView {
     this._enterLock = false
   }
 
-  push(filter, call=true){
+  add(filter, call=true){
     this._editOp(call, () => {
       if(call){
-        config.filters.push(filter)
+        config.filters.add(filter)
       }else{
         if(!this.filterer(filter))
           return
@@ -101,16 +101,17 @@ class DataView {
     })
   }
 
-  remove(filter, i, call=true){
+  remove(filters, is, call=true){
     this._editOp(call, () => {
       if(call){
-        config.filters.remove(filter)
+        config.filters.remove(filters)
       }else{
-        i = this.filters.indexOf(filter)
-        if(!this.filterer(filter) || i == -1)
-          return
+        // use unique comparer for speed
+        let comparer = (x, y) => x['text'] > y['text'] ? 1 : x['text'] < y['text'] ? -1 : 0
+        is = indexOfSorted(this.filters.sort(comparer), filters.sort(comparer), comparer)
+        this.filters.sort(this.comparer)
       }
-      this.filters.splice(i, 1)
+      popMany(this.filters, is)
       this.grid.invalidateAllRows()
       this.grid.updateRowCount()
       this.grid.render()
@@ -120,9 +121,9 @@ class DataView {
   update(filter, i, call=true){
     this._editOp(call, () => {
       if(call){
-        // remove & push since the subfilter parent references will be different
+        // remove & add since the subfilter parent references will be different
         config.filters.remove(this.filters[i])
-        config.filters.push(filter)
+        config.filters.add(filter)
       }else{
         i = this.filters.indexOf(filter)
         if(!this.filterer(filter) || i == -1)
@@ -158,7 +159,7 @@ class DataView {
   }
 
   sort(){
-    this.filters = this.filters.sort(this.comparer)
+    this.filters.sort(this.comparer)
     this.grid.invalidateAllRows()
     this.grid.render()
   }
@@ -172,8 +173,8 @@ class DataView {
 
   filterObserver(type, value){
     switch(type){
-      case 'push': this.push(value, false); break
-      case 'remove': this.remove(value, null, false); break
+      case 'add': this.add(value, false); break
+      case 'remove': this.remove([value], null, false); break
       case 'update': this.update(value, null, false); break
       case 'setValue': this.setValue(value, false); break
     }
@@ -217,7 +218,7 @@ class PrefDialog {
               let filtersObject = JSON.parse($(this).val())
               let filters = []
               for(let key in filtersObject)
-                filters.push(Filter.fromObject(key, filtersObject[key]))
+                filters.add(Filter.fromObject(key, filtersObject[key]))
               self.dataView.setValue(filters)
               $(this).dialog('close')
             },

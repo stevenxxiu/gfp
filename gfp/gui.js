@@ -93,16 +93,21 @@ export class SearchGui {
   constructor(){
     let observer = (type, value) => {
       switch(type){
-        case 'push': this.matcher.add(value); break
-        case 'remove': this.matcher.remove(value); break
+        case 'add':
+          this.matcher.add(value)
+          break
+        case 'remove':
+          for(let filter of value)
+            this.matcher.remove(filter)
+          break
         case 'setValue':
           this.matcher = new CombinedMultiMatcher(3)
-          for(let filter of config.filters)
+          for(let filter of value)
             this.matcher.add(filter)
           break
       }
     }
-    observer('setValue')
+    observer('setValue', config.filters)
     config.filters.observe(observer)
     this.nodeData = new NodeData()
     this.nodeData.children = []
@@ -219,7 +224,7 @@ export class SearchGui {
     let text = prompt('Filter: ', domainUrl)
     if(text === null)
       return
-    config.filters.push(MultiRegExpFilter.fromText(text))
+    config.filters.add(MultiRegExpFilter.fromText(text))
     this.filterResults()
   }
 

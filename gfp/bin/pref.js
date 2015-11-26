@@ -40,12 +40,12 @@ function main(){
       $(this).removeClass('ui-state-focus')
     })
     controls.find('.inc-hit-count').click(() => {
-      let filter = config.filters.get(1)
+      let filter = config.filters._filters[1]
       filter.hitCount++
       config.filters.update(filter)
     })
     controls.find('.add-filter').click(() => {
-      config.filters.push(Filter.fromText(` added filter ${pad(config.filters.length, 3)} `))
+      config.filters.add(Filter.fromText(` added filter ${pad(config.filters.length, 3)} `))
     })
   })
 
