@@ -299,7 +299,7 @@ class PrefDialog {
 
     /* Find bar */
     let filterVals = {}
-    let binaryFilter = ['FN-', 'TY+']
+    let binaryFilter = ['FfNn-', 'TtYy+']
     window.grid = grid
     let dateFormatter = grid.getColumns()[grid.getColumnIndex('lastHit')].formatter
     this.dataView.filterer = (val) => {
@@ -307,8 +307,8 @@ class PrefDialog {
       for(let key in filterVals){
         switch(key){
           case 'text': if(!val[key].includes(filterVals[key])) return false; break
-          case 'slow': if(!binaryFilter[+val[key]].toLowerCase().includes(filterVals[key])) return false; break
-          case 'enabled': if(!binaryFilter[+val[key]].toLowerCase().includes(filterVals[key])) return false; break
+          case 'slow': if(!binaryFilter[+val[key]].includes(filterVals[key])) return false; break
+          case 'enabled': if(!binaryFilter[+val[key]].includes(filterVals[key])) return false; break
           case 'hitCount': if(!val[key].toString().includes(filterVals[key])) return false; break
           case 'lastHit': if(!dateFormatter(null, null, val[key], null, val).includes(filterVals[key]))
             return false; break
