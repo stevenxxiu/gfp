@@ -10,6 +10,7 @@
 .gfp
   display: flex !important
   flex-direction: column
+  outline: none
   .slick-sort-indicator
     float: none
   a
@@ -37,7 +38,9 @@
     margin: 0 auto
   .slick-headerrow-column
     background: #E6E6E6
-    padding: 1px
+    height: 25px
+    padding: 0
+    border: 0
   .slick-cell, .slick-headerrow-column
     input
       margin: 0
