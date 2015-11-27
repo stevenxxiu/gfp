@@ -111,11 +111,6 @@ class DataView {
     })
   }
 
-  addTemp(filter, i){
-    this.filters.splice(i, 0, filter)
-    this._render(true, true, true)
-  }
-
   remove(filters, is, call=true){
     this._editOp(call, () => {
       if(call){
@@ -129,6 +124,16 @@ class DataView {
       popMany(this.filters, is)
       this._render(true, true, true)
     })
+  }
+
+  addTemp(i){
+    this.filters.splice(i, 0, Filter.fromText(''))
+    this._render(true, true, true)
+  }
+
+  removeTemp(i){
+    this.filters.splice(i, 1)
+    this._render(true, true, true)
   }
 
   update(filter, i, call=true){
@@ -365,8 +370,34 @@ class PrefDialog {
       if(this.searchGui)
         this.searchGui.filterResults()
     })
+    gridDom.on('blur', 'input.editor-text', () => Slick.GlobalEditorLock.commitCurrentEdit())
     grid.setSelectionModel(new Slick.RowSelectionModel())
-    this.dialog.keydown((e) => {if(e.keyCode == 46) this.dataView.remove(null, grid.getSelectedRows())})
+
+    /* Add & Remove */
+    let cancelled = true
+    let tempI = null
+    grid.onCellChange.subscribe((e, args) => cancelled = false)
+    grid.onBeforeCellEditorDestroy.subscribe((e, args) => {
+      if(cancelled && tempI !== null)
+        setTimeout(() => {this.dataView.removeTemp(tempI); tempI = null}, 0)
+      cancelled = true
+    })
+    let addFilter = () => {
+      let is = grid.getSelectedRows()
+      tempI = is[is.length - 1] || 0
+      this.dataView.addTemp(tempI)
+      grid.gotoCell(tempI, 0, true)
+    }
+    let removeFilter = () => this.dataView.remove(null, grid.getSelectedRows())
+    this.dialog.find('.add').click((_e) => {addFilter(); return false})
+    this.dialog.keydown((e) => {
+      switch(e.keyCode){
+        case 45: addFilter(); break
+        case 46: removeFilter(); break
+      }
+      if(this.searchGui)
+        this.searchGui.filterResults()
+    })
 
     /* Initialize grid & dataView */
     grid.init()
