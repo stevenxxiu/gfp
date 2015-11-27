@@ -394,6 +394,15 @@ class PrefDialog {
       switch(e.keyCode){
         case 45: addFilter(); break
         case 46: removeFilter(); break
+        case 65:
+          if(e.ctrlKey || e.metaKey){
+            let rows = []
+            for(let i = 0; i < grid.getDataLength(); i++)
+              rows.push(i)
+            grid.setSelectedRows(rows)
+            e.preventDefault()
+          }
+          break
       }
       if(this.searchGui)
         this.searchGui.filterResults()
