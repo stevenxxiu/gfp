@@ -161,12 +161,14 @@ class DataView {
   }
 
   setValue(filters=null, call=true){
-    if(filters === null)
-      filters = Array.from(config.filters)
-    else if(call)
-      config.filters.setValue(filters)
-    this.filters = filters.filter(this.filterer).sort(this.comparer)
-    this._render(true, true, true)
+    this._editOp(call, () => {
+      if(filters === null)
+        filters = Array.from(config.filters)
+      else if(call)
+        config.filters.setValue(filters)
+      this.filters = filters.filter(this.filterer).sort(this.comparer)
+      this._render(true, true, true)
+    })
   }
 
   getItem(i){
@@ -229,7 +231,7 @@ class PrefDialog {
               let filtersObject = JSON.parse($(this).val())
               let filters = []
               for(let key in filtersObject)
-                filters.add(Filter.fromObject(key, filtersObject[key]))
+                filters.push(Filter.fromObject(key, filtersObject[key]))
               self.dataView.setValue(filters)
               $(this).dialog('close')
             },
