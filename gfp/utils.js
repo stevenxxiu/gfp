@@ -47,7 +47,7 @@ export function popMany(xs, is){
   for(let i of is)
     mask[i] = true
   let offset = 0
-  for(let i=0; i<xs.length; i++){
+  for(let i = 0; i < xs.length; i++){
     if(mask[i] === undefined){
       xs[offset] = xs[i]
       offset++

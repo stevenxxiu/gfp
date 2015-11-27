@@ -12,7 +12,7 @@ function main(){
   let pref = require('gfp/pref').default
   new pref(searchGui)
   // es5 to allow webpack to parse requires
-  for(let i=0; i<config.plugins.length; i++)
+  for(let i = 0; i < config.plugins.length; i++)
     require('gfp/plugin/' + config.plugins[i].toLowerCase()).default(searchGui)
   LogTime.snap('Total init time')
 }
