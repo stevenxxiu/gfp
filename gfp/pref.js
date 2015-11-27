@@ -69,6 +69,18 @@ class DataView {
     })
   }
 
+  _render(resetSelection, resetRows, resetRowCount){
+    if(resetSelection){
+      this.grid.resetActiveCell()
+      this.grid.setSelectedRows([])
+    }
+    if(resetRows)
+      this.grid.invalidateAllRows()
+    if(resetRowCount)
+      this.grid.updateRowCount()
+    this.grid.render()
+  }
+
   getLength(){
     return this.filters.length
   }
@@ -93,11 +105,7 @@ class DataView {
       }
       let i = bisect(this.filters, filter, this.comparer)
       this.filters.splice(i, 0, filter)
-      this.grid.resetActiveCell()
-      this.grid.setSelectedRows([])
-      this.grid.invalidateAllRows()
-      this.grid.updateRowCount()
-      this.grid.render()
+      this._render(true, true, true)
       if(call)
         this.grid.scrollRowIntoView(i)
     })
@@ -114,11 +122,7 @@ class DataView {
         this.filters.sort(this.comparer)
       }
       popMany(this.filters, is)
-      this.grid.resetActiveCell()
-      this.grid.setSelectedRows([])
-      this.grid.invalidateAllRows()
-      this.grid.updateRowCount()
-      this.grid.render()
+      this._render(true, true, true)
     })
   }
 
@@ -136,8 +140,7 @@ class DataView {
       this.filters.splice(i, 1)
       i = bisect(this.filters, filter, this.comparer)
       this.filters.splice(i, 0, filter)
-      this.grid.invalidateAllRows()
-      this.grid.render()
+      this._render(false, true, false)
       if(call)
         this.grid.scrollRowIntoView(i)
     })
@@ -153,11 +156,7 @@ class DataView {
     else if(call)
       config.filters.setValue(filters)
     this.filters = filters.filter(this.filterer).sort(this.comparer)
-    this.grid.resetActiveCell()
-    this.grid.setSelectedRows([])
-    this.grid.invalidateAllRows()
-    this.grid.updateRowCount()
-    this.grid.render()
+    this._render(true, true, true)
   }
 
   getItem(i){
@@ -166,15 +165,12 @@ class DataView {
 
   sort(){
     this.filters.sort(this.comparer)
-    this.grid.invalidateAllRows()
-    this.grid.render()
+    this._render(true, true, false)
   }
 
   filter(){
     this.filters = Array.from(config.filters).filter(this.filterer).sort(this.comparer)
-    this.grid.invalidateAllRows()
-    this.grid.updateRowCount()
-    this.grid.render()
+    this._render(true, true, true)
   }
 
   filterObserver(type, value){
