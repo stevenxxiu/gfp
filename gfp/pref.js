@@ -391,6 +391,8 @@ class PrefDialog {
     let removeFilter = () => this.dataView.remove(null, grid.getSelectedRows())
     this.dialog.find('.add').click((_e) => {addFilter(); return false})
     gridDom.keydown((e) => {
+      if(e.target.nodeName == 'INPUT')
+        return
       switch(e.keyCode){
         case 45: addFilter(); break
         case 46: removeFilter(); break
