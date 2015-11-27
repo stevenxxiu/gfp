@@ -130,7 +130,7 @@ class DataView {
         config.filters.add(filter)
       }else{
         i = this.filters.indexOf(filter)
-        if(!this.filterer(filter) || i == -1)
+        if(i == -1)
           return
       }
       this.filters.splice(i, 1)
