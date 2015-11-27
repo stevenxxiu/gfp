@@ -135,7 +135,7 @@ class DataView {
     this._editOp(call, () => {
       if(call){
         // remove & add since the subfilter parent references will be different
-        config.filters.remove(this.filters[i])
+        config.filters.remove([this.filters[i]])
         config.filters.add(filter)
       }else{
         i = this.filters.indexOf(filter)
@@ -278,12 +278,8 @@ class PrefDialog {
           `<input type="checkbox" name="" value="${value}" ${value ? 'checked' : ''} />`,
       }, {
         id: 'hitCount', field: 'hitCount', name: 'Hits', width: 1, sortable: true,
-        editor: Slick.Editors.Text, validator: (text) => {
-          let val = parseInt(text)
-          if(isNaN(val) || val < 0)
-            return {valid: false, msg: 'must be a number >= 0'}
-          return {valid: true, msg: null}
-        },
+        editor: Slick.Editors.Integer, validator: (val) =>
+          val < 0 ? {valid: false, msg: 'Must be >= 0'} : {valid: true, msg: null},
       }, {
         id: 'lastHit', field: 'lastHit', name: 'Last hit', width: 110, sortable: true,
         formatter: (row, cell, value, columnDef, dataContext) => {
@@ -293,12 +289,7 @@ class PrefDialog {
             `${pad(date.getHours() + 1, 2)}:${pad(date.getMinutes(), 2)}:${pad(date.getSeconds(), 2)}:` +
             `${pad(date.getMilliseconds(), 3)}`
           ) : ''
-        }, editor: Slick.Editors.Text, validator: (text) => {
-          let val = parseInt(text)
-          if(isNaN(val))
-            return {valid: false, msg: 'must be a number'}
-          return {valid: true, msg: null}
-        },
+        }, editor: Slick.Editors.Integer,
       },
     ], {
       autoEdit: false,
@@ -370,11 +361,6 @@ class PrefDialog {
     })
     grid.onValidationError.subscribe((e, args) => alert(args.validationResults.msg))
     grid.onCellChange.subscribe((e, args) => {
-      let column = grid.getColumns()[args.cell]
-      switch(column.field){
-        case 'hitCount': args.item[column.field] = parseInt(args.item[column.field]); break
-        case 'lastHit': args.item[column.field] = parseInt(args.item[column.field]); break
-      }
       this.dataView.update(DataView.itemToFilter(args.item), args.row)
       if(this.searchGui)
         this.searchGui.filterResults()

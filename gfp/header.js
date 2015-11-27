@@ -30,7 +30,7 @@
 // @require     https://cdn.jsdelivr.net/jquery.ui/1.11.3/jquery-ui.min.js
 // @require     https://cdn.jsdelivr.net/jquery.event.drag/2.2/jquery.event.drag.min.js
 // @require     https://rawgit.com/mleibman/SlickGrid/2.1.0/slick.core.js
-// @require     https://rawgit.com/mleibman/SlickGrid/2.1.0/slick.editors.js
+// @require     https://rawgit.com/simonzack/SlickGrid/master/slick.editors.js
 // @require     https://rawgit.com/mleibman/SlickGrid/2.1.0/slick.grid.js
 // @require     https://rawgit.com/mleibman/SlickGrid/2.1.0/plugins/slick.rowselectionmodel.js
 // @resource    jquery-ui-css https://cdn.jsdelivr.net/jquery.ui/1.11.3/themes/smoothness/jquery-ui.min.css
