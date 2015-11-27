@@ -330,13 +330,9 @@ class PrefDialog {
       return true
     }
     let findBar = gridDom.find('.slick-headerrow')
-    let openFindBar = () => {
-      findBar.show()
-      findBar.find('input:first').focus()
-    }
+    let openFindBar = () => findBar.show().find('input:first').focus()
     let closeFindBar = () => {
-      findBar.hide()
-      findBar.find('input').val('')
+      findBar.hide().find('input').val('')
       filterVals = {}
       this.dataView.filter()
       this.dialog.focus()
