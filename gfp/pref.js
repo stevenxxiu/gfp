@@ -111,6 +111,11 @@ class DataView {
     })
   }
 
+  addTemp(filter, i){
+    this.filters.splice(i, 0, filter)
+    this._render(true, true, true)
+  }
+
   remove(filters, is, call=true){
     this._editOp(call, () => {
       if(call){
@@ -190,8 +195,7 @@ class PrefDialog {
       title: 'Google Search Filter +', 'closeOnEscape': false, close: this.destructor.bind(this),
     }))
     this.dataView = null
-    this.bindImport()
-    this.bindExport()
+    this.addImportExport()
     this.addGrid()
   }
 
@@ -208,7 +212,7 @@ class PrefDialog {
     }
   }
 
-  bindImport(){
+  addImportExport(){
     let self = this
     this.dialog.find('.import').click((_e) => {
       $('<textarea></textarea>')
@@ -229,9 +233,6 @@ class PrefDialog {
         }))
       return false
     })
-  }
-
-  bindExport(){
     this.dialog.find('.export').click((_e) => {
       let filtersObject = {}
       for(let filter of this.dataView.getValue())
