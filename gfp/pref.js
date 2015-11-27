@@ -388,7 +388,11 @@ class PrefDialog {
       this.dataView.addTemp(tempI)
       grid.gotoCell(tempI, 0, true)
     }
-    let removeFilter = () => this.dataView.remove(null, grid.getSelectedRows())
+    let removeFilter = () => {
+      this.dataView.remove(null, grid.getSelectedRows())
+      if(this.searchGui)
+        this.searchGui.filterResults()
+    }
     this.dialog.find('.add').click((_e) => {addFilter(); return false})
     gridDom.keydown((e) => {
       if(e.target.nodeName == 'INPUT')
@@ -406,8 +410,6 @@ class PrefDialog {
           }
           break
       }
-      if(this.searchGui)
-        this.searchGui.filterResults()
     })
 
     /* Initialize grid & dataView */
