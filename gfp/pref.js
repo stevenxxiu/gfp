@@ -38,11 +38,12 @@ class DataView {
   config.filters is used as the actual data source.
   */
 
-  constructor(grid, comparer, filterer){
+  constructor(grid, comparer, filterer, searchGui){
     this.grid = grid
-    this.filters = []
     this.comparer = comparer
     this.filterer = filterer
+    this.searchGui = searchGui
+    this.filters = []
     this._filterObserver = this.filterObserver.bind(this)
     config.filters.observe(this._filterObserver)
   }
@@ -90,8 +91,11 @@ class DataView {
       return
     this._enterLock = true
     func()
-    if(call)
+    if(call){
       config.flushFilters()
+      if(this.searchGui)
+        this.searchGui.filterResults()
+    }
     this._enterLock = false
   }
 
@@ -258,7 +262,7 @@ class PrefDialog {
 
   addGrid(){
     let gridDom = this.dialog.find('.grid')
-    this.dataView = new DataView(null, null, null)
+    this.dataView = new DataView(null, null, null, this.searchGui)
     let grid = new Slick.Grid(gridDom, this.dataView, [
       {
         id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true,
@@ -367,11 +371,7 @@ class PrefDialog {
       }
     })
     grid.onValidationError.subscribe((e, args) => alert(args.validationResults.msg))
-    grid.onCellChange.subscribe((e, args) => {
-      this.dataView.update(DataView.itemToFilter(args.item), args.row)
-      if(this.searchGui)
-        this.searchGui.filterResults()
-    })
+    grid.onCellChange.subscribe((e, args) => this.dataView.update(DataView.itemToFilter(args.item), args.row))
     gridDom.on('blur', 'input.editor-text', () => Slick.GlobalEditorLock.commitCurrentEdit())
     grid.setSelectionModel(new Slick.RowSelectionModel())
 
@@ -390,11 +390,7 @@ class PrefDialog {
       this.dataView.addTemp(tempI)
       grid.gotoCell(tempI, 0, true)
     }
-    let removeFilter = () => {
-      this.dataView.remove(null, grid.getSelectedRows())
-      if(this.searchGui)
-        this.searchGui.filterResults()
-    }
+    let removeFilter = () => this.dataView.remove(null, grid.getSelectedRows())
     this.dialog.find('.add').click((_e) => {addFilter(); return false})
     gridDom.keydown((e) => {
       if(e.target.nodeName == 'INPUT')
