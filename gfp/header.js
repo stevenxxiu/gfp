@@ -8,6 +8,7 @@
 // @include     http://www.google.tld/#*&q=*
 // @include     http://www.google.tld/#q=*
 // @include     http://www.google.tld/cse?*
+// @include     http://cse.google.tld/cse?*
 // @include     http://www.google.tld/custom?*
 // @include     http://www.google.tld/search?*
 // @include     https://encrypted.google.com/
@@ -18,6 +19,7 @@
 // @include     https://www.google.tld/#*&q=*
 // @include     https://www.google.tld/#q=*
 // @include     https://www.google.tld/cse?*
+// @include     https://cse.google.tld/cse?*
 // @include     https://www.google.tld/custom?*
 // @include     https://www.google.tld/search?*
 // @grant       GM_addStyle

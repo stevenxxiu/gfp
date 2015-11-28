@@ -52,7 +52,7 @@ class Filters {
 
 class Config {
   constructor(){
-    this.plugins = ['customSearch', 'instant']
+    this.plugins = ['google', 'customsearch', 'instant']
     this.allowHidden = GM_getValue('allowHidden', true)
     this.filtersObject = JSON.parse(GM_getValue('filters', '{}'))
     let filters = []

@@ -1,4 +1,5 @@
 import {SearchGui} from 'gfp/gui'
+import {ResultsData} from 'gfp/plugin/google'
 
 export default function(searchGui){
   let resultsObserver = new MutationObserver((mutations) => {
@@ -6,7 +7,7 @@ export default function(searchGui){
       for(let addedNode of mutation.addedNodes){
         let node = addedNode.querySelector && addedNode.querySelector(':scope > #ires')
         if(node){
-          // we have a new query, google only adds this node with all results added
+          // all results have finished loading
           searchGui.nodeData.children.length = 0
           searchGui.filterResults(node)
         }
@@ -17,7 +18,6 @@ export default function(searchGui){
   if(!mainNode)
     return
   resultsObserver.observe(mainNode, {subtree: true, childList: true})
-  if(!searchGui)
-    searchGui = new SearchGui()
+  searchGui = new SearchGui(ResultsData)
   return searchGui
 }
