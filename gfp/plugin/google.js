@@ -12,7 +12,12 @@ export class ResultsData extends NodeData {
         yield new KnowledgeData(child)
       }else if(child.classList.contains('card-section')){
         yield new NewsData(child)
-      }else if(!child.classList.contains('obcontainer')){
+      }else if(child.classList.contains('obcontainer')){
+      }else if(child.childElementCount == 2){
+        yield new TweetData(child)
+      }else if(child.childElementCount == 3){
+        yield new TweetContainerData(child)
+      }else{
         yield new TextData(child)
       }
     }
@@ -21,15 +26,25 @@ export class ResultsData extends NodeData {
 
 class CommonData extends NodeData {
   get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite').parentNode)}
-  get url(){return cache(this, 'url', this.node.querySelector('h3.r>a').href)}
+  get url(){return cache(this, 'url', this.node.querySelector('h3.r > a').href)}
   get title(){return cache(this, 'title', this.node.querySelector('h2.r, h3.r').textContent)}
 }
 
-class KnowledgeData extends CommonData {}
-
-class TextData extends CommonData {
-  get summary(){return cache(this, 'summary', this.node.querySelector('div.s').textContent)}
+class ImageContainerData extends NodeData {
+  *getChildren(){for(let child of this.node.querySelectorAll('.bia')) yield new ImageData(child)}
 }
+
+class ImageData extends NodeData {
+  get url(){return cache(this, 'url', this.node.href)}
+}
+
+class MapContainerData extends NodeData {
+  *getChildren(){for(let child of this.node.querySelectorAll('div.g')) yield new MapData(child)}
+}
+
+class MapData extends CommonData {}
+
+class KnowledgeData extends CommonData {}
 
 class NewsData extends NodeData {
   get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite').parentNode)}
@@ -41,18 +56,24 @@ class NewsData extends NodeData {
   }
 }
 
-class MapContainerData extends NodeData {
-  *getChildren(){for(let child of this.node.querySelectorAll('div.g')) yield new MapData(child)}
+class TweetData extends CommonData {
+  get url(){return cache(this, 'url', this.node.querySelector('h3.r > div > a').href)}
+  get summary(){return cache(this, 'summary', this.node.querySelector('div[role="heading"]').textContent)}
 }
 
-class MapData extends CommonData {}
-
-class ImageContainerData extends NodeData {
-  *getChildren(){for(let child of this.node.querySelectorAll('.bia')) yield new ImageData(child)}
+class TweetContainerData extends CommonData {
+  get url(){return cache(this, 'url', this.node.querySelector('h3.r > div > a').href)}
+  *getChildren(){for(let child of this.node.querySelectorAll('ol')) yield new TweetSubData(child)}
 }
 
-class ImageData extends NodeData {
-  get url(){return cache(this, 'url', this.node.href)}
+class TweetSubData extends TweetData {
+  get url(){return cache(this, 'url', this.node.querySelector('h3.r > div > a').href)}
+  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('h3.r + div a'))}
+  get summary(){return cache(this, 'summary', this.node.querySelector('div[role="heading"]').textContent)}
+}
+
+class TextData extends CommonData {
+  get summary(){return cache(this, 'summary', this.node.querySelector('div.s').textContent)}
 }
 
 export default function(searchGui){
