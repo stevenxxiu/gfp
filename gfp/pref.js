@@ -1,9 +1,9 @@
 /* global $, GM_addStyle, GM_registerMenuCommand, Slick*/
 import config from 'gfp/config'
-import prefStyle from 'gfp/css/pref.scss'
 import prefHtml from 'gfp/html/pref.html'
-import {InvalidFilter} from 'gfp/lib/filterClasses'
+import prefStyle from 'gfp/css/pref.scss'
 import {Filter} from 'gfp/filter'
+import {InvalidFilter} from 'gfp/lib/filterClasses'
 import {CombinedMultiMatcher} from 'gfp/matcher'
 import {addStyleResolve, bisect, pad, indexOfSorted, popMany} from 'gfp/utils'
 
