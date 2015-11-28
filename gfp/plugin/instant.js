@@ -2,7 +2,10 @@ import {SearchGui} from 'gfp/gui'
 import {ResultsData} from 'gfp/plugin/google'
 
 export default function(searchGui){
-  let resultsObserver = new MutationObserver((mutations) => {
+  let mainNode = document.getElementById('main')
+  if(!mainNode)
+    return
+  new MutationObserver((mutations) => {
     for(let mutation of mutations){
       for(let addedNode of mutation.addedNodes){
         let node = addedNode.querySelector && addedNode.querySelector(':scope > #ires')
@@ -13,11 +16,7 @@ export default function(searchGui){
         }
       }
     }
-  })
-  let mainNode = document.getElementById('main')
-  if(!mainNode)
-    return
-  resultsObserver.observe(mainNode, {subtree: true, childList: true})
+  }).observe(mainNode, {subtree: true, childList: true})
   if(!searchGui)
     searchGui = new SearchGui(ResultsData)
   return searchGui

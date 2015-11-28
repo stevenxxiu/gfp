@@ -18,7 +18,10 @@ class TextData extends NodeData {
 export default function(searchGui){
   if(window.location.href.indexOf('/cse?') == -1 && window.location.href.indexOf('/custom?') == -1)
     return
-  let resultsObserver = new MutationObserver((mutations) => {
+  let mainNode = document.getElementById('cse')
+  if(!mainNode)
+    return
+  new MutationObserver((mutations) => {
     for(let mutation of mutations){
       for(let addedNode of mutation.addedNodes){
         if(addedNode.classList && addedNode.classList.contains('gcsc-branding')){
@@ -28,11 +31,7 @@ export default function(searchGui){
         }
       }
     }
-  })
-  let mainNode = document.getElementById('cse')
-  if(!mainNode)
-    return
-  resultsObserver.observe(mainNode, {subtree: true, childList: true})
+  }).observe(mainNode, {subtree: true, childList: true})
   searchGui = new SearchGui(ResultsData)
   return searchGui
 }
