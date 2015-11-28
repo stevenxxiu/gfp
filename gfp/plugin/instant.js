@@ -1,35 +1,23 @@
+import {SearchGui} from 'gfp/gui'
 
 export default function(searchGui){
-  // //initialize searchGui if we haven't already (e.g. on the home page)
-  // if(!searchGui.initialized)
-  //   searchGui.init()
-
-  // //results parent node
-  // let resultsNode
-  // //pref link
-  // let _prefLink
-
-  // let resultsObserver=new MutationObserver(function(mutations){
-  //   mutations.forEach(function(mutation) {
-  //     //filter nodes whenever they are added, instead of doing batch filters
-  //     for(let i=0;i<mutation.addedNodes.length;i++){
-  //       addedNode=mutation.addedNodes[i]
-  //       if(addedNode.id=='ires'){
-  //         //update prefLink (google instant inserts a new one every time)
-  //         if(!_prefLink || !isInDom(_prefLink))
-  //           _prefLink=prefLink.createLinkSettings()
-  //         //we have a new query, google only adds this node with all results added (to test this properly, disable all other userscripts)
-  //         searchGui.filterResults()
-  //         prefMeta.isUpdated=false
-  //         //other extensions might use this
-  //         window.dispatchEvent(new CustomEvent('instantResults'))
-  //       }
-  //     }
-  //   })
-  // })
-
-  // let mainNode=document.getElementById('main')
-  // if(!mainNode)
-  //   return false
-  // resultsObserver.observe(mainNode,{subtree: true, childList: true})
+  let resultsObserver = new MutationObserver((mutations) => {
+    for(let mutation of mutations){
+      for(let addedNode of mutation.addedNodes){
+        let node = addedNode.querySelector && addedNode.querySelector(':scope > #ires')
+        if(node){
+          // we have a new query, google only adds this node with all results added
+          searchGui.nodeData.children.length = 0
+          searchGui.filterResults(node)
+        }
+      }
+    }
+  })
+  let mainNode = document.getElementById('main')
+  if(!mainNode)
+    return
+  resultsObserver.observe(mainNode, {subtree: true, childList: true})
+  if(!searchGui)
+    searchGui = new SearchGui()
+  return searchGui
 }
