@@ -297,7 +297,7 @@ class PrefDialog {
           let date = new Date(value)
           return dataContext.hitCount > 0 ? (
             `${date.getFullYear()}-${pad(date.getMonth() + 1, 2)}-${pad(date.getDate(), 2)} ` +
-            `${pad(date.getHours() + 1, 2)}:${pad(date.getMinutes(), 2)}:${pad(date.getSeconds(), 2)}:` +
+            `${pad(date.getHours(), 2)}:${pad(date.getMinutes(), 2)}:${pad(date.getSeconds(), 2)}:` +
             `${pad(date.getMilliseconds(), 3)}`
           ) : ''
         }, editor: Slick.Editors.Integer,
