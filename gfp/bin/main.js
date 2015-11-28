@@ -6,7 +6,7 @@ function main(){
   let searchGui = null
   // es5 to allow webpack to parse requires
   for(let i = 0; i < config.plugins.length; i++)
-    searchGui = searchGui || require('gfp/plugin/' + config.plugins[i]).default(searchGui)
+    searchGui = require('gfp/plugin/' + config.plugins[i]).default(searchGui)
   let pref = require('gfp/pref').default
   new pref(searchGui)
   LogTime.snap('Total init time')

@@ -18,6 +18,7 @@ export default function(searchGui){
   if(!mainNode)
     return
   resultsObserver.observe(mainNode, {subtree: true, childList: true})
-  searchGui = new SearchGui(ResultsData)
+  if(!searchGui)
+    searchGui = new SearchGui(ResultsData)
   return searchGui
 }
