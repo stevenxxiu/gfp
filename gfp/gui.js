@@ -99,7 +99,7 @@ export class SearchGui {
   hideResult(nodeData, filter=null){
     if(nodeData.act(this.hideResult, filter))
       return
-    if(config.allowHidden && filter.collapse){
+    if(config.allowHidden && (!filter || filter.collapse)){
       nodeData.node.classList.add('hide')
       nodeData.undo = () => nodeData.node.classList.remove('hide')
       return
@@ -188,7 +188,7 @@ export class SearchGui {
       if(!this._filterResults(childData))
         filtered = false
     }
-    if(filtered)
+    if(filtered && nodeData.node)
       this.hideResult(nodeData)
     else if(NodeData.attrs.some((attr) => nodeData[attr] !== null))
       this.addFilterLink(nodeData)
