@@ -31,10 +31,10 @@
 // @require     https://cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js
 // @require     https://cdn.jsdelivr.net/jquery.ui/1.11.3/jquery-ui.min.js
 // @require     https://cdn.jsdelivr.net/jquery.event.drag/2.2/jquery.event.drag.min.js
-// @require     https://rawgit.com/mleibman/SlickGrid/2.1.0/slick.core.js
-// @require     https://rawgit.com/simonzack/SlickGrid/master/slick.editors.js
-// @require     https://rawgit.com/mleibman/SlickGrid/2.1.0/slick.grid.js
-// @require     https://rawgit.com/mleibman/SlickGrid/2.1.0/plugins/slick.rowselectionmodel.js
+// @require     https://rawgit.com/6pac/SlickGrid/2.1.0/slick.core.js
+// @require     https://rawgit.com/6pac/SlickGrid/master/slick.editors.js
+// @require     https://rawgit.com/6pac/SlickGrid/2.1.0/slick.grid.js
+// @require     https://rawgit.com/6pac/SlickGrid/2.1.0/plugins/slick.rowselectionmodel.js
 // @resource    jquery-ui-css https://cdn.jsdelivr.net/jquery.ui/1.11.3/themes/smoothness/jquery-ui.min.css
 // @resource    jquery-ui-css/images/ui-bg_glass_55_fbf9ee_1x400.png https://cdn.jsdelivr.net/jquery.ui/1.11.3/themes/smoothness/images/ui-bg_glass_55_fbf9ee_1x400.png
 // @resource    jquery-ui-css/images/ui-bg_glass_65_ffffff_1x400.png https://cdn.jsdelivr.net/jquery.ui/1.11.3/themes/smoothness/images/ui-bg_glass_65_ffffff_1x400.png
@@ -47,7 +47,7 @@
 // @resource    jquery-ui-css/images/ui-icons_454545_256x240.png https://cdn.jsdelivr.net/jquery.ui/1.11.3/themes/smoothness/images/ui-icons_454545_256x240.png
 // @resource    jquery-ui-css/images/ui-icons_888888_256x240.png https://cdn.jsdelivr.net/jquery.ui/1.11.3/themes/smoothness/images/ui-icons_888888_256x240.png
 // @resource    jquery-ui-css/images/ui-icons_cd0a0a_256x240.png https://cdn.jsdelivr.net/jquery.ui/1.11.3/themes/smoothness/images/ui-icons_cd0a0a_256x240.png
-// @resource    slickgrid-css https://rawgit.com/mleibman/SlickGrid/2.1.0/slick.grid.css
-// @resource    slickgrid-css/images/sort-asc.gif https://rawgit.com/mleibman/SlickGrid/2.1.0/images/sort-asc.gif
-// @resource    slickgrid-css/images/sort-desc.gif https://rawgit.com/mleibman/SlickGrid/2.1.0/images/sort-desc.gif
+// @resource    slickgrid-css https://rawgit.com/6pac/SlickGrid/2.1.0/slick.grid.css
+// @resource    slickgrid-css/images/sort-asc.gif https://rawgit.com/6pac/SlickGrid/2.1.0/images/sort-asc.gif
+// @resource    slickgrid-css/images/sort-desc.gif https://rawgit.com/6pac/SlickGrid/2.1.0/images/sort-desc.gif
 // ==/UserScript==
