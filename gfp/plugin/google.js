@@ -4,15 +4,13 @@ import {cache} from 'gfp/utils'
 export class ResultsData extends NodeData {
   *getChildren(){
     for(let child of this.node.querySelectorAll('.g')){
-      if(child.id == 'imagebox_bigimages'){
+      if(child.classList.contains('obcontainer') || child.classList.contains('mnr-c')){
+      }else if(child.id == 'imagebox_bigimages'){
         yield new ImageContainerData(child)
       }else if(child.id == 'lclbox'){
         yield new MapContainerData(child)
-      }else if(child.classList.contains('mnr-c')){
-        yield new KnowledgeData(child)
       }else if(child.classList.contains('card-section')){
         yield new NewsData(child)
-      }else if(child.classList.contains('obcontainer')){
       }else if(child.childElementCount == 2){
         yield new TweetData(child)
       }else if(child.childElementCount == 3){
@@ -43,8 +41,6 @@ class MapContainerData extends NodeData {
 }
 
 class MapData extends CommonData {}
-
-class KnowledgeData extends CommonData {}
 
 class NewsData extends NodeData {
   get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite').parentNode)}
