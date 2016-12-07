@@ -11,7 +11,7 @@ let through = require('through-gulp')
 let webpack = require('webpack')
 let webpackStream = require('webpack-stream')
 
-function build(inPath, outPath, cover=false){
+function build(inPath, outPath, devtool=undefined, cover=false){
   let resRoot = path.resolve('.').replace(/\\/g, '/')
   return gulp.src(inPath)
     .pipe(webpackStream({
@@ -43,13 +43,14 @@ function build(inPath, outPath, cover=false){
       plugins: [
         new webpack.LoaderOptionsPlugin({options: {postcss: [autoprefixer({browsers: ['last 2 versions']})]}}),
       ],
+      devtool: devtool,
       watch: true,
       output: {filename: outPath},
     }, webpack))
 }
 
 gulp.task('pref', () => {
-  build('gfp/bin/pref.js', 'pref.js', {devtool: '#inline-source-map'}).pipe(gulp.dest('dist'))
+  build('gfp/bin/pref.js', 'pref.js', 'source-map').pipe(gulp.dest('dist'))
 })
 
 gulp.task('greasemonkey', () => {
@@ -62,19 +63,21 @@ gulp.task('greasemonkey', () => {
 })
 
 gulp.task('test', () => {
-  build('gfp/bin/test.js', 'test.js', true).pipe(gulp.dest('dist')).pipe(through(function(file, encoding, callback){
-    new Mocha({ui: 'tdd'}).addFile('dist/test.js').run(() => {
-      let collector = new istanbul.Collector()
-      let reporter = new istanbul.Reporter()
-      collector.add(global.__coverage__)
-      reporter.addAll(['text', 'lcov'])
-      reporter.write(collector, true, () => {})
-      delete global.__coverage__
-      delete require.cache[path.resolve('dist/test.js')]
-      this.push(file)
-      callback()
-    })
-  }))
+  build('gfp/bin/test.js', 'test.js', undefined, 'source-map').pipe(gulp.dest('dist')).pipe(through(
+    function(file, encoding, callback){
+      new Mocha({ui: 'tdd'}).addFile('dist/test.js').run(() => {
+        let collector = new istanbul.Collector()
+        let reporter = new istanbul.Reporter()
+        collector.add(global.__coverage__)
+        reporter.addAll(['text', 'lcov'])
+        reporter.write(collector, true, () => {})
+        delete global.__coverage__
+        delete require.cache[path.resolve('dist/test.js')]
+        this.push(file)
+        callback()
+      })
+    }
+  ))
 })
 
 gulp.task('default', ['greasemonkey'])
