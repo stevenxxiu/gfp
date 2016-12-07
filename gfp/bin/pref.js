@@ -1,4 +1,7 @@
-/* globals $ */
+import $ from 'jquery'
+
+import Config from 'gfp/config'
+import Pref from 'gfp/pref'
 import {Filter} from 'gfp/filter'
 import {pad} from 'gfp/utils'
 
@@ -26,9 +29,9 @@ function main(){
   window.GM_registerMenuCommand = (name, cb) => $(cb)
   window.GM_getValue = (name, value) => name in window.store ? window.store[name]: value
   window.GM_setValue = (name, value) => window.store[name] = value
-  let config = require('gfp/config').default
-  let pref = require('gfp/pref').default
-  new pref(null)
+  let config = new Config()
+  let searchGui = {config: config, filterResults: () => {}}
+  new Pref(searchGui)
   $(() => {
     let controls = $(`<div style="text-align: center; position: absolute; left: 0; right: 0; bottom: 80px;">
       <div style="display: inline-block;">

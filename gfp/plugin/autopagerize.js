@@ -1,8 +1,8 @@
 
-export default function(searchGui){
+export default function(searchGui, _config){
   let mainNode = document.getElementById('rso')
   if(!mainNode || !searchGui)
-    return
+    return searchGui
   new MutationObserver((mutations) => {
     // all results have finished loading
     let res = []

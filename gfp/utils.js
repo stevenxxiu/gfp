@@ -1,4 +1,3 @@
-/* global GM_addStyle, GM_getResourceText, GM_getResourceURL */
 
 export function addStyleResolve(name){
   GM_addStyle(GM_getResourceText(name).replace(

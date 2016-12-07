@@ -1,4 +1,3 @@
-/* globals GM_getValue, GM_setValue */
 import {Filter} from 'gfp/filter'
 import {bisect, indexOfSorted, popMany} from 'gfp/utils'
 
@@ -50,7 +49,7 @@ class Filters {
   }
 }
 
-class Config {
+export default class Config {
   constructor(){
     this.plugins = ['google', 'customsearch', 'instant', 'autopagerize']
     this.allowHidden = GM_getValue('allowHidden', true)
@@ -88,5 +87,3 @@ class Config {
     GM_setValue('filters', JSON.stringify(this.filtersObject))
   }
 }
-
-export default new Config()

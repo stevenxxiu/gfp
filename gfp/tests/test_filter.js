@@ -1,3 +1,6 @@
+import sinon from 'sinon'
+import {assert} from 'chai'
+
 import {BlockingFilter, MultiRegExpFilter, RegExpFilter, WhitelistFilter} from 'gfp/filter'
 import {ActiveFilter, Filter, InvalidFilter} from 'gfp/lib/filterClasses'
 

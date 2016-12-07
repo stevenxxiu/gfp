@@ -72,10 +72,10 @@ class TextData extends CommonData {
   get summary(){return cache(this, 'summary', this.node.querySelector('div.s').textContent)}
 }
 
-export default function(searchGui){
+export default function(searchGui, config){
   if(window.location.href.indexOf('/search?') == -1)
     return
-  searchGui = new SearchGui(ResultsData)
+  searchGui = new SearchGui(ResultsData, config)
   searchGui.filterResults(document.getElementById('ires'))
   return searchGui
 }

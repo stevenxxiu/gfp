@@ -15,12 +15,13 @@ class TextData extends NodeData {
   get summary(){return cache(this, 'summary', this.node.querySelector('.gs-snippet').textContent)}
 }
 
-export default function(searchGui){
+export default function(searchGui, config){
   if(window.location.href.indexOf('/cse?') == -1 && window.location.href.indexOf('/custom?') == -1)
-    return
+    return searchGui
   let mainNode = document.getElementById('cse')
   if(!mainNode)
-    return
+    return searchGui
+  searchGui = new SearchGui(ResultsData, config)
   new MutationObserver((mutations) => {
     for(let mutation of mutations){
       for(let addedNode of mutation.addedNodes){
@@ -32,6 +33,5 @@ export default function(searchGui){
       }
     }
   }).observe(mainNode, {subtree: true, childList: true})
-  searchGui = new SearchGui(ResultsData)
   return searchGui
 }

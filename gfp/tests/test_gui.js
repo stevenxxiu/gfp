@@ -1,13 +1,16 @@
-import config from 'gfp/config'
+import sinon from 'sinon'
+import {assert} from 'chai'
+
+import Config from 'gfp/config'
 import {Filter} from 'gfp/filter'
-import {NodeData, ResultsData, SearchGui} from 'gfp/gui'
+import {NodeData, SearchGui} from 'gfp/gui'
 
 suite('SearchGui', () => {
   let self = {sandbox: sinon.sandbox.create()}
   let createSearchGui = (filters, nodeData) => {
-    self.sandbox.stub(window, 'GM_getValue').withArgs('filters').returns(JSON.stringify(filters))
-    config.constructor.call(config)
-    self.searchGui = new SearchGui()
+    self.sandbox.stub(global, 'GM_getValue').withArgs('filters').returns(JSON.stringify(filters))
+    self.config = new Config()
+    self.searchGui = new SearchGui(function(){return self.newData}, self.config)
     self.searchGui.nodeData = nodeData
     self.sandbox.stub(self.searchGui, 'hideResult')
     self.sandbox.stub(self.searchGui, 'addFilterLink')
@@ -32,7 +35,7 @@ suite('SearchGui', () => {
       createSearchGui({}, {})
       sinon.spy(self.searchGui.matcher, 'add')
       let filter = Filter.fromText('a')
-      config.filters.add(filter)
+      self.config.filters.add(filter)
       assert.calledOnce(self.searchGui.matcher.add)
       assert.calledWithExactly(self.searchGui.matcher.add, filter)
     })
@@ -40,8 +43,8 @@ suite('SearchGui', () => {
       createSearchGui({}, {})
       sinon.spy(self.searchGui.matcher, 'remove')
       let filter = Filter.fromText('a')
-      config.filters.add(filter)
-      config.filters.remove([filter])
+      self.config.filters.add(filter)
+      self.config.filters.remove([filter])
       assert.calledOnce(self.searchGui.matcher.remove)
       assert.calledWithExactly(self.searchGui.matcher.remove, filter)
     })
@@ -50,7 +53,6 @@ suite('SearchGui', () => {
     test('only processes new results when node is specified', () => {
       createSearchGui({}, self.existingData)
       self.sandbox.spy(self.searchGui.matcher, 'matchesAny')
-      self.sandbox.stub(ResultsData.prototype, 'getChildren', self.newData.getChildren)
       self.searchGui.filterResults({})
       assert.callCount(self.searchGui.matcher.matchesAny, 3)
       assert.equal(self.searchGui.nodeData.children.length, 3)
@@ -64,28 +66,30 @@ suite('SearchGui', () => {
     })
     test('config is not updated if there is no match', () => {
       createSearchGui({'a0$$b0$$c0': {}}, self.existingData)
-      self.sandbox.spy(config.filters, 'update')
-      self.sandbox.spy(config, 'flushFilters')
+      self.sandbox.spy(self.config.filters, 'update')
+      self.sandbox.spy(self.config, 'flushFilters')
       self.searchGui.filterResults()
-      assert.notCalled(config.filters.update)
-      assert.notCalled(config.flushFilters)
+      assert.notCalled(self.config.filters.update)
+      assert.notCalled(self.config.flushFilters)
     })
     test('config is updated on match', () => {
       createSearchGui({'a1$$b1$$c1': {}}, self.existingData)
-      self.sandbox.spy(config.filters, 'update')
-      self.sandbox.spy(config, 'flushFilters')
+      self.sandbox.spy(self.config.filters, 'update')
+      self.sandbox.spy(self.config, 'flushFilters')
       self.searchGui.filterResults()
-      assert.equal(config.filters._filters[0].hitCount, 1)
-      assert.isAbove(config.filters._filters[0].lastHit, 0)
-      assert.calledOnce(config.filters.update)
-      assert.calledWithExactly(config.filters.update, config.filters._filters[0])
-      assert.calledOnce(config.flushFilters)
+      assert.equal(self.config.filters._filters[0].hitCount, 1)
+      assert.isAbove(self.config.filters._filters[0].lastHit, 0)
+      assert.calledOnce(self.config.filters.update)
+      assert.calledWithExactly(self.config.filters.update, self.config.filters._filters[0])
+      assert.calledOnce(self.config.flushFilters)
     })
     test('blacklist matches hide results', () => {
       createSearchGui({'a1$$b1$$c1': {}}, self.existingData)
       self.searchGui.filterResults()
       assert.calledOnce(self.searchGui.hideResult)
-      assert.calledWithExactly(self.searchGui.hideResult, self.searchGui.nodeData.children[0], config.filters._filters[0])
+      assert.calledWithExactly(
+        self.searchGui.hideResult, self.searchGui.nodeData.children[0], self.config.filters._filters[0]
+      )
     })
     test('filter links are added to shown results', () => {
       createSearchGui({'@@a1$$b1$$c1': {}}, self.existingData)

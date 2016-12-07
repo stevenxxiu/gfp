@@ -1,10 +1,8 @@
-import {SearchGui} from 'gfp/gui'
-import {ResultsData} from 'gfp/plugin/google'
 
-export default function(searchGui){
+export default function(searchGui, _config){
   let mainNode = document.getElementById('main')
-  if(!mainNode)
-    return
+  if(!mainNode || !searchGui)
+    return searchGui
   new MutationObserver((mutations) => {
     for(let mutation of mutations){
       for(let addedNode of mutation.addedNodes){
@@ -17,7 +15,5 @@ export default function(searchGui){
       }
     }
   }).observe(mainNode, {subtree: true, childList: true})
-  if(!searchGui)
-    searchGui = new SearchGui(ResultsData)
   return searchGui
 }

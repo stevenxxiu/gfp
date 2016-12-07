@@ -1,3 +1,6 @@
+import sinon from 'sinon'
+import {assert} from 'chai'
+
 import {MultiRegExpFilter, RegExpFilter} from 'gfp/filter'
 import {CombinedMultiMatcher, MultiMatcher, SubMatcher} from 'gfp/matcher'
 

@@ -1,19 +1,22 @@
+import sinon from 'sinon'
+import {assert} from 'chai'
+
 import {cache, bisect, pad, addStyleResolve, indexOfSorted, popMany} from 'gfp/utils'
 
 suite('utils', () => {
   let self = {sandbox: sinon.sandbox.create()}
   teardown(() => self.sandbox.restore())
   test('addStyleResolve', () => {
-    self.sandbox.stub(window, 'GM_getResourceText').withArgs('some-css')
+    self.sandbox.stub(global, 'GM_getResourceText').withArgs('some-css')
       .returns('body{background-image: url("images/image.png");}')
-    self.sandbox.stub(window, 'GM_getResourceURL').withArgs('some-css/images/image.png')
+    self.sandbox.stub(global, 'GM_getResourceURL').withArgs('some-css/images/image.png')
       .returns('greasemonkey-script:94242686-1400-4dce-982a-090cbfef7ba1/image.png')
-    self.sandbox.stub(window, 'GM_addStyle')
+    self.sandbox.stub(global, 'GM_addStyle')
     addStyleResolve('some-css')
-    assert.calledWithExactly(window.GM_addStyle, `body{
+    assert.calledWithExactly(global.GM_addStyle, `body{
       background-image: url("greasemonkey-script:94242686-1400-4dce-982a-090cbfef7ba1/image.png");
     }`.replace(/\n\s*/g, ''))
-    assert.calledOnce(window.GM_addStyle)
+    assert.calledOnce(global.GM_addStyle)
   })
   test('pad', () => {
     assert.equal(pad(1, 3), '001')

@@ -1,5 +1,6 @@
-/* global $, GM_addStyle, GM_registerMenuCommand, Slick*/
-import config from 'gfp/config'
+import $ from 'jquery'
+import Slick from 'slickgrid'
+
 import prefHtml from 'gfp/html/pref.html'
 import prefStyle from 'gfp/css/pref.scss'
 import {Filter} from 'gfp/filter'
@@ -43,13 +44,14 @@ class DataView {
     this.comparer = comparer
     this.filterer = filterer
     this.searchGui = searchGui
+    this.config = searchGui.config
     this.filters = []
     this._filterObserver = this.filterObserver.bind(this)
-    config.filters.observe(this._filterObserver)
+    this.config.filters.observe(this._filterObserver)
   }
 
   destructor(){
-    config.filters.unobserve(this._filterObserver)
+    this.config.filters.unobserve(this._filterObserver)
   }
 
   static filterToitem(filter){
@@ -87,14 +89,17 @@ class DataView {
   }
 
   _editOp(call, func){
+    /**
+    args:
+      call: whether the action comes from pref
+    */
     if(this._enterLock)
       return
     this._enterLock = true
     func()
     if(call){
-      config.flushFilters()
-      if(this.searchGui)
-        this.searchGui.filterResults()
+      this.config.flushFilters()
+      this.searchGui.filterResults()
     }
     this._enterLock = false
   }
@@ -102,7 +107,7 @@ class DataView {
   add(filter, call=true){
     this._editOp(call, () => {
       if(call){
-        config.filters.add(filter)
+        this.config.filters.add(filter)
       }else{
         if(!this.filterer(filter))
           return
@@ -118,7 +123,7 @@ class DataView {
   remove(filters, is, call=true){
     this._editOp(call, () => {
       if(call){
-        config.filters.remove(is.map((i) => this.filters[i]))
+        this.config.filters.remove(is.map((i) => this.filters[i]))
       }else{
         // use unique comparer for speed
         let comparer = (x, y) => x['text'] > y['text'] ? 1 : x['text'] < y['text'] ? -1 : 0
@@ -143,9 +148,9 @@ class DataView {
   update(filter, i, call=true){
     this._editOp(call, () => {
       if(call){
-        // remove & add since the subfilter parent references will be different
-        config.filters.remove([this.filters[i]])
-        config.filters.add(filter)
+        // remove & add since matcher doesn't support updates
+        this.config.filters.remove([this.filters[i]])
+        this.config.filters.add(filter)
       }else{
         i = this.filters.indexOf(filter)
         if(i == -1)
@@ -161,15 +166,15 @@ class DataView {
   }
 
   getValue(){
-    return config.filters
+    return this.config.filters
   }
 
   setValue(filters=null, call=true){
     this._editOp(call, () => {
       if(filters === null)
-        filters = Array.from(config.filters)
+        filters = Array.from(this.config.filters)
       else if(call)
-        config.filters.setValue(filters)
+        this.config.filters.setValue(filters)
       this.filters = filters.filter(this.filterer).sort(this.comparer)
       this._render(true, true, true)
     })
@@ -185,7 +190,7 @@ class DataView {
   }
 
   filter(){
-    this.filters = Array.from(config.filters).filter(this.filterer).sort(this.comparer)
+    this.filters = Array.from(this.config.filters).filter(this.filterer).sort(this.comparer)
     this._render(true, true, true)
   }
 
@@ -266,7 +271,7 @@ class PrefDialog {
     let grid = new Slick.Grid(gridDom, this.dataView, [
       {
         id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true,
-        formatter: (row, cell, value, columnDef, _dataContext) =>
+        formatter: (row, cell, value, _columnDef, _dataContext) =>
           `<span class="${value.startsWith('@@') ? 'whitelist' : 'blocking'}-filter">${value}</span>`,
         editor: Slick.Editors.Text, validator: (text) => {
           // spaces only don't count as being empty, since they can exist in urls
@@ -281,11 +286,11 @@ class PrefDialog {
       }, {
         // use css for the image since there can be many slow filters
         id: 'slow', field: 'slow', name: '!', width: 1, sortable: true,
-        formatter: (row, cell, value, columnDef, _dataContext) =>
+        formatter: (row, cell, value, _columnDef, _dataContext) =>
           value ? '<img class="slow-image"></img>' : '',
       }, {
         id: 'enabled', field: 'enabled', name: 'Enabled', width: 40, sortable: true,
-        formatter: (row, cell, value, columnDef, _dataContext) =>
+        formatter: (row, cell, value, _columnDef, _dataContext) =>
           `<input type="checkbox" name="" value="${value}" ${value ? 'checked' : ''} />`,
       }, {
         id: 'hitCount', field: 'hitCount', name: 'Hits', width: 1, sortable: true,
@@ -378,8 +383,8 @@ class PrefDialog {
     /* Add & Remove */
     let cancelled = true
     let tempI = null
-    grid.onCellChange.subscribe((e, _args) => cancelled = false)
-    grid.onBeforeCellEditorDestroy.subscribe((e, _args) => {
+    grid.onCellChange.subscribe((_e, _args) => cancelled = false)
+    grid.onBeforeCellEditorDestroy.subscribe((_e, _args) => {
       if(cancelled && tempI !== null)
         setTimeout(() => {this.dataView.removeTemp(tempI); tempI = null}, 0)
       cancelled = true

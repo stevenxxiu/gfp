@@ -1,5 +1,3 @@
-/* globals GM_addStyle */
-import config from 'gfp/config'
 import guiStyle from 'gfp/css/gui.scss'
 import {BlockingFilter, MultiRegExpFilter} from 'gfp/filter'
 import {CombinedMultiMatcher} from 'gfp/matcher'
@@ -35,8 +33,9 @@ NodeData.prototype.summary = null
 NodeData.prototype.action = null
 
 export class SearchGui {
-  constructor(ResultsData){
+  constructor(ResultsData, config){
     this.ResultsData = ResultsData
+    this.config = config
     let observer = (type, value) => {
       switch(type){
         case 'add':
@@ -47,14 +46,14 @@ export class SearchGui {
             this.matcher.remove(filter)
           break
         case 'setValue':
-          this.matcher = new CombinedMultiMatcher(3)
+          this.matcher = new CombinedMultiMatcher(NodeData.attrs.length)
           for(let filter of value)
             this.matcher.add(filter)
           break
       }
     }
-    observer('setValue', config.filters)
-    config.filters.observe(observer)
+    observer('setValue', this.config.filters)
+    this.config.filters.observe(observer)
     this.nodeData = new NodeData()
     this.nodeData.children = []
     this.createNodes()
@@ -97,9 +96,9 @@ export class SearchGui {
   }
 
   hideResult(nodeData, filter=null){
-    if(nodeData.act(this.hideResult, filter))
+    if(!nodeData.node || nodeData.act(this.hideResult, filter))
       return
-    if(config.allowHidden && (!filter || filter.collapse)){
+    if(this.config.allowHidden && (!filter || filter.collapse)){
       nodeData.node.classList.add('hide')
       nodeData.undo = () => nodeData.node.classList.remove('hide')
       return
@@ -133,7 +132,7 @@ export class SearchGui {
   }
 
   addFilterLink(nodeData, filter=null){
-    if(nodeData.act(this.addFilterLink, filter))
+    if(!nodeData.node || nodeData.act(this.addFilterLink, filter))
       return
     if(!nodeData.linkArea)
       return
@@ -162,7 +161,7 @@ export class SearchGui {
     let text = prompt('Filter: ', domainUrl)
     if(text === null)
       return
-    config.filters.add(MultiRegExpFilter.fromText(text))
+    this.config.filters.add(MultiRegExpFilter.fromText(text))
     this.filterResults()
   }
 
@@ -174,7 +173,7 @@ export class SearchGui {
     if(filter){
       filter.hitCount++
       filter.lastHit = new Date().getTime()
-      config.filters.update(filter)
+      this.config.filters.update(filter)
       if(filter instanceof BlockingFilter){
         this.hideResult(nodeData, filter)
         return true
@@ -188,7 +187,7 @@ export class SearchGui {
       if(!this._filterResults(childData))
         filtered = false
     }
-    if(filtered && nodeData.node)
+    if(filtered)
       this.hideResult(nodeData)
     else if(NodeData.attrs.some((attr) => nodeData[attr] !== null))
       this.addFilterLink(nodeData)
@@ -202,7 +201,7 @@ export class SearchGui {
     */
     let matched = false
     let observer = (type, _filter) => {if(type == 'update') matched = true}
-    config.filters.observe(observer)
+    this.config.filters.observe(observer)
     if(node){
       // only need to filter the new node
       let nodeData = new this.ResultsData(node)
@@ -212,7 +211,7 @@ export class SearchGui {
       this._filterResults(this.nodeData)
     }
     if(matched)
-      config.flushFilters()
-    config.filters.unobserve(observer)
+      this.config.flushFilters()
+    this.config.filters.unobserve(observer)
   }
 }
