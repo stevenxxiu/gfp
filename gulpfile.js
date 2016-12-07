@@ -4,66 +4,36 @@ let autoprefixer = require('autoprefixer')
 let concat = require('gulp-continuous-concat')
 let FirefoxProfile = require('firefox-profile')
 let gulp = require('gulp')
-let karma = require('karma')
-let merge = require('merge').recursive
-let open_ = require('open')
 let path = require('path')
 let webpack = require('webpack')
 let webpackStream = require('webpack-stream')
 
-let webpackConfig = {
-  resolve: {root: [path.resolve('.'), path.resolve('gfp/lib')]},
-  module: {
-    loaders: [{
-      test: /\.html$/, loader: `html?minimize=true&attrs=img:src&root=${path.resolve('.').replace(/\\/g, '/')}`,
-    }, {
-      test: /\.scss$/, loader: `css?minimize&root=${path.resolve('.').replace(/\\/g, '/')}!postcss!sass?indentedSyntax`,
-    }, {
-      test: /\.png$/, loader: 'url?mimetype=image/png&limit=10000',
-    }],
-  },
-  postcss: () => [autoprefixer({browsers: ['last 2 versions']})],
-}
-
-let babelConfig = {
-  build: {
-    plugins: [
-      'transform-es2015-block-scoped-functions',
-      'transform-es2015-classes',
-      'transform-es2015-constants',
-      'transform-es2015-destructuring',
-      'transform-es2015-function-name',
-      'transform-es2015-modules-commonjs',
-      'transform-es2015-object-super',
-      'transform-es2015-parameters',
-      'transform-es2015-unicode-regex',
-    ],
-  },
-  test: {
-    presets: ['es2015-without-regenerator'],
-  },
-}
-
-let karmaConfig = {
-  frameworks: ['source-map-support', 'mocha', 'chai', 'sinon'],
-  client: {
-    captureConsole: true,
-    mocha: {reporter: 'html', ui: 'tdd'},
-  },
-}
-
-function build(path, webPackConfig_){
+function build(path_){
+  let resRoot = path.resolve('.').replace(/\\/g, '/')
   let fileName = 'google_search_filter_plus.user.js'
-  return gulp.src(path)
-    .pipe(webpackStream(merge(true, webpackConfig, {
+  return gulp.src(path_)
+    .pipe(webpackStream({
+      resolve: {modules: ['node_modules', path.resolve('.'), path.resolve('gfp/lib')]},
       module: {
-        loaders: [{
-          test: /\.js$/, exclude: /[/\\]node_modules[/\\]/, loader: 'babel', query: babelConfig.build,
-        }].concat(webpackConfig.module.loaders),
+        rules: [
+          {
+            test: /\.html$/, loader: 'html-loader', options: {minimize: true, attrs: 'img:src', root: resRoot},
+          }, {
+            test: /\.scss$/, use: [
+              {loader: 'css-loader', options: {minimize: true, root: resRoot}}, {loader: 'postcss-loader'},
+              {loader: 'sass-loader', options: {indentedSyntax: true}},
+            ],
+          }, {
+            test: /\.png$/, loader: 'url-loader', options: {mimetype: 'img/png', limit: 10000},
+          },
+        ],
       },
+      plugins: [
+        new webpack.LoaderOptionsPlugin({options: {postcss: [autoprefixer({browsers: ['last 2 versions']})]}}),
+      ],
       watch: true,
       output: {filename: fileName},
-    }, webPackConfig_ || {}), webpack))
+    }, webpack))
     .pipe(addsrc('gfp/header.js'))
     .pipe(concat(fileName))
 }
@@ -73,7 +43,7 @@ gulp.task('build', function(){
 })
 
 gulp.task('greasemonkey', function(){
-  new FirefoxProfile.Finder().getPath('default', function(err, profilePath){
+  new FirefoxProfile.Finder().getPath('dev-edition-default', function(err, profilePath){
     build('gfp/bin/main.js').pipe(gulp.dest(path.join(profilePath, 'gm_scripts/Google_Search_Filter_Plus')))
   })
 })
@@ -117,4 +87,4 @@ gulp.task('cover', function(){
   open_('http://localhost:9877')
 })
 
-gulp.task('default', ['test', 'cover'])
+gulp.task('default', ['greasemonkey'])
