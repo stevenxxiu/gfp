@@ -4,13 +4,14 @@ let autoprefixer = require('autoprefixer')
 let concat = require('gulp-continuous-concat')
 let FirefoxProfile = require('firefox-profile')
 let gulp = require('gulp')
+let istanbul = require('istanbul')
 let Mocha = require('mocha')
 let path = require('path')
 let through = require('through-gulp')
 let webpack = require('webpack')
 let webpackStream = require('webpack-stream')
 
-function build(inPath, outPath){
+function build(inPath, outPath, cover=false){
   let resRoot = path.resolve('.').replace(/\\/g, '/')
   return gulp.src(inPath)
     .pipe(webpackStream({
@@ -34,7 +35,9 @@ function build(inPath, outPath){
             ],
           }, {
             test: /\.png$/, loader: 'url-loader', options: {mimetype: 'img/png', limit: 10000},
-          },
+          }, ...(cover ? [{
+            test: /\.js$/, exclude: [path.resolve('gfp/lib')], loader: 'babel-loader', options: {plugins: ['istanbul']},
+          }] : []),
         ],
       },
       plugins: [
@@ -59,11 +62,18 @@ gulp.task('greasemonkey', () => {
 })
 
 gulp.task('test', () => {
-  build('gfp/bin/test.js', 'test.js').pipe(gulp.dest('dist')).pipe(through(function(file, encoding, callback){
-    new Mocha({ui: 'tdd'}).addFile('dist/test.js').run(() => {})
-    delete require.cache[path.resolve('dist/test.js')]
-    this.push(file)
-    callback()
+  build('gfp/bin/test.js', 'test.js', true).pipe(gulp.dest('dist')).pipe(through(function(file, encoding, callback){
+    new Mocha({ui: 'tdd'}).addFile('dist/test.js').run(() => {
+      let collector = new istanbul.Collector()
+      let reporter = new istanbul.Reporter()
+      collector.add(global.__coverage__)
+      reporter.addAll(['text', 'lcov'])
+      reporter.write(collector, true, () => {})
+      delete global.__coverage__
+      delete require.cache[path.resolve('dist/test.js')]
+      this.push(file)
+      callback()
+    })
   }))
 })
 
