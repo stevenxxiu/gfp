@@ -59,9 +59,9 @@ gulp.task('greasemonkey', () => {
 })
 
 gulp.task('test', () => {
-  let mocha = new Mocha({ui: 'tdd'}).addFile('dist/test.js')
   build('gfp/bin/test.js', 'test.js').pipe(gulp.dest('dist')).pipe(through(function(file, encoding, callback){
-    mocha.run(() => {})
+    new Mocha({ui: 'tdd'}).addFile('dist/test.js').run(() => {})
+    delete require.cache[path.resolve('dist/test.js')]
     this.push(file)
     callback()
   }))
