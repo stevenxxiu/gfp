@@ -4,14 +4,14 @@ import {assert} from 'chai'
 import {cache, bisect, pad, addStyleResolve, indexOfSorted, popMany} from 'gfp/utils'
 
 suite('utils', () => {
-  let self = {sandbox: sinon.sandbox.create()}
-  teardown(() => self.sandbox.restore())
+  this.sandbox = sinon.sandbox.create()
+  teardown(() => this.sandbox.restore())
   test('addStyleResolve', () => {
-    self.sandbox.stub(global, 'GM_getResourceText').withArgs('some-css')
+    this.sandbox.stub(global, 'GM_getResourceText').withArgs('some-css')
       .returns('body{background-image: url("images/image.png");}')
-    self.sandbox.stub(global, 'GM_getResourceURL').withArgs('some-css/images/image.png')
+    this.sandbox.stub(global, 'GM_getResourceURL').withArgs('some-css/images/image.png')
       .returns('greasemonkey-script:94242686-1400-4dce-982a-090cbfef7ba1/image.png')
-    self.sandbox.stub(global, 'GM_addStyle')
+    this.sandbox.stub(global, 'GM_addStyle')
     addStyleResolve('some-css')
     assert.calledWithExactly(global.GM_addStyle, `body{
       background-image: url("greasemonkey-script:94242686-1400-4dce-982a-090cbfef7ba1/image.png");
