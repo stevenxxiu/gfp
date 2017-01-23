@@ -59,13 +59,13 @@ suite('Config', () => {
     })
   })
   test('flushAllowHidden calls GM_setValue', () => {
-    this.sandbox.spy(global, 'GM_setValue')
+    this.sandbox.spy(window, 'GM_setValue')
     this.config.flushAllowHidden()
-    assert.calledOnce(global.GM_setValue)
+    assert.calledOnce(window.GM_setValue)
   })
   test('flushFilters calls GM_setValue', () => {
-    this.sandbox.spy(global, 'GM_setValue')
+    this.sandbox.spy(window, 'GM_setValue')
     this.config.flushFilters()
-    assert.calledOnce(global.GM_setValue)
+    assert.calledOnce(window.GM_setValue)
   })
 })

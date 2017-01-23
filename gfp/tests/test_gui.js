@@ -8,7 +8,7 @@ import {NodeData, SearchGui} from 'gfp/gui'
 suite('SearchGui', () => {
   this.sandbox = sinon.sandbox.create()
   let createSearchGui = (filters, nodeData) => {
-    this.sandbox.stub(global, 'GM_getValue').withArgs('filters').returns(JSON.stringify(filters))
+    this.sandbox.stub(window, 'GM_getValue').withArgs('filters').returns(JSON.stringify(filters))
     this.config = new Config()
     this.searchGui = new SearchGui(this.NewData, this.config)
     this.searchGui.nodeData = nodeData
