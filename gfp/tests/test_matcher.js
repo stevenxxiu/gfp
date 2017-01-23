@@ -9,7 +9,7 @@ SubMatcher.prototype.toTestObject = function(){
 
 suite('SubMatcher', () => {
   setup(() => this.matcher = new SubMatcher())
-  test('constructor', () => {
+  test('constructor_', () => {
     assert.equal(this.matcher.filterByKeyword.size, 0)
   })
   test('isSlowFilter', () => {
@@ -103,7 +103,7 @@ suite('SubMatcher', () => {
 
 suite('MultiMatcher', () => {
   setup(() => {this.attrs = [0, 1]; this.matcher = new MultiMatcher(2)})
-  test('constructor', () => {
+  test('constructor_', () => {
     assert.equal(this.matcher.matchers.length, 2)
   })
   test('isSlowFilter', () => {
@@ -178,7 +178,7 @@ suite('MultiMatcher', () => {
 
 suite('CombinedMultiMatcher', () => {
   setup(() => {this.attrs = [0]; this.matcher = new CombinedMultiMatcher(1)})
-  test('constructor', () => {
+  test('constructor_', () => {
     let matcher = new CombinedMultiMatcher(2)
     assert.equal(matcher.blacklist.matchers.length, 2)
     assert.equal(matcher.whitelist.matchers.length, 2)
