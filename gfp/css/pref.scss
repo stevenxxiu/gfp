@@ -8,10 +8,10 @@
   resize: none
 
 .gfp
-  display: flex !important
-  flex-direction: column
   outline: none
   user-select: none
+  display: flex !important
+  flex-direction: column
   .slick-sort-indicator
     float: none
   a
@@ -20,9 +20,10 @@
     height: 16px
     width: 16px
   .row:last-child
-    flex-grow: 1
-  .grid
-    height: 100%
+    flex: 1
+    display: flex
+    .grid
+      flex: 1
   .slick-cell
     &:first-child
       white-space: pre
