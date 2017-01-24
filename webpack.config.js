@@ -7,7 +7,7 @@ let env = process.env.NODE_ENV.trim()
 let resRoot = path.resolve('.').replace(/\\/g, '/')
 
 module.exports = {
-  entry: {dev: 'gfp/bin/main.js', pref: 'gfp/bin/pref.js'}[env],
+  entry: {browser: 'gfp/bin/main.js', pref: 'gfp/bin/pref.js'}[env],
   resolve: {modules: ['node_modules', '.', 'gfp/lib']},
   externals: {
     'jquery': '$',
@@ -35,9 +35,9 @@ module.exports = {
   },
   plugins: [
     new webpack.LoaderOptionsPlugin({options: {postcss: [autoprefixer({browsers: ['last 2 versions']})]}}),
-    new webpack.BannerPlugin({banner: env != 'dev' ? '' : fs.readFileSync('gfp/header.js', 'utf-8'), raw: true}),
+    new webpack.BannerPlugin({banner: env != 'browser' ? '' : fs.readFileSync('gfp/header.js', 'utf-8'), raw: true}),
   ],
   watch: true,
   performance: {hints: false},
-  devtool: env != 'dev' ? 'inline-source-map': '#',
+  devtool: env != 'browser' ? 'inline-source-map': '#',
 }

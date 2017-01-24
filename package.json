@@ -23,7 +23,7 @@
   },
   "scripts": {
     "pref": "set NODE_ENV=pref && webpack --output-filename dist/pref.js",
-    "dev": "set NODE_ENV=dev && webpack --output-filename dist/browser.user.js",
+    "browser": "set NODE_ENV=browser && webpack --output-filename dist/browser.user.js",
     "test": "set NODE_ENV=test && karma start"
   },
   "eslintConfig": {
