@@ -9,8 +9,6 @@ export class ResultsData extends NodeData {
         yield new ImageContainerData(child)
       }else if(child.id == 'lclbox'){
         yield new MapContainerData(child)
-      }else if(child.classList.contains('card-section')){
-        yield new NewsData(child)
       }else if(child.childElementCount == 2){
         yield new TweetData(child)
       }else if(child.childElementCount == 3){
@@ -19,6 +17,8 @@ export class ResultsData extends NodeData {
         yield new TextData(child)
       }
     }
+    for(let child of this.node.querySelectorAll('g-inner-card'))
+      yield new NewsData(child)
   }
 }
 
@@ -43,13 +43,9 @@ class MapContainerData extends NodeData {
 class MapData extends CommonData {}
 
 class NewsData extends NodeData {
-  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite').parentNode)}
+  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite').parentNode.parentNode)}
   get url(){return cache(this, 'url', this.node.querySelector('a').href)}
   get title(){return cache(this, 'title', this.node.querySelector('a').textContent)}
-  get summary(){
-    let node = this.node.querySelector('span.s')
-    return cache(this, 'summary', node ? node.textContent : null)
-  }
 }
 
 class TweetData extends CommonData {
