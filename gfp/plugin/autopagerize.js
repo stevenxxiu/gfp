@@ -10,7 +10,7 @@ export default function(searchGui, _config){
       for(let addedNode of mutation.addedNodes)
         if(addedNode.classList && addedNode.classList.contains('g'))
           res.push(addedNode)
-    searchGui.filterResults({querySelectorAll: () => res})
+    searchGui.filterResults({querySelectorAll: (selector) => selector == '.g' ? res : []})
   }).observe(mainNode, {subtree: true, childList: true})
   return searchGui
 }

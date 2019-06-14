@@ -9,9 +9,7 @@ export class ResultsData extends NodeData {
         yield new ImageContainerData(child)
       }else if(child.id == 'lclbox'){
         yield new MapContainerData(child)
-      }else if(child.childElementCount == 2){
-        yield new TweetData(child)
-      }else if(child.childElementCount == 3){
+      }else if(child.firstChild.nodeName == 'G-SECTION-WITH-HEADER'){
         yield new TweetContainerData(child)
       }else{
         yield new TextData(child)
@@ -24,8 +22,8 @@ export class ResultsData extends NodeData {
 
 class CommonData extends NodeData {
   get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite').parentNode)}
-  get url(){return cache(this, 'url', this.node.querySelector('h3.r > a').href)}
-  get title(){return cache(this, 'title', this.node.querySelector('h2.r, h3.r').textContent)}
+  get url(){return cache(this, 'url', this.node.querySelector('.r > a').href)}
+  get title(){return cache(this, 'title', this.node.querySelector('h3').textContent)}
 }
 
 class ImageContainerData extends NodeData {
@@ -43,25 +41,23 @@ class MapContainerData extends NodeData {
 class MapData extends CommonData {}
 
 class NewsData extends NodeData {
-  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite').parentNode.parentNode)}
+  get linkArea(){
+    if(this.node.querySelector('cite') == null) return // drawing hasn't finished
+    return cache(this, 'linkArea', this.node.querySelector('cite').parentNode)
+  }
   get url(){return cache(this, 'url', this.node.querySelector('a').href)}
   get title(){return cache(this, 'title', this.node.querySelector('a').textContent)}
 }
 
-class TweetData extends CommonData {
-  get url(){return cache(this, 'url', this.node.querySelector('h3.r > div > a').href)}
-  get summary(){return cache(this, 'summary', this.node.querySelector('div[role="heading"]').textContent)}
-}
-
 class TweetContainerData extends CommonData {
-  get url(){return cache(this, 'url', this.node.querySelector('h3.r > div > a').href)}
+  get url(){return cache(this, 'url', this.node.querySelector('g-more-link > a').href)}
   *getChildren(){for(let child of this.node.querySelectorAll('ol')) yield new TweetSubData(child)}
 }
 
-class TweetSubData extends TweetData {
-  get url(){return cache(this, 'url', this.node.querySelector('h3.r > div > a').href)}
-  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('h3.r + div a'))}
-  get summary(){return cache(this, 'summary', this.node.querySelector('div[role="heading"]').textContent)}
+class TweetSubData extends CommonData {
+  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('span.f'))}
+  get url(){return cache(this, 'url', this.node.querySelector('a').href)}
+  get summary(){return cache(this, 'summary', this.node.querySelector('a').textContent)}
 }
 
 class TextData extends CommonData {
