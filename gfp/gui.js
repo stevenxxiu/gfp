@@ -157,7 +157,7 @@ export class SearchGui {
   }
 
   addFromResult(nodeData){
-    let domainUrl = '||' + nodeData.url.replace(/^[\w\-]+:\/+(?:www\.)?/, '')
+    let domainUrl = '||' + nodeData.url.replace(/^[\w-]+:\/+(?:www\.)?/, '')
     let text = prompt('Filter: ', domainUrl)
     if(text === null)
       return
