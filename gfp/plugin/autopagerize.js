@@ -14,14 +14,7 @@ export default function(searchGui, _config){
       // can't wrap parent/grandparent's querySelectorAll, as it will include elements not in addedNodes
       // can't use node's querySelectorAll, as it doesn't include self
       // can't create a parent element and move the nodes in it, as the nodes don't get added after the MutationObserver
-      searchGui.filterResults({querySelectorAll: function* (selector){
-        for(let node of res){
-          if(selector == '.g' && node.classList.contains('g'))
-            yield node
-          if(selector == 'g-inner-card' && node.nodeName == 'G-INNER-CARD')
-            yield node
-        }
-      }})
+      searchGui.filterResults({querySelectorAll: (selector) => res.filter(node => node.matches(selector))})
     }
   }).observe(mainNode, {subtree: true, childList: true})
   return searchGui
