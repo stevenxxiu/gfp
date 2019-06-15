@@ -16,7 +16,7 @@ export class ResultsData extends NodeData {
       }
     }
     for(let child of this.node.querySelectorAll('g-inner-card'))
-      yield new NewsData(child)
+      yield new NewsVideoData(child)
   }
 }
 
@@ -40,10 +40,11 @@ class MapContainerData extends NodeData {
 
 class MapData extends CommonData {}
 
-class NewsData extends NodeData {
+class NewsVideoData extends NodeData {
   get linkArea(){
-    if(this.node.querySelector('cite') == null) return // drawing hasn't finished
-    return cache(this, 'linkArea', this.node.querySelector('cite').parentNode)
+    let query = this.node.querySelector('cite, span[style]')
+    if(query == null) return // drawing hasn't finished
+    return cache(this, 'linkArea', query.parentNode)
   }
   get url(){return cache(this, 'url', this.node.querySelector('a').href)}
   get title(){return cache(this, 'title', this.node.querySelector('a').textContent)}
