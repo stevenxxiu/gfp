@@ -52,11 +52,13 @@ class NewsVideoData extends NodeData {
 
 class TweetContainerData extends CommonData {
   get url(){return cache(this, 'url', this.node.querySelector('g-more-link > a').href)}
-  *getChildren(){for(let child of this.node.querySelectorAll('ol')) yield new TweetSubData(child)}
+  get title(){return cache(this, 'title', this.node.querySelector('g-link').textContent)}
+  *getChildren(){for(let child of this.node.querySelectorAll('g-inner-card')) yield new TweetSubData(child)}
 }
 
 class TweetSubData extends CommonData {
   get linkArea(){return cache(this, 'linkArea', this.node.querySelector('span.f'))}
+  get title(){return ''}
   get url(){return cache(this, 'url', this.node.querySelector('a').href)}
   get summary(){return cache(this, 'summary', this.node.querySelector('a').textContent)}
 }
