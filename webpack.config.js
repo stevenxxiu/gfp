@@ -7,6 +7,7 @@ let env = process.env.NODE_ENV.trim()
 let resRoot = path.resolve('.').replace(/\\/g, '/')
 
 module.exports = {
+  mode: 'development',
   entry: {browser: 'gfp/bin/main.js', pref: 'gfp/bin/pref.js'}[env],
   resolve: {modules: ['node_modules', '.', 'gfp/lib']},
   externals: {
@@ -21,7 +22,8 @@ module.exports = {
         test: /\.html$/, loader: 'html-loader', options: {minimize: true, attrs: 'img:src', root: resRoot},
       }, {
         test: /\.scss$/, use: [
-          {loader: 'css-loader', options: {minimize: true, root: resRoot}}, {loader: 'postcss-loader'},
+          {loader: 'css-loader'},
+          {loader: 'postcss-loader', options: {plugins: [autoprefixer({overrideBrowserslist: ['last 2 versions']})]}},
           {loader: 'sass-loader', options: {indentedSyntax: true}},
         ],
       }, {
@@ -34,7 +36,6 @@ module.exports = {
     ],
   },
   plugins: [
-    new webpack.LoaderOptionsPlugin({options: {postcss: [autoprefixer({browsers: ['last 2 versions']})]}}),
     new webpack.BannerPlugin({banner: env != 'browser' ? '' : fs.readFileSync('gfp/header.js', 'utf-8'), raw: true}),
   ],
   watch: true,
