@@ -1,20 +1,30 @@
 
 export default function(searchGui, _config){
-  let mainNode = document.getElementById('rso')
+  const mainNode = document.getElementById('rso')
   if(!mainNode || !searchGui)
     return searchGui
   new MutationObserver((mutations) => {
     // all results have finished loading this includes google's own nodes that load later too, such as news items
-    let res = []
-    for(let mutation of mutations)
-      for(let addedNode of mutation.addedNodes)
+    const res = []
+    for(const mutation of mutations)
+      for(const addedNode of mutation.addedNodes)
         if(addedNode.nodeType != 3)
           res.push(addedNode)
     if(res.length){
-      // can't wrap parent/grandparent's querySelectorAll, as it will include elements not in addedNodes
-      // can't use node's querySelectorAll, as it doesn't include self
-      // can't create a parent element and move the nodes in it, as the nodes don't get added after the MutationObserver
-      searchGui.filterResults({querySelectorAll: (selector) => res.filter(node => node.matches(selector))})
+      searchGui.filterResults({querySelectorAll: (selector) => {
+        // - Can't wrap parent/grandparent's `querySelectorAll`, as it will include elements not in `addedNodes`.
+        // - Can't use node's `querySelectorAll`, as it doesn't include the node itself.
+        // - Can't create a parent element and move the nodes in it, as the nodes don't get added after the
+        //   MutationObserver.
+        const matchedNodes = []
+        for(let node of res){
+          if(node.matches(selector))
+            matchedNodes.push(node)
+          // call `querySelectorAll` as well, as `node` can be a results container node
+          Array.prototype.push.apply(matchedNodes, node.querySelectorAll(selector))
+        }
+        return matchedNodes
+      }})
     }
   }).observe(mainNode, {subtree: true, childList: true})
   return searchGui
