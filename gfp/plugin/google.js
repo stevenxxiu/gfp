@@ -43,7 +43,7 @@ class MapData extends CommonData {}
 class NewsVideoData extends NodeData {
   get linkArea(){
     let query = this.node.querySelector('cite, span[style]')
-    if(query == null) return // drawing hasn't finished
+    if(query == null) return null // drawing hasn't finished
     return cache(this, 'linkArea', query.parentNode)
   }
   get url(){return cache(this, 'url', this.node.querySelector('a').href)}
