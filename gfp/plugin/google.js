@@ -71,6 +71,6 @@ export default function(searchGui, config){
   if(window.location.href.indexOf('/search?') == -1)
     return
   searchGui = new SearchGui(ResultsData, config)
-  searchGui.filterResults(document.getElementById('ires'))
+  searchGui.filterResults(document.getElementById('search'))
   return searchGui
 }
