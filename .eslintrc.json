@@ -18,10 +18,9 @@
     "amd": true,
     "node": true,
     "browser": true,
-    "mocha": true
+    "jest/globals": true
   },
   "globals": {
-    "global": true,
     "GM_addStyle": true,
     "GM_getResourceText": true,
     "GM_getResourceURL": true,
@@ -29,5 +28,6 @@
     "GM_setValue": true,
     "GM_registerMenuCommand": true
   },
+  "plugins": ["jest"],
   "extends": "eslint:recommended"
 }

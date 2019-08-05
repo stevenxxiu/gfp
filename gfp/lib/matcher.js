@@ -19,7 +19,7 @@
  * @fileOverview Matcher class implementing matching addresses against a list of filters.
  */
 
-let {Filter, RegExpFilter, WhitelistFilter} = require("filterClasses");
+let {Filter, RegExpFilter, WhitelistFilter} = require("./filterClasses");
 
 /**
  * Blacklist/whitelist filter matching

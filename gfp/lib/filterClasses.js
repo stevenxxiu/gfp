@@ -19,7 +19,7 @@
  * @fileOverview Definition of Filter class and its subclasses.
  */
 
-let {FilterNotifier} = require("filterNotifier");
+let {FilterNotifier} = require("./filterNotifier");
 
 /**
  * Abstract base class for filters
