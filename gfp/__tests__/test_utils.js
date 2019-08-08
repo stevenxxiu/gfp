@@ -3,21 +3,21 @@ import {cache, bisect, pad, addStyleResolve, indexOfSorted, popMany} from 'gfp/u
 describe('utils', () => {
   afterEach(() => jest.resetAllMocks())
   test('addStyleResolve', () => {
-    global.GM_getResourceText = jest.fn()
-    global.GM_getResourceText.mockImplementation(resourceName =>
+    window.GM_getResourceText = jest.fn()
+    window.GM_getResourceText.mockImplementation(resourceName =>
       resourceName == 'some-css' ? 'body{background-image: url("images/image.png");}' : null
     )
-    global.GM_getResourceURL = jest.fn()
-    global.GM_getResourceURL.mockImplementation(resourceName =>
+    window.GM_getResourceURL = jest.fn()
+    window.GM_getResourceURL.mockImplementation(resourceName =>
       resourceName == 'some-css/images/image.png' ?
         'greasemonkey-script:94242686-1400-4dce-982a-090cbfef7ba1/image.png' : null
     )
-    global.GM_addStyle = jest.fn()
+    window.GM_addStyle = jest.fn()
     addStyleResolve('some-css')
-    expect(global.GM_addStyle).toBeCalledWith(`body{
+    expect(window.GM_addStyle).toBeCalledWith(`body{
       background-image: url("greasemonkey-script:94242686-1400-4dce-982a-090cbfef7ba1/image.png");
     }`.replace(/\n\s*/g, ''))
-    expect(global.GM_addStyle).toHaveBeenCalledTimes(1)
+    expect(window.GM_addStyle).toHaveBeenCalledTimes(1)
   })
   test('pad', () => {
     expect(pad(1, 3)).toBe('001')

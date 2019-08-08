@@ -4,8 +4,8 @@ import {Filter} from 'gfp/filter'
 describe('Config', () => {
   let config
   beforeEach(() => {
-    global.GM_getValue = jest.fn().mockImplementation((name, value) => value)
-    global.GM_setValue = jest.fn()
+    window.GM_getValue = jest.fn().mockImplementation((name, value) => value)
+    window.GM_setValue = jest.fn()
     config = new Config()
   })
   afterEach(() => jest.resetAllMocks())

@@ -5,7 +5,7 @@ import {NodeData, SearchGui} from 'gfp/gui'
 describe('SearchGui', () => {
   let config, searchGui, existingData, NewData
   const createSearchGui = (filters, nodeData) => {
-    global.GM_getValue = jest.fn().mockImplementation((name) => name == 'filters' ? JSON.stringify(filters) : '')
+    window.GM_getValue = jest.fn().mockImplementation((name) => name == 'filters' ? JSON.stringify(filters) : '')
     config = new Config()
     searchGui = new SearchGui(NewData, config)
     searchGui.nodeData = nodeData
@@ -13,8 +13,8 @@ describe('SearchGui', () => {
     searchGui.addFilterLink = jest.fn()
   }
   beforeEach(() => {
-    global.GM_addStyle = () => null
-    global.GM_setValue = () => null
+    window.GM_addStyle = () => null
+    window.GM_setValue = () => null
     existingData = Object.assign(new NodeData(), {
       children: [
         Object.assign(new NodeData(), {url: 'a1', title: 'b1', summary: 'c1'}),
