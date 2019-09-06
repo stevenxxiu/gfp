@@ -1,4 +1,4 @@
-import guiStyle from 'gfp/css/gui.scss'
+import guiStyle from 'gfp/css/gui.sass'
 import {BlockingFilter, MultiRegExpFilter} from 'gfp/filter'
 import {CombinedMultiMatcher} from 'gfp/matcher'
 

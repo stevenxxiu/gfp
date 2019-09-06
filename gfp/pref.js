@@ -2,7 +2,7 @@ import $ from 'jquery'
 import Slick from 'slickgrid'
 
 import prefHtml from 'gfp/html/pref.html'
-import prefStyle from 'gfp/css/pref.scss'
+import prefStyle from 'gfp/css/pref.sass'
 import {Filter} from 'gfp/filter'
 import {InvalidFilter} from 'gfp/lib/filterClasses'
 import {CombinedMultiMatcher} from 'gfp/matcher'

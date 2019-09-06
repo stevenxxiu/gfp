@@ -21,7 +21,7 @@ module.exports = {
       {
         test: /\.html$/, loader: 'html-loader', options: {minimize: true, attrs: 'img:src', root: resRoot},
       }, {
-        test: /\.scss$/, use: [
+        test: /\.sass$/, use: [
           {loader: 'css-loader'},
           {loader: 'postcss-loader', options: {plugins: [autoprefixer({overrideBrowserslist: ['last 2 versions']})]}},
           {loader: 'sass-loader', options: {indentedSyntax: true}},
