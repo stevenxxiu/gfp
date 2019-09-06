@@ -20,8 +20,8 @@
     "webpack": "^4.39.1"
   },
   "scripts": {
-    "pref": "set NODE_ENV=pref && webpack --output-filename pref.js",
-    "browser": "set NODE_ENV=browser && webpack --output-filename google_search_filter_plus.user.js",
+    "pref": "env NODE_ENV=pref webpack --output-filename pref.js",
+    "browser": "env NODE_ENV=browser webpack --output-filename google_search_filter_plus.user.js",
     "test": "jest"
   }
 }
