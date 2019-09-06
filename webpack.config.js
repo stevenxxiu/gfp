@@ -34,9 +34,7 @@ module.exports = {
       }, {
         test: /\.png$/, loader: 'url-loader', options: {mimetype: 'img/png', limit: 10000},
       }, {
-        test: /\.js$/, exclude: [path.resolve('gfp/lib')], loader: 'babel-loader', options: {plugins: [
-          ...(env == 'test' ? ['istanbul'] : []),
-        ]},
+        test: /\.js$/, exclude: [path.resolve('gfp/lib')], loader: 'babel-loader',
       },
     ],
   },
