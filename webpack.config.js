@@ -24,10 +24,7 @@ module.exports = {
         test: /\.sass$/, use: [
           {loader: 'css-loader'},
           {loader: 'postcss-loader', options: {
-            ident: 'postcss',
-            plugins: () => [
-              postcssPresetEnv({browsers: 'last 2 versions'}),
-            ],
+            ident: 'postcss', plugins: () => [postcssPresetEnv({browsers: 'last 2 versions'})],
           }},
           {loader: 'sass-loader'},
         ],
