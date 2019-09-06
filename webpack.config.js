@@ -24,7 +24,7 @@ module.exports = {
         test: /\.sass$/, use: [
           {loader: 'css-loader'},
           {loader: 'postcss-loader', options: {plugins: [autoprefixer({overrideBrowserslist: ['last 2 versions']})]}},
-          {loader: 'sass-loader', options: {indentedSyntax: true}},
+          {loader: 'sass-loader'},
         ],
       }, {
         test: /\.png$/, loader: 'url-loader', options: {mimetype: 'img/png', limit: 10000},
