@@ -1,10 +1,10 @@
 'use strict'
-let autoprefixer = require('autoprefixer')
-let fs = require('fs')
-let path = require('path')
-let webpack = require('webpack')
-let env = process.env.NODE_ENV.trim()
-let resRoot = path.resolve('.').replace(/\\/g, '/')
+const fs = require('fs')
+const path = require('path')
+const postcssPresetEnv = require('postcss-preset-env')
+const resRoot = path.resolve('.').replace(/\\/g, '/')
+const webpack = require('webpack')
+const env = process.env.NODE_ENV.trim()
 
 module.exports = {
   mode: 'development',
@@ -23,7 +23,12 @@ module.exports = {
       }, {
         test: /\.sass$/, use: [
           {loader: 'css-loader'},
-          {loader: 'postcss-loader', options: {plugins: [autoprefixer({overrideBrowserslist: ['last 2 versions']})]}},
+          {loader: 'postcss-loader', options: {
+            ident: 'postcss',
+            plugins: () => [
+              postcssPresetEnv({browsers: 'last 2 versions'}),
+            ],
+          }},
           {loader: 'sass-loader'},
         ],
       }, {
