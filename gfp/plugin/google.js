@@ -4,7 +4,10 @@ import {cache} from 'gfp/utils'
 export class ResultsData extends NodeData {
   *getChildren(){
     for(const child of this.node.querySelectorAll('.g')){
-      if(child.classList.contains('obcontainer') || child.classList.contains('mnr-c')){
+      if(child.classList.contains('obcontainer') || (
+        child.classList.contains('mnr-c') && child.hasAttribute('lang') && !child.classList.contains('kno-kp')
+      )){
+        // contains other .g elements, skip so we don't have duplicate links
       }else if(child.id == 'imagebox_bigimages'){
         yield new ImageContainerData(child)
       }else if(child.id == 'lclbox'){
