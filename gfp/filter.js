@@ -1,6 +1,6 @@
 import {ActiveFilter, Filter as Filter_, InvalidFilter, RegExpFilter as RegExpFilter_} from 'gfp/lib/filterClasses'
 
-let RegExpFilter__ = Object.assign(new Function(), RegExpFilter_, {prototype: RegExpFilter_.prototype})
+const RegExpFilter__ = Object.assign(new Function(), RegExpFilter_, {prototype: RegExpFilter_.prototype})
 export class RegExpFilter extends RegExpFilter__ {
   constructor(regexpSource, matchCase, collapse){
     super()
@@ -10,7 +10,7 @@ export class RegExpFilter extends RegExpFilter__ {
       this.collapse = collapse
     // convert regex filters immediately to catch syntax errors, normal filters on-demand
     if(regexpSource.length >= 2 && regexpSource.startsWith('/') && regexpSource.endsWith('/')){
-      let regexp = new RegExp(regexpSource.substr(1, regexpSource.length - 2), this.matchCase ? '' : 'i')
+      const regexp = new RegExp(regexpSource.substr(1, regexpSource.length - 2), this.matchCase ? '' : 'i')
       Object.defineProperty(this, 'regexp', {value: regexp})
     }else{
       this.regexpSource = regexpSource
@@ -25,8 +25,8 @@ export class RegExpFilter extends RegExpFilter__ {
     // text is not stored to save memory
     let matchCase = false
     let collapse = false
-    let options = optionsStr.toUpperCase().split(',')
-    for(let option of options){
+    const options = optionsStr.toUpperCase().split(',')
+    for(const option of options){
       switch(option){
         case 'MATCH_CASE': matchCase = true; break
         case 'COLLAPSE': collapse = true; break
@@ -50,37 +50,37 @@ RegExpFilter.prototype.index = 0
 // index to all non-null subfilters
 RegExpFilter.prototype.dataIndex = 0
 
-let ActiveFilter_ = Object.assign(new Function(), ActiveFilter, {prototype: RegExpFilter_.prototype})
+const ActiveFilter_ = Object.assign(new Function(), ActiveFilter, {prototype: RegExpFilter_.prototype})
 export class MultiRegExpFilter extends ActiveFilter_ {
   constructor(text, filters){
     super()
     this.text = text
     this.filters = filters
-    for(let filter of filters)
+    for(const filter of filters)
       filter.parent = this
   }
 
   get collapse(){
-    for(let filter of this.filters)
+    for(const filter of this.filters)
       if(filter.collapse)
         return true
     return false
   }
 
   static fromText(text){
-    let origText = text
+    const origText = text
     let filters = []
     let blocking = true
     if(text.indexOf('@@') === 0){
       blocking = false
       text = text.substr(2)
     }
-    let parts = text.split(/\$([\w,]*?)(?:\$|$)/)
+    const parts = text.split(/\$([\w,]*?)(?:\$|$)/)
     for(let i = 0; i < parts.length; i += 2){
-      let [part, options] = [parts[i], parts[i+1]]
+      const [part, options] = [parts[i], parts[i+1]]
       if(!part)
         continue
-      let filter = RegExpFilter.fromParts(part, options)
+      const filter = RegExpFilter.fromParts(part, options)
       if(filter instanceof InvalidFilter)
         return new InvalidFilter(text)
       if(i > 0)
@@ -95,10 +95,10 @@ export class MultiRegExpFilter extends ActiveFilter_ {
   }
 }
 
-export let Filter = Filter_
+export const Filter = Filter_
 
 Filter.fromObject = function(text, obj){
-  let res = Filter.fromText(text)
+  const res = Filter.fromText(text)
   if(res instanceof ActiveFilter){
     if('disabled' in obj)
       res._disabled = obj.disabled === true
@@ -111,7 +111,7 @@ Filter.fromObject = function(text, obj){
 }
 
 Filter.prototype.toObject = function(){
-  let res = {}
+  const res = {}
   if(this instanceof ActiveFilter){
     if(this._disabled)
       res.disabled = true

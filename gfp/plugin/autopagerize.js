@@ -17,7 +17,7 @@ export default function(searchGui, _config){
         // - Can't create a parent element and move the nodes in it, as the nodes don't get added after the
         //   MutationObserver.
         const matchedNodes = []
-        for(let node of res){
+        for(const node of res){
           if(node.matches(selector))
             matchedNodes.push(node)
           // call `querySelectorAll` as well, as `node` can be a results container node

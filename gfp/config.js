@@ -17,7 +17,7 @@ class Filters {
   }
 
   _trigger(type, value){
-    for(let cb of this._callbacks)
+    for(const cb of this._callbacks)
       cb(type, value)
   }
 
@@ -54,8 +54,8 @@ export default class Config {
     this.plugins = ['google', 'customsearch', 'instant', 'autopagerize']
     this.allowHidden = GM_getValue('allowHidden', true)
     this.filtersObject = JSON.parse(GM_getValue('filters', '{}'))
-    let filters = []
-    for(let key in this.filtersObject)
+    const filters = []
+    for(const key in this.filtersObject)
       filters.push(Filter.fromObject(key, this.filtersObject[key]))
     this.filters = new Filters(filters)
     this.filters.observe((type, value) => {
@@ -64,7 +64,7 @@ export default class Config {
           this.filtersObject[value.text] = value.toObject()
           break
         case 'remove':
-          for(let filter of value)
+          for(const filter of value)
             delete this.filtersObject[filter.text]
           break
         case 'update':
@@ -72,7 +72,7 @@ export default class Config {
           break
         case 'setValue':
           this.filtersObject = {}
-          for(let filter of value)
+          for(const filter of value)
             this.filtersObject[filter.text] = filter.toObject()
           break
       }

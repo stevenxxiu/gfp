@@ -112,7 +112,7 @@ class DataView {
         if(!this.filterer(filter))
           return
       }
-      let i = bisect(this.filters, filter, this.comparer)
+      const i = bisect(this.filters, filter, this.comparer)
       this.filters.splice(i, 0, filter)
       this._render(true, true, true)
       if(call)
@@ -126,7 +126,7 @@ class DataView {
         this.config.filters.remove(is.map((i) => this.filters[i]))
       }else{
         // use unique comparer for speed
-        let comparer = (x, y) => x['text'] > y['text'] ? 1 : x['text'] < y['text'] ? -1 : 0
+        const comparer = (x, y) => x['text'] > y['text'] ? 1 : x['text'] < y['text'] ? -1 : 0
         is = indexOfSorted(this.filters.sort(comparer), filters.sort(comparer), comparer)
         this.filters.sort(this.comparer)
       }
@@ -229,7 +229,7 @@ class PrefDialog {
   }
 
   addImportExport(){
-    let self = this
+    const self = this
     this.dialog.find('.import').click((_e) => {
       $('<textarea></textarea>')
         .dialog(Object.assign(this.dialogConfig, {
@@ -237,9 +237,9 @@ class PrefDialog {
           buttons: [{
             text: 'OK',
             click(){
-              let filtersObject = JSON.parse($(this).val())
-              let filters = []
-              for(let key in filtersObject)
+              const filtersObject = JSON.parse($(this).val())
+              const filters = []
+              for(const key in filtersObject)
                 filters.push(Filter.fromObject(key, filtersObject[key]))
               self.dataView.setValue(filters)
               $(this).dialog('close')
@@ -250,8 +250,8 @@ class PrefDialog {
       return false
     })
     this.dialog.find('.export').click((_e) => {
-      let filtersObject = {}
-      for(let filter of this.dataView.getValue())
+      const filtersObject = {}
+      for(const filter of this.dataView.getValue())
         filtersObject[filter.text] = filter.toObject()
       $('<textarea></textarea>')
         .attr('readonly', 'readonly')
@@ -266,9 +266,9 @@ class PrefDialog {
   }
 
   addGrid(){
-    let gridDom = this.dialog.find('.grid')
+    const gridDom = this.dialog.find('.grid')
     this.dataView = new DataView(null, null, null, this.searchGui)
-    let grid = new Slick.Grid(gridDom, this.dataView, [
+    const grid = new Slick.Grid(gridDom, this.dataView, [
       {
         id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true,
         formatter: (row, cell, value, _columnDef, _dataContext) =>
@@ -299,7 +299,7 @@ class PrefDialog {
       }, {
         id: 'lastHit', field: 'lastHit', name: 'Last hit', width: 110, sortable: true,
         formatter: (row, cell, value, columnDef, dataContext) => {
-          let date = new Date(value)
+          const date = new Date(value)
           return dataContext.hitCount > 0 ? (
             `${date.getFullYear()}-${pad(date.getMonth() + 1, 2)}-${pad(date.getDate(), 2)} ` +
             `${pad(date.getHours(), 2)}:${pad(date.getMinutes(), 2)}:${pad(date.getSeconds(), 2)}:` +
@@ -319,12 +319,12 @@ class PrefDialog {
 
     /* Find bar */
     let filterVals = {}
-    let binaryFilter = ['FfNn-', 'TtYy+']
+    const binaryFilter = ['FfNn-', 'TtYy+']
     window.grid = grid
-    let dateFormatter = grid.getColumns()[grid.getColumnIndex('lastHit')].formatter
+    const dateFormatter = grid.getColumns()[grid.getColumnIndex('lastHit')].formatter
     this.dataView.filterer = (val) => {
       val = DataView.filterToitem(val)
-      for(let key in filterVals){
+      for(const key in filterVals){
         switch(key){
           case 'text': if(!val[key].includes(filterVals[key])) return false; break
           case 'slow': if(!binaryFilter[+val[key]].includes(filterVals[key])) return false; break
@@ -336,16 +336,16 @@ class PrefDialog {
       }
       return true
     }
-    let findBar = gridDom.find('.slick-headerrow')
-    let openFindBar = () => findBar.show().find('input:first').focus()
-    let closeFindBar = () => {
+    const findBar = gridDom.find('.slick-headerrow')
+    const openFindBar = () => findBar.show().find('input:first').focus()
+    const closeFindBar = () => {
       findBar.hide().find('input').val('')
       filterVals = {}
       this.dataView.filter()
       this.dialog.focus()
     }
     grid.onHeaderRowCellRendered.subscribe((e, args) => {
-      let searchField = $('<input></input>')
+      const searchField = $('<input></input>')
         .keydown((e) => {if(e.keyCode == 27) closeFindBar()})
         .on('input', (_e) => {filterVals[args.column.field] = searchField.val(); this.dataView.filter()})
       $(args.node).empty().append(searchField)
@@ -367,10 +367,10 @@ class PrefDialog {
     /* Editing */
     grid.onClick.subscribe((e, args) => {
       if($(e.target).is(':checkbox')){
-        let column = grid.getColumns()[args.cell]
+        const column = grid.getColumns()[args.cell]
         if(column.editable === false || column.autoEdit === false)
           return
-        let item = this.dataView.getItem(args.row)
+        const item = this.dataView.getItem(args.row)
         item[column.field] = !item[column.field]
         new grid.onCellChange.notify({row: args.row, cell: args.cell, item: item}, new Slick.EventData())
       }
@@ -389,13 +389,13 @@ class PrefDialog {
         setTimeout(() => {this.dataView.removeTemp(tempI); tempI = null}, 0)
       cancelled = true
     })
-    let addFilter = () => {
-      let is = grid.getSelectedRows()
+    const addFilter = () => {
+      const is = grid.getSelectedRows()
       tempI = is[is.length - 1] || 0
       this.dataView.addTemp(tempI)
       grid.gotoCell(tempI, 0, true)
     }
-    let removeFilter = () => this.dataView.remove(null, grid.getSelectedRows())
+    const removeFilter = () => this.dataView.remove(null, grid.getSelectedRows())
     this.dialog.find('.add').click((_e) => {addFilter(); return false})
     gridDom.keydown((e) => {
       if(e.target.nodeName == 'INPUT')
@@ -405,7 +405,7 @@ class PrefDialog {
         case 46: removeFilter(); break
         case 65:
           if(e.ctrlKey || e.metaKey){
-            let rows = []
+            const rows = []
             for(let i = 0; i < grid.getDataLength(); i++)
               rows.push(i)
             grid.setSelectedRows(rows)
@@ -421,7 +421,7 @@ class PrefDialog {
     this.dataView.setValue()
 
     /* Dialog */
-    let height = gridDom.height()
+    const height = gridDom.height()
     this.dialog.on('dialogresize', (e, ui) => {
       gridDom.css('height', `${height + (ui.size.height - ui.originalSize.height)}px`)
       grid.resizeCanvas()

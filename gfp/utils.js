@@ -21,7 +21,7 @@ export function bisect(a, x, comparer, lo=0, hi=null){
   if(hi === null)
     hi = a.length
   while(lo < hi){
-    let mid = (lo + hi) >> 1
+    const mid = (lo + hi) >> 1
     if(comparer(x, a[mid]) < 0)
       hi = mid
     else
@@ -31,9 +31,9 @@ export function bisect(a, x, comparer, lo=0, hi=null){
 }
 
 export function indexOfSorted(xs, ys, comparer){
-  let res = []
+  const res = []
   let i = 0
-  for(let y of ys){
+  for(const y of ys){
     i = bisect(xs, y, comparer, i + 1) - 1
     res.push(xs[i] == y ? i : -1)
   }
@@ -42,8 +42,8 @@ export function indexOfSorted(xs, ys, comparer){
 
 export function popMany(xs, is){
   // O(n) time, mask is not'ed for speed
-  let mask = new Array(xs.length)
-  for(let i of is)
+  const mask = new Array(xs.length)
+  for(const i of is)
     mask[i] = true
   let offset = 0
   for(let i = 0; i < xs.length; i++){

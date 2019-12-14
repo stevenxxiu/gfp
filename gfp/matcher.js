@@ -14,7 +14,7 @@ export class SubMatcher extends Matcher {
 
   findKeyword(filter){
     let res = ''
-    let candidates = this.constructor._findCandidates(filter)
+    const candidates = this.constructor._findCandidates(filter)
     if(candidates === null)
       return res
     let resCount = 0xFFFFFF
@@ -34,8 +34,8 @@ export class SubMatcher extends Matcher {
   add(filter){
     // Duplicates are rare and not checked for efficiency, otherwise we need to store sub filter text maps, and multiple
     // parents per sub filter.
-    let keyword = this.findKeyword(filter)
-    let prevEntry = this.filterByKeyword.get(keyword)
+    const keyword = this.findKeyword(filter)
+    const prevEntry = this.filterByKeyword.get(keyword)
     if(prevEntry === undefined){
       this.filterByKeyword.set(keyword, filter)
     }else if(prevEntry.length == 1){
@@ -52,7 +52,7 @@ export class SubMatcher extends Matcher {
       candidates = ['']
     for(let candidate of candidates){
       candidate = candidate.substr(1)
-      let prevEntry = this.filterByKeyword.get(candidate)
+      const prevEntry = this.filterByKeyword.get(candidate)
       if(prevEntry === undefined){
       }else if(prevEntry.length == 1){
         if(prevEntry == filter){
@@ -60,7 +60,7 @@ export class SubMatcher extends Matcher {
           break
         }
       }else{
-        let i = prevEntry.indexOf(filter)
+        const i = prevEntry.indexOf(filter)
         if(i > -1){
           if(prevEntry.length == 2)
             this.filterByKeyword.set(candidate, prevEntry[1 - i])
@@ -85,8 +85,8 @@ export class SubMatcher extends Matcher {
   }
 
   *_iterMatches(filters, data, parents){
-    for(let filter of filters){
-      let parent = filter.parent
+    for(const filter of filters){
+      const parent = filter.parent
       if((filter.dataIndex === 0 || parents.has(parent)) && filter.matches(data))
         yield filter
     }
@@ -103,10 +103,10 @@ export class SubMatcher extends Matcher {
     if(candidates === null)
       candidates = []
     candidates.push('')
-    for(let keyword of candidates){
-      let filters = this.filterByKeyword.get(keyword)
+    for(const keyword of candidates){
+      const filters = this.filterByKeyword.get(keyword)
       if(filters){
-        for(let res of this._iterMatches(filters, data, parents))
+        for(const res of this._iterMatches(filters, data, parents))
           yield res
       }
     }
@@ -122,7 +122,7 @@ export class MultiMatcher {
   }
 
   static isSlowFilter(filter){
-    for(let subFilter of filter.filters){
+    for(const subFilter of filter.filters){
       if(SubMatcher.isSlowFilter(subFilter))
         return true
     }
@@ -132,17 +132,17 @@ export class MultiMatcher {
   add(filter){
     if(filter.disabled)
       return
-    for(let subFilter of filter.filters)
+    for(const subFilter of filter.filters)
       this.matchers[subFilter.index].add(subFilter)
   }
 
   remove(filter){
-    for(let subFilter of filter.filters)
+    for(const subFilter of filter.filters)
       this.matchers[subFilter.index].remove(subFilter)
   }
 
   clear(){
-    for(let matcher of this.matchers)
+    for(const matcher of this.matchers)
       matcher.clear()
   }
 
@@ -151,14 +151,14 @@ export class MultiMatcher {
     // {filter: nextNullNum}
     let [prevFilters, curFilters] = [new Map(), new Map()]
     for(let i = 0; i < this.n; i++){
-      for(let subFilter of this.matchers[i].iterMatches(data[attrs[i]], prevFilters)){
+      for(const subFilter of this.matchers[i].iterMatches(data[attrs[i]], prevFilters)){
         if(subFilter.dataIndex == subFilter.parent.filters.length - 1)
           return subFilter.parent
         curFilters.set(subFilter.parent, subFilter.parent.filters[subFilter.dataIndex + 1].index - i)
       }
       if(i != this.n - 1){
         // include null subFilters whose parents have so far matched
-        for(let [filter, nextNullNum] of prevFilters.entries()){
+        for(const [filter, nextNullNum] of prevFilters.entries()){
           if(nextNullNum > 0)
             curFilters.set(filter, nextNullNum - 1)
         }

@@ -36,18 +36,18 @@ export class SearchGui {
   constructor(ResultsData, config){
     this.ResultsData = ResultsData
     this.config = config
-    let observer = (type, value) => {
+    const observer = (type, value) => {
       switch(type){
         case 'add':
           this.matcher.add(value)
           break
         case 'remove':
-          for(let filter of value)
+          for(const filter of value)
             this.matcher.remove(filter)
           break
         case 'setValue':
           this.matcher = new CombinedMultiMatcher(NodeData.attrs.length)
-          for(let filter of value)
+          for(const filter of value)
             this.matcher.add(filter)
           break
       }
@@ -84,7 +84,7 @@ export class SearchGui {
   }
 
   toggleResult(nodeData, showTitle, showLink, initial=false){
-    for(let child of nodeData.node.children)
+    for(const child of nodeData.node.children)
       if(child != showTitle && child != showLink)
         child.classList.toggle('hide')
     if(initial)
@@ -109,7 +109,7 @@ export class SearchGui {
       showTitle.textContent = nodeData.title
       nodeData.node.appendChild(showTitle)
     }
-    let showLink = this.showLink.cloneNode(true)
+    const showLink = this.showLink.cloneNode(true)
     if(filter)
       showLink.title = filter.text
     nodeData.node.appendChild(showLink)
@@ -136,9 +136,9 @@ export class SearchGui {
       return
     if(!nodeData.linkArea)
       return
-    let dash = this.dash.cloneNode(true)
+    const dash = this.dash.cloneNode(true)
     nodeData.linkArea.appendChild(dash)
-    let addLink = this.addLink.cloneNode(true)
+    const addLink = this.addLink.cloneNode(true)
     if(filter)
       addLink.title = filter.text
     nodeData.linkArea.appendChild(addLink)
@@ -157,8 +157,8 @@ export class SearchGui {
   }
 
   addFromResult(nodeData){
-    let domainUrl = '||' + nodeData.url.replace(/^[\w-]+:\/+(?:www\.)?/, '')
-    let text = prompt('Filter: ', domainUrl)
+    const domainUrl = '||' + nodeData.url.replace(/^[\w-]+:\/+(?:www\.)?/, '')
+    const text = prompt('Filter: ', domainUrl)
     if(text === null)
       return
     this.config.filters.add(MultiRegExpFilter.fromText(text))
@@ -169,7 +169,7 @@ export class SearchGui {
     // store all children so we can re-filter
     if(nodeData.children === undefined)
       nodeData.children = Array.from(nodeData.getChildren())
-    let filter = this.matcher.matchesAny(nodeData, NodeData.attrs)
+    const filter = this.matcher.matchesAny(nodeData, NodeData.attrs)
     if(filter){
       filter.hitCount++
       filter.lastHit = new Date().getTime()
@@ -183,7 +183,7 @@ export class SearchGui {
       }
     }
     let filtered = !!nodeData.children.length
-    for(let childData of nodeData.children){
+    for(const childData of nodeData.children){
       if(!this._filterResults(childData))
         filtered = false
     }
@@ -200,11 +200,11 @@ export class SearchGui {
       node: Used when additional search results pop up.
     */
     let matched = false
-    let observer = (type, _filter) => {if(type == 'update') matched = true}
+    const observer = (type, _filter) => {if(type == 'update') matched = true}
     this.config.filters.observe(observer)
     if(node){
       // only need to filter the new node
-      let nodeData = new this.ResultsData(node)
+      const nodeData = new this.ResultsData(node)
       this.nodeData.children.push(nodeData)
       this._filterResults(nodeData)
     }else{

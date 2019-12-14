@@ -3,7 +3,7 @@ import {cache} from 'gfp/utils'
 
 class ResultsData extends NodeData {
   *getChildren(){
-    for(let child of this.node.querySelectorAll('.gsc-table-result'))
+    for(const child of this.node.querySelectorAll('.gsc-table-result'))
       yield new TextData(child)
   }
 }
@@ -18,13 +18,13 @@ class TextData extends NodeData {
 export default function(searchGui, config){
   if(window.location.href.indexOf('/cse?') == -1 && window.location.href.indexOf('/custom?') == -1)
     return searchGui
-  let mainNode = document.getElementById('cse')
+  const mainNode = document.getElementById('cse')
   if(!mainNode)
     return searchGui
   searchGui = new SearchGui(ResultsData, config)
   new MutationObserver((mutations) => {
-    for(let mutation of mutations){
-      for(let addedNode of mutation.addedNodes){
+    for(const mutation of mutations){
+      for(const addedNode of mutation.addedNodes){
         if(addedNode.classList && addedNode.classList.contains('gcsc-branding')){
           // all results have finished loading
           searchGui.nodeData.children.length = 0
