@@ -2,7 +2,6 @@
 const fs = require('fs')
 const path = require('path')
 const postcssPresetEnv = require('postcss-preset-env')
-const resRoot = path.resolve('.').replace(/\\/g, '/')
 const webpack = require('webpack')
 const env = process.env.NODE_ENV.trim()
 
@@ -19,7 +18,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.html$/, loader: 'html-loader', options: {minimize: true, attrs: 'img:src', root: resRoot},
+        test: /\.html$/, loader: 'html-loader', options: {minimize: true, attrs: 'img:src'},
       }, {
         test: /\.sass$/, use: [
           {loader: 'css-loader'},
@@ -29,7 +28,7 @@ module.exports = {
           {loader: 'sass-loader'},
         ],
       }, {
-        test: /\.png$/, loader: 'url-loader', options: {mimetype: 'img/png', limit: 10000},
+        test: /\.png$/, loader: 'url-loader', options: {mimetype: 'img/png', limit: 10000, esModule: false},
       }, {
         test: /\.js$/, exclude: [path.resolve('gfp/lib')], loader: 'babel-loader',
       },
