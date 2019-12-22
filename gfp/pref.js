@@ -285,7 +285,7 @@ class PrefDialog {
         },
       }, {
         // use css for the image since there can be many slow filters
-        id: 'slow', field: 'slow', name: '!', width: 1, sortable: true,
+        id: 'slow', field: 'slow', name: '!', width: 1, sortable: true, cssClass: 'slow-column',
         formatter: (row, cell, value, _columnDef, _dataContext) =>
           value ? '<img class="slow-image"></img>' : '',
       }, {

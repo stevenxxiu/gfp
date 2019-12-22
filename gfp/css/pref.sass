@@ -21,17 +21,17 @@
   .row:last-child
     flex: 1
     display: flex
+  .slow-column
+    display: flex
+    align-items: center
+    justify-content: center
   .slick-cell
     &:first-child
       white-space: pre
     .whitelist-filter
       color: #080
     .slow-image
-      background: url('~img/slow.png') no-repeat
-      width: 26px
-      height: 20px
-      margin-left: auto
-      margin-right: auto
+      content: url('~img/slow.png')
   .slick-cell.selected
       background: #f5f5f5
   .slick-header-column:nth-child(2) > .slick-column-name
