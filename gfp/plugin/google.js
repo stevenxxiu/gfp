@@ -4,9 +4,11 @@ import {cache} from 'gfp/utils'
 export class ResultsData extends NodeData {
   *getChildren(){
     for(const child of this.node.querySelectorAll('.g')){
-      if(child.classList.contains('obcontainer') || (
-        child.classList.contains('mnr-c') && child.hasAttribute('lang') && !child.classList.contains('kno-kp')
-      )){
+      if(
+        child.classList.contains('obcontainer') ||
+        child.classList.contains('kno-kp') ||
+        child.classList.contains('g-blk')
+      ){
         // contains other .g elements, skip so we don't have duplicate links
       }else if(child.id == 'imagebox_bigimages'){
         yield new ImageContainerData(child)
@@ -14,6 +16,8 @@ export class ResultsData extends NodeData {
         yield new MapContainerData(child)
       }else if(child.firstChild.nodeName == 'G-SECTION-WITH-HEADER'){
         yield new TweetContainerData(child)
+      }else if(child.previousElementSibling && child.previousElementSibling.classList.contains('mod')){
+        yield new FeaturedSnippetData(child)
       }else{
         yield new TextData(child)
       }
@@ -64,6 +68,10 @@ class TweetSubData extends CommonData {
   get title(){return ''}
   get url(){return cache(this, 'url', this.node.querySelector('a').href)}
   get summary(){return cache(this, 'summary', this.node.querySelector('a').textContent)}
+}
+
+class FeaturedSnippetData extends CommonData {
+  get summary(){return cache(this, 'summary', this.node.previousElementSibling.textContent)}
 }
 
 class TextData extends CommonData {
