@@ -23,7 +23,7 @@
   },
   "scripts": {
     "pref": "env NODE_ENV=pref webpack --output-filename pref.js",
-    "browser": "env NODE_ENV=browser webpack --output-filename google_search_filter_plus.user.js",
+    "script": "env NODE_ENV=script webpack --output-filename google_search_filter_plus.user.js",
     "test": "jest"
   }
 }
