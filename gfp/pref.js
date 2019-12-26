@@ -289,7 +289,7 @@ class PrefDialog {
         formatter: (row, cell, value, _columnDef, _dataContext) =>
           value ? '<img class="slow-image"></img>' : '',
       }, {
-        id: 'enabled', field: 'enabled', name: 'Enabled', width: 40, sortable: true,
+        id: 'enabled', field: 'enabled', name: 'Enabled', width: 45, sortable: true,
         formatter: (row, cell, value, _columnDef, _dataContext) =>
           `<input type="checkbox" name="" value="${value}" ${value ? 'checked' : ''} />`,
       }, {
