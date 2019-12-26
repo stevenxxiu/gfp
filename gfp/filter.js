@@ -105,7 +105,7 @@ Filter.fromObject = function(text, obj){
     if('hitCount' in obj)
       res._hitCount = parseInt(obj.hitCount) || 0
     if('lastHit' in obj)
-      res._lastHit = parseInt(obj.lastHit) || 0
+      res._lastHit = parseInt(obj.lastHit) || null
   }
   return res
 }
