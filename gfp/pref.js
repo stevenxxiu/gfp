@@ -270,7 +270,7 @@ class PrefDialog {
     this.dataView = new DataView(null, null, null, this.searchGui)
     const grid = new Slick.Grid(gridDom, this.dataView, [
       {
-        id: 'text', field: 'text', name: 'Filter rule', width: 300, sortable: true,
+        id: 'text', field: 'text', name: 'Filter Rule', width: 300, sortable: true,
         formatter: (row, cell, value, _columnDef, _dataContext) =>
           `<span class="${value.startsWith('@@') ? 'whitelist' : 'blocking'}-filter">${value}</span>`,
         editor: Slick.Editors.Text, validator: (text) => {
@@ -297,7 +297,7 @@ class PrefDialog {
         editor: Slick.Editors.Integer, validator: (val) =>
           val < 0 ? {valid: false, msg: 'Must be >= 0'} : {valid: true, msg: null},
       }, {
-        id: 'lastHit', field: 'lastHit', name: 'Last hit', width: 110, sortable: true,
+        id: 'lastHit', field: 'lastHit', name: 'Last Hit', width: 110, sortable: true,
         formatter: (row, cell, value, columnDef, dataContext) => {
           if(!value || dataContext.hitCount == 0)
             return ''
