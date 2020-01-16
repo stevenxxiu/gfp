@@ -64,10 +64,6 @@ export class SearchGui {
     /**
     Create once and clone to improve performance.
     */
-    // dash
-    this.dash = document.createElement('span')
-    this.dash.textContent = '-'
-    this.dash.classList.add('dash')
     // add filter link
     this.addLink = document.createElement('a')
     this.addLink.textContent = 'Filter'
@@ -136,8 +132,6 @@ export class SearchGui {
       return
     if(!nodeData.linkArea)
       return
-    const dash = this.dash.cloneNode(true)
-    nodeData.linkArea.appendChild(dash)
     const addLink = this.addLink.cloneNode(true)
     if(filter)
       addLink.title = filter.text
@@ -151,7 +145,6 @@ export class SearchGui {
         addLink.title = filter.text
     }
     nodeData.undo = () => {
-      nodeData.linkArea.removeChild(dash)
       nodeData.linkArea.removeChild(addLink)
     }
   }
