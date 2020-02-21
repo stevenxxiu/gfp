@@ -28,7 +28,12 @@ export class ResultsData extends NodeData {
 }
 
 class CommonData extends NodeData {
-  get linkArea(){return cache(this, 'linkArea', this.node.querySelector('cite').parentNode)}
+  get linkArea(){
+    let linkArea = this.node.querySelector('.action-menu')
+    if(linkArea) linkArea = linkArea.parentNode.parentNode
+    if(!linkArea) linkArea = this.node.querySelector('cite').parentNode
+    return cache(this, 'linkArea',  linkArea)
+  }
   get url(){return cache(this, 'url', this.node.querySelector('.r > a').href)}
   get title(){return cache(this, 'title', this.node.querySelector('h3').textContent)}
 }
