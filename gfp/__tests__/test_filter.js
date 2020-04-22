@@ -1,10 +1,14 @@
-import {BlockingFilter, MultiRegExpFilter, RegExpFilter, WhitelistFilter} from 'gfp/filter'
-import {ActiveFilter, Filter, InvalidFilter} from 'gfp/lib/filterClasses'
+import { BlockingFilter, MultiRegExpFilter, RegExpFilter, WhitelistFilter } from 'gfp/filter'
+import { ActiveFilter, Filter, InvalidFilter } from 'gfp/lib/filterClasses'
 
 describe('Filter', () => {
   describe('fromObject', () => {
     test('ActiveFilter', () => {
-      const filter = Filter.fromObject('a', {disabled: true, hitCount: 1, lastHit: 1})
+      const filter = Filter.fromObject('a', {
+        disabled: true,
+        hitCount: 1,
+        lastHit: 1,
+      })
       expect(filter.disabled).toBe(true)
       expect(filter.hitCount).toBe(1)
       expect(filter.lastHit).toBe(1)
@@ -19,7 +23,11 @@ describe('Filter', () => {
       filter._disabled = true
       filter._hitCount = 1
       filter._lastHit = 1
-      expect(filter.toObject()).toStrictEqual({disabled: true, hitCount: 1, lastHit: 1})
+      expect(filter.toObject()).toStrictEqual({
+        disabled: true,
+        hitCount: 1,
+        lastHit: 1,
+      })
     })
     test('InvalidFilter', () => {
       const filter = new InvalidFilter('text')
@@ -28,24 +36,25 @@ describe('Filter', () => {
   })
 })
 
-RegExpFilter.prototype.toTestObject = function(){
+RegExpFilter.prototype.toTestObject = function () {
   const obj = {}
-  if(this.regexp !== null)
-    obj.regexp = this.regexp.toString()
-  if(this.matchCase)
-    obj.matchCase = true
-  if(this.collapse)
-    obj.collapse = true
+  if (this.regexp !== null) obj.regexp = this.regexp.toString()
+  if (this.matchCase) obj.matchCase = true
+  if (this.collapse) obj.collapse = true
   return obj
 }
 
 describe('RegExpFilter', () => {
   describe('fromParts', () => {
     test('plain', () => {
-      expect(RegExpFilter.fromParts('a*b', '').toTestObject()).toStrictEqual({regexp: /a.*b/i.toString()})
-      expect(RegExpFilter.fromParts('/a.*b/', '').toTestObject()).toStrictEqual({regexp: /a.*b/i.toString()})
+      expect(RegExpFilter.fromParts('a*b', '').toTestObject()).toStrictEqual({
+        regexp: /a.*b/i.toString(),
+      })
+      expect(RegExpFilter.fromParts('/a.*b/', '').toTestObject()).toStrictEqual({ regexp: /a.*b/i.toString() })
       expect(RegExpFilter.fromParts('/a.*b/', 'match_case,COLLAPSE').toTestObject()).toStrictEqual({
-        regexp: /a.*b/.toString(), matchCase: true, collapse: true,
+        regexp: /a.*b/.toString(),
+        matchCase: true,
+        collapse: true,
       })
     })
     test('types', () => {
@@ -59,16 +68,14 @@ describe('RegExpFilter', () => {
   })
 })
 
-MultiRegExpFilter.prototype.toTestObject = function(){
+MultiRegExpFilter.prototype.toTestObject = function () {
   const obj = this.toObject()
   obj.filters = []
-  for(const subFilter of this.filters){
+  for (const subFilter of this.filters) {
     const subObj = subFilter.toTestObject()
     delete subObj.regexp
-    if(subFilter.index)
-      subObj.index = subFilter.index
-    if(subFilter.dataIndex)
-      subObj.dataIndex = subFilter.dataIndex
+    if (subFilter.index) subObj.index = subFilter.index
+    if (subFilter.dataIndex) subObj.dataIndex = subFilter.dataIndex
     obj.filters.push(subObj)
   }
   return obj
@@ -83,18 +90,26 @@ describe('MultiRegExpFilter', () => {
   })
   describe('fromText', () => {
     test('plain', () => {
-      expect(MultiRegExpFilter.fromText('').toTestObject()).toStrictEqual({filters: []})
-      expect(MultiRegExpFilter.fromText('a').toTestObject()).toStrictEqual({filters: [{}]})
-      expect(MultiRegExpFilter.fromText('a$$').toTestObject()).toStrictEqual({filters: [{}]})
+      expect(MultiRegExpFilter.fromText('').toTestObject()).toStrictEqual({
+        filters: [],
+      })
+      expect(MultiRegExpFilter.fromText('a').toTestObject()).toStrictEqual({
+        filters: [{}],
+      })
+      expect(MultiRegExpFilter.fromText('a$$').toTestObject()).toStrictEqual({
+        filters: [{}],
+      })
       expect(MultiRegExpFilter.fromText('a$$$$b').toTestObject()).toStrictEqual({
-        filters: [{}, {index: 2, dataIndex: 1}],
+        filters: [{}, { index: 2, dataIndex: 1 }],
       })
     })
     test('options', () => {
-      expect(MultiRegExpFilter.fromText('$MATCH_CASE').toTestObject()).toStrictEqual({filters: []})
-      expect(MultiRegExpFilter.fromText('a$MATCH_CASE').toTestObject()).toStrictEqual({filters: [{matchCase: true}]})
+      expect(MultiRegExpFilter.fromText('$MATCH_CASE').toTestObject()).toStrictEqual({ filters: [] })
+      expect(MultiRegExpFilter.fromText('a$MATCH_CASE').toTestObject()).toStrictEqual({
+        filters: [{ matchCase: true }],
+      })
       expect(MultiRegExpFilter.fromText('a$$b$MATCH_CASE').toTestObject()).toStrictEqual({
-        filters: [{}, {index: 1, dataIndex: 1, matchCase: true}],
+        filters: [{}, { index: 1, dataIndex: 1, matchCase: true }],
       })
     })
     test('types', () => {

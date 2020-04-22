@@ -24,33 +24,28 @@
  * List of registered listeners
  * @type Array of function(action, item, newValue, oldValue)
  */
-let listeners = [];
+let listeners = []
 
 /**
  * This class allows registering and triggering listeners for filter events.
  * @class
  */
-let FilterNotifier = exports.FilterNotifier =
-{
+let _FilterNotifier = (exports.FilterNotifier = {
   /**
    * Adds a listener
    */
-  addListener: function(/**function(action, item, newValue, oldValue)*/ listener)
-  {
-    if (listeners.indexOf(listener) >= 0)
-      return;
+  addListener: function (/**function(action, item, newValue, oldValue)*/ listener) {
+    if (listeners.indexOf(listener) >= 0) return
 
-    listeners.push(listener);
+    listeners.push(listener)
   },
 
   /**
    * Removes a listener that was previosly added via addListener
    */
-  removeListener: function(/**function(action, item, newValue, oldValue)*/ listener)
-  {
-    let index = listeners.indexOf(listener);
-    if (index >= 0)
-      listeners.splice(index, 1);
+  removeListener: function (/**function(action, item, newValue, oldValue)*/ listener) {
+    let index = listeners.indexOf(listener)
+    if (index >= 0) listeners.splice(index, 1)
   },
 
   /**
@@ -64,10 +59,8 @@ let FilterNotifier = exports.FilterNotifier =
    *                 "filter.disabled", "filter.hitCount", "filter.lastHit")
    * @param {Subscription|Filter} item item that the change applies to
    */
-  triggerListeners: function(action, item, param1, param2, param3)
-  {
-    let list = listeners.slice();
-    for (let listener of list)
-      listener(action, item, param1, param2, param3);
-  }
-};
+  triggerListeners: function (action, item, param1, param2, param3) {
+    let list = listeners.slice()
+    for (let listener of list) listener(action, item, param1, param2, param3)
+  },
+})

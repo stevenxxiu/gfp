@@ -1,13 +1,13 @@
-import {MultiRegExpFilter, RegExpFilter} from 'gfp/filter'
-import {CombinedMultiMatcher, MultiMatcher, SubMatcher} from 'gfp/matcher'
+import { MultiRegExpFilter, RegExpFilter } from 'gfp/filter'
+import { CombinedMultiMatcher, MultiMatcher, SubMatcher } from 'gfp/matcher'
 
-SubMatcher.prototype.toTestObject = function(){
+SubMatcher.prototype.toTestObject = function () {
   return Array.from(this.filterByKeyword.entries()).sort()
 }
 
 describe('SubMatcher', () => {
   let matcher
-  beforeEach(() => matcher = new SubMatcher())
+  beforeEach(() => (matcher = new SubMatcher()))
   test('constructor_', () => {
     expect(matcher.filterByKeyword.size).toBe(0)
   })
@@ -28,7 +28,11 @@ describe('SubMatcher', () => {
       matcher.add(filters[0])
       matcher.add(filters[1])
       matcher.add(filters[2])
-      expect(matcher.toTestObject()).toStrictEqual([['aaa', filters[0]], ['bbb', filters[1]], ['ccc', filters[2]]])
+      expect(matcher.toTestObject()).toStrictEqual([
+        ['aaa', filters[0]],
+        ['bbb', filters[1]],
+        ['ccc', filters[2]],
+      ])
     })
     test('then prefer longer keywords', () => {
       const filter = RegExpFilter.fromText(' aaa bbbb ')
@@ -102,7 +106,10 @@ describe('SubMatcher', () => {
 
 describe('MultiMatcher', () => {
   let attrs, matcher
-  beforeEach(() => {attrs = [0, 1]; matcher = new MultiMatcher(2)})
+  beforeEach(() => {
+    attrs = [0, 1]
+    matcher = new MultiMatcher(2)
+  })
   test('constructor_', () => {
     expect(matcher.matchers.length).toBe(2)
   })
@@ -131,7 +138,10 @@ describe('MultiMatcher', () => {
   })
   describe('matchesAny', () => {
     describe('single filter', () => {
-      beforeEach(() => {attrs = [0, 1, 2, 3]; matcher = new MultiMatcher(4)})
+      beforeEach(() => {
+        attrs = [0, 1, 2, 3]
+        matcher = new MultiMatcher(4)
+      })
       test('[0]', () => {
         const filter = MultiRegExpFilter.fromText('a')
         matcher.add(filter)
@@ -178,7 +188,10 @@ describe('MultiMatcher', () => {
 
 describe('CombinedMultiMatcher', () => {
   let attrs, matcher
-  beforeEach(() => {attrs = [0]; matcher = new CombinedMultiMatcher(1)})
+  beforeEach(() => {
+    attrs = [0]
+    matcher = new CombinedMultiMatcher(1)
+  })
   test('constructor_', () => {
     const matcher = new CombinedMultiMatcher(2)
     expect(matcher.blacklist.matchers).toHaveLength(2)

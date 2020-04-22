@@ -1,11 +1,11 @@
 import Config from 'gfp/config'
-import {Filter} from 'gfp/filter'
-import {NodeData, SearchGui} from 'gfp/gui'
+import { Filter } from 'gfp/filter'
+import { NodeData, SearchGui } from 'gfp/gui'
 
 describe('SearchGui', () => {
   let config, searchGui, existingData, NewData
   const createSearchGui = (filters, nodeData) => {
-    window.GM_getValue = jest.fn().mockImplementation((name) => name == 'filters' ? JSON.stringify(filters) : '')
+    window.GM_getValue = jest.fn().mockImplementation((name) => (name == 'filters' ? JSON.stringify(filters) : ''))
     config = new Config()
     searchGui = new SearchGui(NewData, config)
     searchGui.nodeData = nodeData
@@ -17,16 +17,34 @@ describe('SearchGui', () => {
     window.GM_setValue = () => null
     existingData = Object.assign(new NodeData(), {
       children: [
-        Object.assign(new NodeData(), {url: 'a1', title: 'b1', summary: 'c1'}),
-        Object.assign(new NodeData(), {url: 'a2', title: 'b2', summary: 'c2'}),
+        Object.assign(new NodeData(), {
+          url: 'a1',
+          title: 'b1',
+          summary: 'c1',
+        }),
+        Object.assign(new NodeData(), {
+          url: 'a2',
+          title: 'b2',
+          summary: 'c2',
+        }),
       ],
     })
-    NewData = function(){return Object.assign(new NodeData(), {
-      *getChildren(){
-        yield Object.assign(new NodeData(), {url: 'a1', title: 'b1', summary: 'c1'})
-        yield Object.assign(new NodeData(), {url: 'a2', title: 'b2', summary: 'c2'})
-      },
-    })}
+    NewData = function () {
+      return Object.assign(new NodeData(), {
+        *getChildren() {
+          yield Object.assign(new NodeData(), {
+            url: 'a1',
+            title: 'b1',
+            summary: 'c1',
+          })
+          yield Object.assign(new NodeData(), {
+            url: 'a2',
+            title: 'b2',
+            summary: 'c2',
+          })
+        },
+      })
+    }
   })
   afterEach(() => jest.resetAllMocks())
   describe('filter changes updates matcher', () => {
@@ -64,7 +82,7 @@ describe('SearchGui', () => {
       expect(searchGui.nodeData.children).toHaveLength(2)
     })
     test('config is not updated if there is no match', () => {
-      createSearchGui({'a0$$b0$$c0': {}}, existingData)
+      createSearchGui({ a0$$b0$$c0: {} }, existingData)
       jest.spyOn(config.filters, 'update')
       jest.spyOn(config, 'flushFilters')
       searchGui.filterResults()
@@ -72,7 +90,7 @@ describe('SearchGui', () => {
       expect(config.flushFilters).not.toHaveBeenCalled()
     })
     test('config is updated on match', () => {
-      createSearchGui({'a1$$b1$$c1': {}}, existingData)
+      createSearchGui({ a1$$b1$$c1: {} }, existingData)
       jest.spyOn(config.filters, 'update')
       jest.spyOn(config, 'flushFilters')
       searchGui.filterResults()
@@ -83,18 +101,18 @@ describe('SearchGui', () => {
       expect(config.flushFilters.mock.calls.length).toBe(1)
     })
     test('blacklist matches hide results', () => {
-      createSearchGui({'a1$$b1$$c1': {}}, existingData)
+      createSearchGui({ a1$$b1$$c1: {} }, existingData)
       searchGui.filterResults()
       expect(searchGui.hideResult.mock.calls.length).toBe(1)
       expect(searchGui.hideResult).toBeCalledWith(searchGui.nodeData.children[0], config.filters._filters[0])
     })
     test('filter links are added to shown results', () => {
-      createSearchGui({'@@a1$$b1$$c1': {}}, existingData)
+      createSearchGui({ '@@a1$$b1$$c1': {} }, existingData)
       searchGui.filterResults()
       expect(searchGui.addFilterLink.mock.calls).toHaveLength(2)
     })
     test('container is hidden if all its children are hidden', () => {
-      createSearchGui({'a1$$b1$$c1': {}, 'a2$$b2$$c2': {}}, existingData)
+      createSearchGui({ a1$$b1$$c1: {}, a2$$b2$$c2: {} }, existingData)
       searchGui.filterResults()
       expect(searchGui.hideResult.mock.calls).toHaveLength(3)
       expect(searchGui.hideResult).toBeCalledWith(searchGui.nodeData)

@@ -1,5 +1,5 @@
 import Config from 'gfp/config'
-import {Filter} from 'gfp/filter'
+import { Filter } from 'gfp/filter'
 
 describe('Config', () => {
   let config
@@ -43,7 +43,7 @@ describe('Config', () => {
   describe('filter changes updates json', () => {
     test('add', () => {
       config.filters.add(Filter.fromText('a'))
-      expect(config.filtersObject).toStrictEqual({'a': {}})
+      expect(config.filtersObject).toStrictEqual({ a: {} })
     })
     test('remove', () => {
       const filter = Filter.fromText('a')
@@ -56,7 +56,7 @@ describe('Config', () => {
       config.filters.add(filter)
       filter.hitCount++
       config.filters.update(filter)
-      expect(config.filtersObject).toStrictEqual({'a': {hitCount: 1}})
+      expect(config.filtersObject).toStrictEqual({ a: { hitCount: 1 } })
     })
   })
   test('flushAllowHidden calls GM_setValue', () => {

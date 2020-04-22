@@ -1,11 +1,11 @@
 export const LogTime = {
   curTime: null,
 
-  start(){
+  start() {
     this.curTime = new Date().getTime()
   },
 
-  snap(msg){
+  snap(msg) {
     console.log(`${msg}: ${new Date().getTime() - this.curTime}ms`)
   },
 }

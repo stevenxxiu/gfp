@@ -29,5 +29,13 @@
     "GM_registerMenuCommand": true
   },
   "plugins": ["jest"],
+  "overrides": [
+    {
+      "files": ["gfp/header.js"],
+      "rules": {
+        "max-len": "off"
+      }
+    }
+  ],
   "extends": "eslint:recommended"
 }

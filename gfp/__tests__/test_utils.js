@@ -1,22 +1,25 @@
-import {cache, bisect, pad, addStyleResolve, indexOfSorted, popMany} from 'gfp/utils'
+import { cache, bisect, pad, addStyleResolve, indexOfSorted, popMany } from 'gfp/utils'
 
 describe('utils', () => {
   afterEach(() => jest.resetAllMocks())
   test('addStyleResolve', () => {
     window.GM_getResourceText = jest.fn()
-    window.GM_getResourceText.mockImplementation(resourceName =>
+    window.GM_getResourceText.mockImplementation((resourceName) =>
       resourceName == 'some-css' ? 'body{background-image: url("images/image.png");}' : null
     )
     window.GM_getResourceURL = jest.fn()
-    window.GM_getResourceURL.mockImplementation(resourceName =>
-      resourceName == 'some-css/images/image.png' ?
-        'greasemonkey-script:94242686-1400-4dce-982a-090cbfef7ba1/image.png' : null
+    window.GM_getResourceURL.mockImplementation((resourceName) =>
+      resourceName == 'some-css/images/image.png'
+        ? 'greasemonkey-script:94242686-1400-4dce-982a-090cbfef7ba1/image.png'
+        : null
     )
     window.GM_addStyle = jest.fn()
     addStyleResolve('some-css')
-    expect(window.GM_addStyle).toBeCalledWith(`body{
-      background-image: url("greasemonkey-script:94242686-1400-4dce-982a-090cbfef7ba1/image.png");
-    }`.replace(/\n\s*/g, ''))
+    expect(window.GM_addStyle).toBeCalledWith(
+      `body{
+        background-image: url("greasemonkey-script:94242686-1400-4dce-982a-090cbfef7ba1/image.png");
+      }`.replace(/\n\s*/g, '')
+    )
     expect(window.GM_addStyle).toHaveBeenCalledTimes(1)
   })
   test('pad', () => {
@@ -24,7 +27,7 @@ describe('utils', () => {
     expect(pad(1234, 3)).toBe('1234')
   })
   test('cache', () => {
-    const obj = {a: 1}
+    const obj = { a: 1 }
     cache(obj, 'b', 2)
     expect(obj.b).toBe(2)
   })

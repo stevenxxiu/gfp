@@ -1,5 +1,5 @@
 module.exports = {
-  'moduleNameMapper': {
+  moduleNameMapper: {
     '\\.sass$': '<rootDir>/fileTransformer.js',
   },
 }
