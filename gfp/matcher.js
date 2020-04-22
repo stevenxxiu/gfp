@@ -3,7 +3,9 @@ import { Matcher } from 'gfp/lib/matcher'
 
 export class SubMatcher extends Matcher {
   static _findCandidates(filter) {
-    if (filter.regexpSource === null) return null
+    if (filter.regexpSource === null) {
+      return null
+    }
     return filter.regexpSource.toLowerCase().match(/[^a-z0-9%*][a-z0-9%]{3,}(?=[^a-z0-9%*])/g)
   }
 
@@ -14,7 +16,9 @@ export class SubMatcher extends Matcher {
   findKeyword(filter) {
     let res = ''
     const candidates = this.constructor._findCandidates(filter)
-    if (candidates === null) return res
+    if (candidates === null) {
+      return res
+    }
     let resCount = 0xffffff
     let resLength = 0
     for (let candidate of candidates) {
@@ -46,7 +50,9 @@ export class SubMatcher extends Matcher {
   remove(filter) {
     // only used by pref, doesn't need to be efficient
     let candidates = this.constructor._findCandidates(filter)
-    if (candidates === null) candidates = ['']
+    if (candidates === null) {
+      candidates = ['']
+    }
     for (let candidate of candidates) {
       candidate = candidate.substr(1)
       const prevEntry = this.filterByKeyword.get(candidate)
@@ -59,8 +65,11 @@ export class SubMatcher extends Matcher {
       } else {
         const i = prevEntry.indexOf(filter)
         if (i > -1) {
-          if (prevEntry.length == 2) this.filterByKeyword.set(candidate, prevEntry[1 - i])
-          else prevEntry.splice(i, 1)
+          if (prevEntry.length == 2) {
+            this.filterByKeyword.set(candidate, prevEntry[1 - i])
+          }else {
+            prevEntry.splice(i, 1)
+          }
           break
         }
       }
@@ -82,7 +91,9 @@ export class SubMatcher extends Matcher {
   *_iterMatches(filters, data, parents) {
     for (const filter of filters) {
       const parent = filter.parent
-      if ((filter.dataIndex === 0 || parents.has(parent)) && filter.matches(data)) yield filter
+      if ((filter.dataIndex === 0 || parents.has(parent)) && filter.matches(data)) {
+        yield filter
+      }
     }
   }
 
@@ -91,14 +102,20 @@ export class SubMatcher extends Matcher {
     args:
       parents: All parent filters matched so far, excluding the ones whose subFilters have so far been null.
     */
-    if (data === null) return
+    if (data === null) {
+      return
+    }
     let candidates = data.toLowerCase().match(/[a-z0-9%]{3,}/g)
-    if (candidates === null) candidates = []
+    if (candidates === null) {
+      candidates = []
+    }
     candidates.push('')
     for (const keyword of candidates) {
       const filters = this.filterByKeyword.get(keyword)
       if (filters) {
-        for (const res of this._iterMatches(filters, data, parents)) yield res
+        for (const res of this._iterMatches(filters, data, parents)) {
+          yield res
+        }
       }
     }
   }
@@ -108,27 +125,39 @@ export class MultiMatcher {
   constructor(n) {
     this.n = n
     this.matchers = []
-    for (let i = 0; i < n; i++) this.matchers.push(new SubMatcher())
+    for (let i = 0; i < n; i++) {
+      this.matchers.push(new SubMatcher())
+    }
   }
 
   static isSlowFilter(filter) {
     for (const subFilter of filter.filters) {
-      if (SubMatcher.isSlowFilter(subFilter)) return true
+      if (SubMatcher.isSlowFilter(subFilter)) {
+        return true
+      }
     }
     return false
   }
 
   add(filter) {
-    if (filter.disabled) return
-    for (const subFilter of filter.filters) this.matchers[subFilter.index].add(subFilter)
+    if (filter.disabled) {
+      return
+    }
+    for (const subFilter of filter.filters) {
+      this.matchers[subFilter.index].add(subFilter)
+    }
   }
 
   remove(filter) {
-    for (const subFilter of filter.filters) this.matchers[subFilter.index].remove(subFilter)
+    for (const subFilter of filter.filters) {
+      this.matchers[subFilter.index].remove(subFilter)
+    }
   }
 
   clear() {
-    for (const matcher of this.matchers) matcher.clear()
+    for (const matcher of this.matchers) {
+      matcher.clear()
+    }
   }
 
   matchesAny(data, attrs) {
@@ -137,13 +166,17 @@ export class MultiMatcher {
     let [prevFilters, curFilters] = [new Map(), new Map()]
     for (let i = 0; i < this.n; i++) {
       for (const subFilter of this.matchers[i].iterMatches(data[attrs[i]], prevFilters)) {
-        if (subFilter.dataIndex == subFilter.parent.filters.length - 1) return subFilter.parent
+        if (subFilter.dataIndex == subFilter.parent.filters.length - 1) {
+          return subFilter.parent
+        }
         curFilters.set(subFilter.parent, subFilter.parent.filters[subFilter.dataIndex + 1].index - i)
       }
       if (i != this.n - 1) {
         // include null subFilters whose parents have so far matched
         for (const [filter, nextNullNum] of prevFilters.entries()) {
-          if (nextNullNum > 0) curFilters.set(filter, nextNullNum - 1)
+          if (nextNullNum > 0) {
+            curFilters.set(filter, nextNullNum - 1)
+          }
         }
         [prevFilters, curFilters] = [curFilters, new Map()]
       }

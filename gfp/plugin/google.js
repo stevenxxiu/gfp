@@ -22,7 +22,9 @@ export class ResultsData extends NodeData {
         yield new TextData(child)
       }
     }
-    for (const child of this.node.querySelectorAll('g-inner-card')) yield new NewsVideoData(child)
+    for (const child of this.node.querySelectorAll('g-inner-card')) {
+      yield new NewsVideoData(child)
+    }
   }
 }
 
@@ -34,7 +36,9 @@ class CommonData extends NodeData {
       this.node.querySelector('.action-menu') || // after the action menu
       this.node.querySelector('span.b') || // after the bold "PDF" text
       this.node.querySelector('cite') // after the title
-    if (linkArea) linkArea = linkArea.parentNode
+    if (linkArea) {
+      linkArea = linkArea.parentNode
+    }
     return cache(this, 'linkArea', linkArea)
   }
   get url() {
@@ -47,7 +51,9 @@ class CommonData extends NodeData {
 
 class ImageContainerData extends NodeData {
   *getChildren() {
-    for (const child of this.node.querySelectorAll('.bia')) yield new ImageData(child)
+    for (const child of this.node.querySelectorAll('.bia')) {
+      yield new ImageData(child)
+    }
   }
 }
 
@@ -59,7 +65,9 @@ class ImageData extends NodeData {
 
 class MapContainerData extends NodeData {
   *getChildren() {
-    for (const child of this.node.querySelectorAll('div.g')) yield new MapData(child)
+    for (const child of this.node.querySelectorAll('div.g')) {
+      yield new MapData(child)
+    }
   }
 }
 
@@ -68,7 +76,10 @@ class MapData extends CommonData {}
 class NewsVideoData extends NodeData {
   get linkArea() {
     const query = this.node.querySelector('cite, span[style]')
-    if (query == null) return null // drawing hasn't finished
+    if (query == null) {
+      // drawing hasn't finished
+      return null
+    }
     return cache(this, 'linkArea', query.parentNode)
   }
   get url() {
@@ -87,7 +98,9 @@ class TweetContainerData extends CommonData {
     return cache(this, 'title', this.node.querySelector('g-link').textContent)
   }
   *getChildren() {
-    for (const child of this.node.querySelectorAll('g-inner-card')) yield new TweetSubData(child)
+    for (const child of this.node.querySelectorAll('g-inner-card')) {
+      yield new TweetSubData(child)
+    }
   }
 }
 
@@ -119,7 +132,9 @@ class TextData extends CommonData {
 }
 
 export default function (searchGui, config) {
-  if (window.location.href.indexOf('/search?') == -1) return
+  if (window.location.href.indexOf('/search?') == -1) {
+    return
+  }
   searchGui = new SearchGui(ResultsData, config)
   searchGui.filterResults(document.getElementById('search'))
   return searchGui

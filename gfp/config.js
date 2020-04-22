@@ -17,7 +17,9 @@ class Filters {
   }
 
   _trigger(type, value) {
-    for (const cb of this._callbacks) cb(type, value)
+    for (const cb of this._callbacks) {
+      cb(type, value)
+    }
   }
 
   add(filter) {
@@ -54,7 +56,9 @@ export default class Config {
     this.allowHidden = GM_getValue('allowHidden', true)
     this.filtersObject = JSON.parse(GM_getValue('filters', '{}'))
     const filters = []
-    for (const key in this.filtersObject) filters.push(Filter.fromObject(key, this.filtersObject[key]))
+    for (const key in this.filtersObject) {
+      filters.push(Filter.fromObject(key, this.filtersObject[key]))
+    }
     this.filters = new Filters(filters)
     this.filters.observe((type, value) => {
       switch (type) {
@@ -62,14 +66,18 @@ export default class Config {
           this.filtersObject[value.text] = value.toObject()
           break
         case 'remove':
-          for (const filter of value) delete this.filtersObject[filter.text]
+          for (const filter of value) {
+            delete this.filtersObject[filter.text]
+          }
           break
         case 'update':
           this.filtersObject[value.text] = value.toObject()
           break
         case 'setValue':
           this.filtersObject = {}
-          for (const filter of value) this.filtersObject[filter.text] = filter.toObject()
+          for (const filter of value) {
+            this.filtersObject[filter.text] = filter.toObject()
+          }
           break
       }
     })

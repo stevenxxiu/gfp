@@ -38,9 +38,15 @@ describe('Filter', () => {
 
 RegExpFilter.prototype.toTestObject = function () {
   const obj = {}
-  if (this.regexp !== null) obj.regexp = this.regexp.toString()
-  if (this.matchCase) obj.matchCase = true
-  if (this.collapse) obj.collapse = true
+  if (this.regexp !== null) {
+    obj.regexp = this.regexp.toString()
+  }
+  if (this.matchCase) {
+    obj.matchCase = true
+  }
+  if (this.collapse) {
+    obj.collapse = true
+  }
   return obj
 }
 
@@ -74,8 +80,12 @@ MultiRegExpFilter.prototype.toTestObject = function () {
   for (const subFilter of this.filters) {
     const subObj = subFilter.toTestObject()
     delete subObj.regexp
-    if (subFilter.index) subObj.index = subFilter.index
-    if (subFilter.dataIndex) subObj.dataIndex = subFilter.dataIndex
+    if (subFilter.index) {
+      subObj.index = subFilter.index
+    }
+    if (subFilter.dataIndex) {
+      subObj.dataIndex = subFilter.dataIndex
+    }
     obj.filters.push(subObj)
   }
   return obj

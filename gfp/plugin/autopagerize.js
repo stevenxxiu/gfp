@@ -1,11 +1,18 @@
 export default function (searchGui, _config) {
   const mainNode = document.getElementById('rso')
-  if (!mainNode || !searchGui) return searchGui
+  if (!mainNode || !searchGui) {
+    return searchGui
+  }
   new MutationObserver((mutations) => {
     // all results have finished loading this includes google's own nodes that load later too, such as news items
     const res = []
-    for (const mutation of mutations)
-      for (const addedNode of mutation.addedNodes) if (addedNode.nodeType != 3) res.push(addedNode)
+    for (const mutation of mutations) {
+      for (const addedNode of mutation.addedNodes) {
+        if (addedNode.nodeType != 3) {
+          res.push(addedNode)
+        }
+      }
+    }
     if (res.length) {
       searchGui.filterResults({
         querySelectorAll: (selector) => {
@@ -15,7 +22,9 @@ export default function (searchGui, _config) {
           //   MutationObserver.
           const matchedNodes = []
           for (const node of res) {
-            if (node.matches(selector)) matchedNodes.push(node)
+            if (node.matches(selector)) {
+              matchedNodes.push(node)
+            }
             // call `querySelectorAll` as well, as `node` can be a results container node
             Array.prototype.push.apply(matchedNodes, node.querySelectorAll(selector))
           }

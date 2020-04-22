@@ -42,11 +42,15 @@ export class SearchGui {
           this.matcher.add(value)
           break
         case 'remove':
-          for (const filter of value) this.matcher.remove(filter)
+          for (const filter of value) {
+            this.matcher.remove(filter)
+          }
           break
         case 'setValue':
           this.matcher = new CombinedMultiMatcher(NodeData.attrs.length)
-          for (const filter of value) this.matcher.add(filter)
+          for (const filter of value) {
+            this.matcher.add(filter)
+          }
           break
       }
     }
@@ -78,16 +82,25 @@ export class SearchGui {
   }
 
   toggleResult(nodeData, showTitle, showLink, initial = false) {
-    for (const child of nodeData.node.children)
-      if (child != showTitle && child != showLink) child.classList.toggle('hide')
-    if (initial) return
-    if (showTitle) showTitle.classList.toggle('hide')
+    for (const child of nodeData.node.children) {
+      if (child != showTitle && child != showLink) {
+        child.classList.toggle('hide')
+      }
+    }
+    if (initial) {
+      return
+    }
+    if (showTitle) {
+      showTitle.classList.toggle('hide')
+    }
     showLink.classList.toggle('hide')
     showLink.textContent = showLink.classList.contains('hide') ? 'hide' : 'show'
   }
 
   hideResult(nodeData, filter = null) {
-    if (!nodeData.node || nodeData.act(this.hideResult, filter)) return
+    if (!nodeData.node || nodeData.act(this.hideResult, filter)) {
+      return
+    }
     if (this.config.allowHidden && (!filter || filter.collapse)) {
       nodeData.node.classList.add('hide')
       nodeData.undo = () => nodeData.node.classList.remove('hide')
@@ -100,7 +113,9 @@ export class SearchGui {
       nodeData.node.appendChild(showTitle)
     }
     const showLink = this.showLink.cloneNode(true)
-    if (filter) showLink.title = filter.text
+    if (filter) {
+      showLink.title = filter.text
+    }
     nodeData.node.appendChild(showLink)
     this.toggleResult(nodeData, showTitle, showLink, true)
     showLink.onclick = () => {
@@ -108,27 +123,41 @@ export class SearchGui {
       return false
     }
     nodeData.redo = (filter) => {
-      if (filter) showLink.title = filter.text
+      if (filter) {
+        showLink.title = filter.text
+      }
     }
     nodeData.undo = () => {
-      if (!showLink.classList.contains('hide')) this.toggleResult(nodeData, showTitle, showLink)
-      if (showTitle) nodeData.node.removeChild(showTitle)
+      if (!showLink.classList.contains('hide')) {
+        this.toggleResult(nodeData, showTitle, showLink)
+      }
+      if (showTitle) {
+        nodeData.node.removeChild(showTitle)
+      }
       nodeData.node.removeChild(showLink)
     }
   }
 
   addFilterLink(nodeData, filter = null) {
-    if (!nodeData.node || nodeData.act(this.addFilterLink, filter)) return
-    if (!nodeData.linkArea) return
+    if (!nodeData.node || nodeData.act(this.addFilterLink, filter)) {
+      return
+    }
+    if (!nodeData.linkArea) {
+      return
+    }
     const addLink = this.addLink.cloneNode(true)
-    if (filter) addLink.title = filter.text
+    if (filter) {
+      addLink.title = filter.text
+    }
     nodeData.linkArea.appendChild(addLink)
     addLink.onclick = () => {
       this.addFromResult(nodeData)
       return false
     }
     nodeData.redo = (filter) => {
-      if (filter) addLink.title = filter.text
+      if (filter) {
+        addLink.title = filter.text
+      }
     }
     nodeData.undo = () => {
       nodeData.linkArea.removeChild(addLink)
@@ -138,14 +167,18 @@ export class SearchGui {
   addFromResult(nodeData) {
     const domainUrl = '||' + nodeData.url.replace(/^[\w-]+:\/+(?:www\.)?/, '')
     const text = prompt('Filter: ', domainUrl)
-    if (text === null) return
+    if (text === null) {
+      return
+    }
     this.config.filters.add(MultiRegExpFilter.fromText(text))
     this.filterResults()
   }
 
   _filterResults(nodeData) {
     // store all children so we can re-filter
-    if (nodeData.children === undefined) nodeData.children = Array.from(nodeData.getChildren())
+    if (nodeData.children === undefined) {
+      nodeData.children = Array.from(nodeData.getChildren())
+    }
     const filter = this.matcher.matchesAny(nodeData, NodeData.attrs)
     if (filter) {
       filter.hitCount++
@@ -161,10 +194,15 @@ export class SearchGui {
     }
     let filtered = !!nodeData.children.length
     for (const childData of nodeData.children) {
-      if (!this._filterResults(childData)) filtered = false
+      if (!this._filterResults(childData)) {
+        filtered = false
+      }
     }
-    if (filtered) this.hideResult(nodeData)
-    else if (NodeData.attrs.some((attr) => nodeData[attr] !== null)) this.addFilterLink(nodeData)
+    if (filtered) {
+      this.hideResult(nodeData)
+    } else if (NodeData.attrs.some((attr) => nodeData[attr] !== null)) {
+      this.addFilterLink(nodeData)
+    }
     return filtered
   }
 
@@ -175,7 +213,9 @@ export class SearchGui {
     */
     let matched = false
     const observer = (type, _filter) => {
-      if (type == 'update') matched = true
+      if (type == 'update') {
+        matched = true
+      }
     }
     this.config.filters.observe(observer)
     if (node) {
@@ -186,7 +226,9 @@ export class SearchGui {
     } else {
       this._filterResults(this.nodeData)
     }
-    if (matched) this.config.flushFilters()
+    if (matched) {
+      this.config.flushFilters()
+    }
     this.config.filters.unobserve(observer)
   }
 }

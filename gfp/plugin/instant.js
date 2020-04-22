@@ -1,6 +1,8 @@
 export default function (searchGui, _config) {
   const mainNode = document.getElementById('main')
-  if (!mainNode || !searchGui) return searchGui
+  if (!mainNode || !searchGui) {
+    return searchGui
+  }
   new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       for (const addedNode of mutation.addedNodes) {

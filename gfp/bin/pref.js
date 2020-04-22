@@ -20,7 +20,9 @@ function main() {
     return { filters: JSON.stringify(filters) }
   })()
   window.GM_addStyle = (text) => {
-    if (text == '') return
+    if (text == '') {
+      return
+    }
     let style = document.createElement('style')
     style.textContent = text
     document.head.appendChild(style)
