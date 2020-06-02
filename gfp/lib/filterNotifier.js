@@ -57,7 +57,7 @@ let _FilterNotifier = (exports.FilterNotifier = {
    *                 "subscription.homepage", "subscription.updated",
    *                 "filter.added", "filter.removed", "filter.moved",
    *                 "filter.disabled", "filter.hitCount", "filter.lastHit")
-   * @param {Subscription|Filter} item item that the change applies to
+   * @param {Filter} item item that the change applies to
    */
   triggerListeners: function (action, item, param1, param2, param3) {
     let list = listeners.slice()

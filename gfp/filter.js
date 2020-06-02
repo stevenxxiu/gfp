@@ -103,7 +103,7 @@ export class MultiRegExpFilter extends ActiveFilter_ {
       }
       filters.push(filter)
     }
-    if (filters.length == 1) {
+    if (filters.length === 1) {
       filters = filters[0]
     }
     return blocking ? new BlockingFilter(origText, filters) : new WhitelistFilter(origText, filters)

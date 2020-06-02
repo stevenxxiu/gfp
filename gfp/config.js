@@ -57,7 +57,9 @@ export default class Config {
     this.filtersObject = JSON.parse(GM_getValue('filters', '{}'))
     const filters = []
     for (const key in this.filtersObject) {
-      filters.push(Filter.fromObject(key, this.filtersObject[key]))
+      if (Object.prototype.hasOwnProperty.call(this.filtersObject, key)) {
+        filters.push(Filter.fromObject(key, this.filtersObject[key]))
+      }
     }
     this.filters = new Filters(filters)
     this.filters.observe((type, value) => {

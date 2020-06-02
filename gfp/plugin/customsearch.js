@@ -25,7 +25,7 @@ class TextData extends NodeData {
 }
 
 export default function (searchGui, config) {
-  if (window.location.href.indexOf('/cse?') == -1 && window.location.href.indexOf('/custom?') == -1) {
+  if (window.location.href.indexOf('/cse?') === -1 && window.location.href.indexOf('/custom?') === -1) {
     return searchGui
   }
   const mainNode = document.getElementById('cse')

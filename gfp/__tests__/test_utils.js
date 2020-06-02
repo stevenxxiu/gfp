@@ -5,11 +5,11 @@ describe('utils', () => {
   test('addStyleResolve', () => {
     window.GM_getResourceText = jest.fn()
     window.GM_getResourceText.mockImplementation((resourceName) =>
-      resourceName == 'some-css' ? 'body{background-image: url("images/image.png");}' : null
+      resourceName === 'some-css' ? 'body{background-image: url("images/image.png");}' : null
     )
     window.GM_getResourceURL = jest.fn()
     window.GM_getResourceURL.mockImplementation((resourceName) =>
-      resourceName == 'some-css/images/image.png'
+      resourceName === 'some-css/images/image.png'
         ? 'greasemonkey-script:94242686-1400-4dce-982a-090cbfef7ba1/image.png'
         : null
     )

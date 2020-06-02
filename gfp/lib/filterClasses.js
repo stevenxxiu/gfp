@@ -48,7 +48,7 @@ Filter.prototype = {
 
   /**
    * Serializes the filter to an array of strings for writing out on the disk.
-   * @param {Array of String} buffer  buffer to push the serialization results into
+   * @param {Array<String>} buffer  buffer to push the serialization results into
    */
   serialize: function (buffer) {
     buffer.push('[Filter]')
@@ -93,9 +93,7 @@ Filter.fromText = function (text) {
   if (text in Filter.knownFilters) return Filter.knownFilters[text]
 
   let ret
-  let match = text.indexOf('#') >= 0 ? Filter.elemhideRegExp.exec(text) : null
-  if (match) ret = ElemHideBase.fromText(text, match[1], match[2], match[3], match[4], match[5])
-  else if (text[0] == '!') ret = new CommentFilter(text)
+  if (text[0] === '!') ret = new CommentFilter(text)
   else ret = RegExpFilter.fromText(text)
 
   Filter.knownFilters[ret.text] = ret
@@ -111,7 +109,7 @@ Filter.fromText = function (text) {
 Filter.fromObject = function (obj) {
   let ret = Filter.fromText(obj.text)
   if (ret instanceof ActiveFilter) {
-    if ('disabled' in obj) ret._disabled = obj.disabled == 'true'
+    if ('disabled' in obj) ret._disabled = obj.disabled === 'true'
     if ('hitCount' in obj) ret._hitCount = parseInt(obj.hitCount) || 0
     if ('lastHit' in obj) ret._lastHit = parseInt(obj.lastHit) || 0
   }
@@ -217,12 +215,11 @@ ActiveFilter.prototype = {
     return this._disabled
   },
   set disabled(value) {
-    if (value != this._disabled) {
+    if (value !== this._disabled) {
       let oldValue = this._disabled
       this._disabled = value
       FilterNotifier.triggerListeners('filter.disabled', this, value, oldValue)
     }
-    return this._disabled
   },
 
   /**
@@ -233,12 +230,11 @@ ActiveFilter.prototype = {
     return this._hitCount
   },
   set hitCount(value) {
-    if (value != this._hitCount) {
+    if (value !== this._hitCount) {
       let oldValue = this._hitCount
       this._hitCount = value
       FilterNotifier.triggerListeners('filter.hitCount', this, value, oldValue)
     }
-    return this._hitCount
   },
 
   /**
@@ -249,12 +245,11 @@ ActiveFilter.prototype = {
     return this._lastHit
   },
   set lastHit(value) {
-    if (value != this._lastHit) {
+    if (value !== this._lastHit) {
       let oldValue = this._lastHit
       this._lastHit = value
       FilterNotifier.triggerListeners('filter.lastHit', this, value, oldValue)
     }
-    return this._lastHit
   },
 
   /**
@@ -288,6 +283,7 @@ ActiveFilter.prototype = {
    * domains
    * @type Object
    */
+  /* eslint-disable sonarjs/cognitive-complexity */
   get domains() {
     // Despite this property being cached, the getter is called
     // several times on Safari, due to WebKit bug 132872
@@ -303,7 +299,7 @@ ActiveFilter.prototype = {
         source = source.toUpperCase()
       }
       let list = source.split(this.domainSeparator)
-      if (list.length == 1 && list[0][0] != '~') {
+      if (list.length === 1 && list[0][0] !== '~') {
         // Fast track for the common one-domain scenario
         domains = { __proto__: null, '': false }
         if (this.ignoreTrailingDot) list[0] = list[0].replace(/\.+$/, '')
@@ -313,10 +309,10 @@ ActiveFilter.prototype = {
         for (let i = 0; i < list.length; i++) {
           let domain = list[i]
           if (this.ignoreTrailingDot) domain = domain.replace(/\.+$/, '')
-          if (domain == '') continue
+          if (domain === '') continue
 
           let include
-          if (domain[0] == '~') {
+          if (domain[0] === '~') {
             include = false
             domain = domain.substr(1)
           } else {
@@ -385,9 +381,10 @@ ActiveFilter.prototype = {
 
     for (let domain in this.domains)
       if (
+        Object.prototype.hasOwnProperty.call(this.domains, domain) &&
         this.domains[domain] &&
-        domain != docDomain &&
-        (domain.length <= docDomain.length || domain.indexOf('.' + docDomain) != domain.length - docDomain.length - 1)
+        domain !== docDomain &&
+        (domain.length <= docDomain.length || domain.indexOf('.' + docDomain) !== domain.length - docDomain.length - 1)
       )
         return false
 
@@ -427,7 +424,7 @@ function RegExpFilter(text, regexpSource, contentType, matchCase, domains, third
   if (thirdParty != null) this.thirdParty = thirdParty
   if (sitekeys != null) this.sitekeySource = sitekeys
 
-  if (regexpSource.length >= 2 && regexpSource[0] == '/' && regexpSource[regexpSource.length - 1] == '/') {
+  if (regexpSource.length >= 2 && regexpSource[0] === '/' && regexpSource[regexpSource.length - 1] === '/') {
     // The filter is a regular expression - convert it immediately to catch syntax errors
     let regexp = new RegExp(regexpSource.substr(1, regexpSource.length - 2), this.matchCase ? '' : 'i')
     Object.defineProperty(this, 'regexp', { value: regexp })
@@ -547,16 +544,12 @@ RegExpFilter.prototype = {
    * @return {Boolean} true in case of a match
    */
   matches: function (location, contentType, docDomain, thirdParty, sitekey) {
-    if (
+    return (
       this.regexp.test(location) &&
-      (RegExpFilter.typeMap[contentType] & this.contentType) != 0 &&
-      (this.thirdParty == null || this.thirdParty == thirdParty) &&
+      (RegExpFilter.typeMap[contentType] & this.contentType) !== 0 &&
+      (this.thirdParty == null || this.thirdParty === thirdParty) &&
       this.isActiveOnDomain(docDomain, sitekey)
-    ) {
-      return true
-    }
-
-    return false
+    )
   },
 }
 
@@ -571,10 +564,11 @@ Object.defineProperty(RegExpFilter.prototype, '0', {
  * Creates a RegExp filter from its text representation
  * @param {String} text   same as in Filter()
  */
+/* eslint-disable sonarjs/cognitive-complexity */
 RegExpFilter.fromText = function (text) {
   let blocking = true
   let origText = text
-  if (text.indexOf('@@') == 0) {
+  if (text.indexOf('@@') === 0) {
     blocking = false
     text = text.substr(2)
   }
@@ -601,17 +595,17 @@ RegExpFilter.fromText = function (text) {
       if (option in RegExpFilter.typeMap) {
         if (contentType == null) contentType = 0
         contentType |= RegExpFilter.typeMap[option]
-      } else if (option[0] == '~' && option.substr(1) in RegExpFilter.typeMap) {
+      } else if (option[0] === '~' && option.substr(1) in RegExpFilter.typeMap) {
         if (contentType == null) contentType = RegExpFilter.prototype.contentType
         contentType &= ~RegExpFilter.typeMap[option.substr(1)]
-      } else if (option == 'MATCH_CASE') matchCase = true
-      else if (option == '~MATCH_CASE') matchCase = false
-      else if (option == 'DOMAIN' && typeof value != 'undefined') domains = value
-      else if (option == 'THIRD_PARTY') thirdParty = true
-      else if (option == '~THIRD_PARTY') thirdParty = false
-      else if (option == 'COLLAPSE') collapse = true
-      else if (option == '~COLLAPSE') collapse = false
-      else if (option == 'SITEKEY' && typeof value != 'undefined') sitekeys = value
+      } else if (option === 'MATCH_CASE') matchCase = true
+      else if (option === '~MATCH_CASE') matchCase = false
+      else if (option === 'DOMAIN' && typeof value != 'undefined') domains = value
+      else if (option === 'THIRD_PARTY') thirdParty = true
+      else if (option === '~THIRD_PARTY') thirdParty = false
+      else if (option === 'COLLAPSE') collapse = true
+      else if (option === '~COLLAPSE') collapse = false
+      else if (option === 'SITEKEY' && typeof value != 'undefined') sitekeys = value
       else return new InvalidFilter(origText, 'Unknown option ' + option.toLowerCase())
     }
   }
@@ -713,127 +707,4 @@ exports.WhitelistFilter = WhitelistFilter
 
 WhitelistFilter.prototype = {
   __proto__: RegExpFilter.prototype,
-}
-
-/**
- * Base class for element hiding filters
- * @param {String} text see Filter()
- * @param {String} [domains] Host names or domains the filter should be restricted to
- * @param {String} selector   CSS selector for the HTML elements that should be hidden
- * @constructor
- * @augments ActiveFilter
- */
-function ElemHideBase(text, domains, selector) {
-  ActiveFilter.call(this, text, domains || null)
-
-  if (domains)
-    this.selectorDomain = domains
-      .replace(/,~[^,]+/g, '')
-      .replace(/^~[^,]+,?/, '')
-      .toLowerCase()
-  this.selector = selector
-}
-exports.ElemHideBase = ElemHideBase
-
-ElemHideBase.prototype = {
-  __proto__: ActiveFilter.prototype,
-
-  /**
-   * @see ActiveFilter.domainSeparator
-   */
-  domainSeparator: ',',
-
-  /**
-   * @see ActiveFilter.ignoreTrailingDot
-   */
-  ignoreTrailingDot: false,
-
-  /**
-   * Host name or domain the filter should be restricted to (can be null for no restriction)
-   * @type String
-   */
-  selectorDomain: null,
-  /**
-   * CSS selector for the HTML elements that should be hidden
-   * @type String
-   */
-  selector: null,
-}
-
-/**
- * Creates an element hiding filter from a pre-parsed text representation
- *
- * @param {String} text       same as in Filter()
- * @param {String} domain     domain part of the text representation (can be empty)
- * @param {String} tagName    tag name part (can be empty)
- * @param {String} attrRules  attribute matching rules (can be empty)
- * @param {String} selector   raw CSS selector (can be empty)
- * @return {ElemHideFilter|ElemHideException|InvalidFilter}
- */
-ElemHideBase.fromText = function (text, domain, isException, tagName, attrRules, selector) {
-  if (!selector) {
-    if (tagName == '*') tagName = ''
-
-    let id = null
-    let additional = ''
-    if (attrRules) {
-      attrRules = attrRules.match(/\([\w-]+(?:[$^*]?=[^()"]*)?\)/g)
-      for (let rule of attrRules) {
-        rule = rule.substr(1, rule.length - 2)
-        let separatorPos = rule.indexOf('=')
-        if (separatorPos > 0) {
-          rule = rule.replace(/=/, '="') + '"'
-          additional += '[' + rule + ']'
-        } else {
-          if (id) {
-            let { Utils } = require('utils')
-            return new InvalidFilter(text, Utils.getString('filter_elemhide_duplicate_id'))
-          } else id = rule
-        }
-      }
-    }
-
-    if (id) selector = tagName + '.' + id + additional + ',' + tagName + '#' + id + additional
-    else if (tagName || additional) selector = tagName + additional
-    else {
-      let { Utils } = require('utils')
-      return new InvalidFilter(text, Utils.getString('filter_elemhide_nocriteria'))
-    }
-  }
-  if (isException) return new ElemHideException(text, domain, selector)
-  else return new ElemHideFilter(text, domain, selector)
-}
-
-/**
- * Class for element hiding filters
- * @param {String} text see Filter()
- * @param {String} domains  see ElemHideBase()
- * @param {String} selector see ElemHideBase()
- * @constructor
- * @augments ElemHideBase
- */
-function ElemHideFilter(text, domains, selector) {
-  ElemHideBase.call(this, text, domains, selector)
-}
-exports.ElemHideFilter = ElemHideFilter
-
-ElemHideFilter.prototype = {
-  __proto__: ElemHideBase.prototype,
-}
-
-/**
- * Class for element hiding exceptions
- * @param {String} text see Filter()
- * @param {String} domains  see ElemHideBase()
- * @param {String} selector see ElemHideBase()
- * @constructor
- * @augments ElemHideBase
- */
-function ElemHideException(text, domains, selector) {
-  ElemHideBase.call(this, text, domains, selector)
-}
-exports.ElemHideException = ElemHideException
-
-ElemHideException.prototype = {
-  __proto__: ElemHideBase.prototype,
 }

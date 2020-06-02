@@ -158,7 +158,7 @@ class DataView {
         this.config.filters.add(filter)
       } else {
         i = this.filters.indexOf(filter)
-        if (i == -1) {
+        if (i === -1) {
           return
         }
       }
@@ -263,7 +263,9 @@ class PrefDialog {
                 const filtersObject = JSON.parse($(this).val())
                 const filters = []
                 for (const key in filtersObject) {
-                  filters.push(Filter.fromObject(key, filtersObject[key]))
+                  if (Object.prototype.hasOwnProperty.call(filtersObject, key)) {
+                    filters.push(Filter.fromObject(key, filtersObject[key]))
+                  }
                 }
                 self.dataView.setValue(filters)
                 $(this).dialog('close')
@@ -334,7 +336,7 @@ class PrefDialog {
             // spaces only don't count as being empty, since they can exist in urls
             if (!text) return { valid: false, msg: 'Empty filter' }
             if (Filter.fromText(text) instanceof InvalidFilter) return { valid: false, msg: 'Invalid filter' }
-            if (Array.from(this.dataView.getValue()).some((filter) => filter.text == text)) {
+            if (Array.from(this.dataView.getValue()).some((filter) => filter.text === text)) {
               return { valid: false, msg: 'Duplicate filter' }
             }
             return { valid: true, msg: null }
@@ -348,7 +350,7 @@ class PrefDialog {
           width: 1,
           sortable: true,
           cssClass: 'slow-column',
-          formatter: (row, cell, value, _columnDef, _dataContext) => (value ? '<img class="slow-image"></img>' : ''),
+          formatter: (row, cell, value, _columnDef, _dataContext) => (value ? '<img class="slow-image" />' : ''),
         },
         {
           id: 'enabled',
@@ -357,7 +359,7 @@ class PrefDialog {
           width: 45,
           sortable: true,
           formatter: (row, cell, value, _columnDef, _dataContext) =>
-            `<input type="checkbox" name="" value="${value}" ${value ? 'checked' : ''} />`,
+            `<input type="checkbox" name="" value="${value}" checked=${!!value} />`,
         },
         {
           id: 'hitCount',
@@ -375,7 +377,7 @@ class PrefDialog {
           width: 110,
           sortable: true,
           formatter: (row, cell, value, columnDef, dataContext) => {
-            if (!value || dataContext.hitCount == 0) {
+            if (!value || dataContext.hitCount === 0) {
               return ''
             }
             const date = new Date(value)
@@ -414,10 +416,6 @@ class PrefDialog {
             }
             break
           case 'slow':
-            if (!binaryFilter[+val[key]].includes(filterVals[key])) {
-              return false
-            }
-            break
           case 'enabled':
             if (!binaryFilter[+val[key]].includes(filterVals[key])) {
               return false
@@ -446,9 +444,9 @@ class PrefDialog {
       this.dialog.focus()
     }
     grid.onHeaderRowCellRendered.subscribe((e, args) => {
-      const searchField = $('<input></input>')
+      const searchField = $('<input/>')
         .keydown((e) => {
-          if (e.keyCode == 27) {
+          if (e.keyCode === 27) {
             closeFindBar()
           }
         })
@@ -461,7 +459,7 @@ class PrefDialog {
     findBar.hide()
     this.dialog.attr('tabindex', 1)
     this.dialog.keydown((e) => {
-      if ((e.ctrlKey || e.metaKey) && e.keyCode == 70) {
+      if ((e.ctrlKey || e.metaKey) && e.keyCode === 70) {
         openFindBar()
         e.preventDefault()
       }
@@ -473,7 +471,7 @@ class PrefDialog {
       x[sortField] > y[sortField] ? sortRes : x[sortField] < y[sortField] ? -sortRes : 0
     grid.setSortColumn(sortField, !!sortRes)
     grid.onSort.subscribe((e, args) => {
-      [sortField, sortRes] = [args.sortCol.field, args.sortAsc ? 1 : -1]
+      ;[sortField, sortRes] = [args.sortCol.field, args.sortAsc ? 1 : -1]
       this.dataView.sort()
     })
 
@@ -519,7 +517,7 @@ class PrefDialog {
       return false
     })
     gridDom.keydown((e) => {
-      if (e.target.nodeName == 'INPUT') {
+      if (e.target.nodeName === 'INPUT') {
         return
       }
       switch (e.keyCode) {

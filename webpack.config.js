@@ -50,11 +50,11 @@ module.exports = {
   },
   plugins: [
     new webpack.BannerPlugin({
-      banner: env != 'script' ? '' : fs.readFileSync('gfp/header.js', 'utf-8'),
+      banner: env !== 'script' ? '' : fs.readFileSync('gfp/header.js', 'utf-8'),
       raw: true,
     }),
   ],
   watch: true,
   performance: { hints: false },
-  devtool: env != 'script' ? 'inline-source-map' : '#',
+  devtool: env !== 'script' ? 'inline-source-map' : false,
 }

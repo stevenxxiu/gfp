@@ -10,11 +10,11 @@ export class ResultsData extends NodeData {
         child.classList.contains('g-blk')
       ) {
         // contains other .g elements, skip so we don't have duplicate links
-      } else if (child.id == 'imagebox_bigimages') {
+      } else if (child.id === 'imagebox_bigimages') {
         yield new ImageContainerData(child)
-      } else if (child.id == 'lclbox') {
+      } else if (child.id === 'lclbox') {
         yield new MapContainerData(child)
-      } else if (child.firstChild.nodeName == 'G-SECTION-WITH-HEADER') {
+      } else if (child.firstChild.nodeName === 'G-SECTION-WITH-HEADER') {
         yield new TweetContainerData(child)
       } else if (child.previousElementSibling && child.previousElementSibling.classList.contains('mod')) {
         yield new FeaturedSnippetData(child)
@@ -132,7 +132,7 @@ class TextData extends CommonData {
 }
 
 export default function (searchGui, config) {
-  if (window.location.href.indexOf('/search?') == -1) {
+  if (window.location.href.indexOf('/search?') === -1) {
     return
   }
   searchGui = new SearchGui(ResultsData, config)

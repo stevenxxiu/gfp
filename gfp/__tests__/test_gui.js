@@ -5,7 +5,7 @@ import { NodeData, SearchGui } from 'gfp/gui'
 describe('SearchGui', () => {
   let config, searchGui, existingData, NewData
   const createSearchGui = (filters, nodeData) => {
-    window.GM_getValue = jest.fn().mockImplementation((name) => (name == 'filters' ? JSON.stringify(filters) : ''))
+    window.GM_getValue = jest.fn().mockImplementation((name) => (name === 'filters' ? JSON.stringify(filters) : ''))
     config = new Config()
     searchGui = new SearchGui(NewData, config)
     searchGui.nodeData = nodeData

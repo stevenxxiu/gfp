@@ -39,8 +39,9 @@ export function indexOfSorted(xs, ys, comparer) {
   const res = []
   let i = 0
   for (const y of ys) {
+    // noinspection JSSuspiciousNameCombination
     i = bisect(xs, y, comparer, i + 1) - 1
-    res.push(xs[i] == y ? i : -1)
+    res.push(xs[i] === y ? i : -1)
   }
   return res
 }

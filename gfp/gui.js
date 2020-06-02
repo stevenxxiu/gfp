@@ -9,7 +9,7 @@ export class NodeData {
 
   act(action, filter) {
     // action: function which modifies the node
-    if (this.action == action) {
+    if (this.action === action) {
       this.redo(filter)
       return true
     } else {
@@ -83,7 +83,7 @@ export class SearchGui {
 
   toggleResult(nodeData, showTitle, showLink, initial = false) {
     for (const child of nodeData.node.children) {
-      if (child != showTitle && child != showLink) {
+      if (child !== showTitle && child !== showLink) {
         child.classList.toggle('hide')
       }
     }
@@ -213,7 +213,7 @@ export class SearchGui {
     */
     let matched = false
     const observer = (type, _filter) => {
-      if (type == 'update') {
+      if (type === 'update') {
         matched = true
       }
     }

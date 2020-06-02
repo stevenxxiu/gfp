@@ -24,7 +24,7 @@ export class SubMatcher extends Matcher {
     for (let candidate of candidates) {
       candidate = candidate.substr(1)
       let count = this.filterByKeyword.has(candidate) ? this.filterByKeyword.get(candidate).length : 0
-      if (count < resCount || (count == resCount && candidate.length > resLength)) {
+      if (count < resCount || (count === resCount && candidate.length > resLength)) {
         res = candidate
         resCount = count
         resLength = candidate.length
@@ -40,7 +40,7 @@ export class SubMatcher extends Matcher {
     const prevEntry = this.filterByKeyword.get(keyword)
     if (prevEntry === undefined) {
       this.filterByKeyword.set(keyword, filter)
-    } else if (prevEntry.length == 1) {
+    } else if (prevEntry.length === 1) {
       this.filterByKeyword.set(keyword, [prevEntry, filter])
     } else {
       prevEntry.push(filter)
@@ -49,29 +49,28 @@ export class SubMatcher extends Matcher {
 
   remove(filter) {
     // only used by pref, doesn't need to be efficient
-    let candidates = this.constructor._findCandidates(filter)
-    if (candidates === null) {
-      candidates = ['']
-    }
+    const candidates = this.constructor._findCandidates(filter) || ['']
     for (let candidate of candidates) {
       candidate = candidate.substr(1)
       const prevEntry = this.filterByKeyword.get(candidate)
       if (prevEntry === undefined) {
-      } else if (prevEntry.length == 1) {
-        if (prevEntry == filter) {
+        continue
+      }
+      if (prevEntry.length === 1) {
+        if (prevEntry === filter) {
           this.filterByKeyword.delete(candidate)
           break
         }
-      } else {
-        const i = prevEntry.indexOf(filter)
-        if (i > -1) {
-          if (prevEntry.length == 2) {
-            this.filterByKeyword.set(candidate, prevEntry[1 - i])
-          }else {
-            prevEntry.splice(i, 1)
-          }
-          break
+        continue
+      }
+      const i = prevEntry.indexOf(filter)
+      if (i === -1) {
+        if (prevEntry.length === 2) {
+          this.filterByKeyword.set(candidate, prevEntry[1 - i])
+        } else {
+          prevEntry.splice(i, 1)
         }
+        break
       }
     }
   }
@@ -166,19 +165,19 @@ export class MultiMatcher {
     let [prevFilters, curFilters] = [new Map(), new Map()]
     for (let i = 0; i < this.n; i++) {
       for (const subFilter of this.matchers[i].iterMatches(data[attrs[i]], prevFilters)) {
-        if (subFilter.dataIndex == subFilter.parent.filters.length - 1) {
+        if (subFilter.dataIndex === subFilter.parent.filters.length - 1) {
           return subFilter.parent
         }
         curFilters.set(subFilter.parent, subFilter.parent.filters[subFilter.dataIndex + 1].index - i)
       }
-      if (i != this.n - 1) {
+      if (i !== this.n - 1) {
         // include null subFilters whose parents have so far matched
         for (const [filter, nextNullNum] of prevFilters.entries()) {
           if (nextNullNum > 0) {
             curFilters.set(filter, nextNullNum - 1)
           }
         }
-        [prevFilters, curFilters] = [curFilters, new Map()]
+        ;[prevFilters, curFilters] = [curFilters, new Map()]
       }
     }
     return null

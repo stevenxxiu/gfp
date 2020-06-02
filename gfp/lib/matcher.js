@@ -62,7 +62,7 @@ Matcher.prototype = {
     let keyword = this.findKeyword(filter)
     let oldEntry = this.filterByKeyword[keyword]
     if (typeof oldEntry == 'undefined') this.filterByKeyword[keyword] = filter
-    else if (oldEntry.length == 1) this.filterByKeyword[keyword] = [oldEntry, filter]
+    else if (oldEntry.length === 1) this.filterByKeyword[keyword] = [oldEntry, filter]
     else oldEntry.push(filter)
     this.keywordByFilter[filter.text] = keyword
   },
@@ -81,7 +81,7 @@ Matcher.prototype = {
       let index = list.indexOf(filter)
       if (index >= 0) {
         list.splice(index, 1)
-        if (list.length == 1) this.filterByKeyword[keyword] = list[0]
+        if (list.length === 1) this.filterByKeyword[keyword] = list[0]
       }
     }
 
@@ -103,7 +103,7 @@ Matcher.prototype = {
     if (match) text = match.input.substr(0, match.index)
 
     // Remove whitelist marker
-    if (text.substr(0, 2) == '@@') text = text.substr(2)
+    if (text.substr(0, 2) === '@@') text = text.substr(2)
 
     let candidates = text.toLowerCase().match(/[^a-z0-9%*][a-z0-9%]{3,}(?=[^a-z0-9%*])/g)
     if (!candidates) return result
@@ -114,7 +114,7 @@ Matcher.prototype = {
     for (let i = 0, l = candidates.length; i < l; i++) {
       let candidate = candidates[i].substr(1)
       let count = candidate in hash ? hash[candidate].length : 0
-      if (count < resultCount || (count == resultCount && candidate.length > resultLength)) {
+      if (count < resultCount || (count === resultCount && candidate.length > resultLength)) {
         result = candidate
         resultCount = count
         resultLength = candidate.length
