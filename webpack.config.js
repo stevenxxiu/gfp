@@ -12,8 +12,6 @@ module.exports = {
   externals: {
     jquery: '$',
     slickgrid: 'Slick',
-    chai: 'chai',
-    sinon: 'sinon',
   },
   module: {
     rules: [
