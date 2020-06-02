@@ -1,0 +1,33 @@
+fail_fast: true
+repos:
+  - repo: git://github.com/pre-commit/pre-commit-hooks
+    rev: v0.9.2
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-byte-order-marker
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: debug-statements
+      - id: detect-private-key
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        entry: npx eslint
+        language: system
+        types: [javascript]
+        pass_filenames: true
+      - id: prettier
+        name: prettier
+        entry: npx prettier --config ./.prettierrc.json --write
+        language: system
+        types: [javascript]
+        pass_filenames: true
+      - id: commitlint
+        name: commitlint
+        entry: npx commitlint --edit
+        stages: [commit-msg]
+        language: system
+        verbose: true

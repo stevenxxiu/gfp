@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const postcssPresetEnv = require('postcss-preset-env')
 const webpack = require('webpack')
-const env = process.env.NODE_ENV.trim()
+const env = (process.env.NODE_ENV || 'script').trim()
 
 module.exports = {
   mode: 'development',
