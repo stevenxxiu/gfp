@@ -4,7 +4,7 @@ import { LogTime } from 'gfp/logger'
 
 function main() {
   LogTime.start()
-  let config = new Config()
+  const config = new Config()
   // es5 to allow webpack to parse requires
   let searchGui = null
   for (let i = 0; i < config.plugins.length; i++) {
