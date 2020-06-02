@@ -18,7 +18,7 @@ module.exports = {
       {
         test: /\.html$/,
         loader: 'html-loader',
-        options: { minimize: true, attrs: 'img:src' },
+        options: { minimize: true },
       },
       {
         test: /\.sass$/,
