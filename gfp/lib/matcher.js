@@ -19,7 +19,7 @@
  * @fileOverview Matcher class implementing matching addresses against a list of filters.
  */
 
-let { Filter, _RegExpFilter, WhitelistFilter } = require('./filterClasses')
+const { Filter, _RegExpFilter, WhitelistFilter } = require('./filterClasses')
 
 /**
  * Blacklist/whitelist filter matching
@@ -59,8 +59,8 @@ Matcher.prototype = {
     if (filter.text in this.keywordByFilter) return
 
     // Look for a suitable keyword
-    let keyword = this.findKeyword(filter)
-    let oldEntry = this.filterByKeyword[keyword]
+    const keyword = this.findKeyword(filter)
+    const oldEntry = this.filterByKeyword[keyword]
     if (typeof oldEntry == 'undefined') this.filterByKeyword[keyword] = filter
     else if (oldEntry.length === 1) this.filterByKeyword[keyword] = [oldEntry, filter]
     else oldEntry.push(filter)
@@ -74,11 +74,11 @@ Matcher.prototype = {
   remove: function (filter) {
     if (!(filter.text in this.keywordByFilter)) return
 
-    let keyword = this.keywordByFilter[filter.text]
-    let list = this.filterByKeyword[keyword]
+    const keyword = this.keywordByFilter[filter.text]
+    const list = this.filterByKeyword[keyword]
     if (list.length <= 1) delete this.filterByKeyword[keyword]
     else {
-      let index = list.indexOf(filter)
+      const index = list.indexOf(filter)
       if (index >= 0) {
         list.splice(index, 1)
         if (list.length === 1) this.filterByKeyword[keyword] = list[0]
@@ -99,21 +99,21 @@ Matcher.prototype = {
     if (Filter.regexpRegExp.test(text)) return result
 
     // Remove options
-    let match = Filter.optionsRegExp.exec(text)
+    const match = Filter.optionsRegExp.exec(text)
     if (match) text = match.input.substr(0, match.index)
 
     // Remove whitelist marker
     if (text.substr(0, 2) === '@@') text = text.substr(2)
 
-    let candidates = text.toLowerCase().match(/[^a-z0-9%*][a-z0-9%]{3,}(?=[^a-z0-9%*])/g)
+    const candidates = text.toLowerCase().match(/[^a-z0-9%*][a-z0-9%]{3,}(?=[^a-z0-9%*])/g)
     if (!candidates) return result
 
-    let hash = this.filterByKeyword
+    const hash = this.filterByKeyword
     let resultCount = 0xffffff
     let resultLength = 0
     for (let i = 0, l = candidates.length; i < l; i++) {
-      let candidate = candidates[i].substr(1)
-      let count = candidate in hash ? hash[candidate].length : 0
+      const candidate = candidates[i].substr(1)
+      const count = candidate in hash ? hash[candidate].length : 0
       if (count < resultCount || (count === resultCount && candidate.length > resultLength)) {
         result = candidate
         resultCount = count
@@ -142,9 +142,9 @@ Matcher.prototype = {
    * Checks whether the entries for a particular keyword match a URL
    */
   _checkEntryMatch: function (keyword, location, contentType, docDomain, thirdParty, sitekey) {
-    let list = this.filterByKeyword[keyword]
+    const list = this.filterByKeyword[keyword]
     for (let i = 0; i < list.length; i++) {
-      let filter = list[i]
+      const filter = list[i]
       if (filter.matches(location, contentType, docDomain, thirdParty, sitekey)) return filter
     }
     return null
@@ -164,9 +164,9 @@ Matcher.prototype = {
     if (candidates === null) candidates = []
     candidates.push('')
     for (let i = 0, l = candidates.length; i < l; i++) {
-      let substr = candidates[i]
+      const substr = candidates[i]
       if (substr in this.filterByKeyword) {
-        let result = this._checkEntryMatch(substr, location, contentType, docDomain, thirdParty, sitekey)
+        const result = this._checkEntryMatch(substr, location, contentType, docDomain, thirdParty, sitekey)
         if (result) return result
       }
     }
@@ -299,9 +299,9 @@ CombinedMatcher.prototype = {
 
     let blacklistHit = null
     for (let i = 0, l = candidates.length; i < l; i++) {
-      let substr = candidates[i]
+      const substr = candidates[i]
       if (substr in this.whitelist.filterByKeyword) {
-        let result = this.whitelist._checkEntryMatch(substr, location, contentType, docDomain, thirdParty, sitekey)
+        const result = this.whitelist._checkEntryMatch(substr, location, contentType, docDomain, thirdParty, sitekey)
         if (result) return result
       }
       if (substr in this.blacklist.filterByKeyword && blacklistHit === null)
@@ -314,10 +314,10 @@ CombinedMatcher.prototype = {
    * @see Matcher#matchesAny
    */
   matchesAny: function (location, contentType, docDomain, thirdParty, sitekey) {
-    let key = location + ' ' + contentType + ' ' + docDomain + ' ' + thirdParty + ' ' + sitekey
+    const key = location + ' ' + contentType + ' ' + docDomain + ' ' + thirdParty + ' ' + sitekey
     if (key in this.resultCache) return this.resultCache[key]
 
-    let result = this.matchesAnyInternal(location, contentType, docDomain, thirdParty, sitekey)
+    const result = this.matchesAnyInternal(location, contentType, docDomain, thirdParty, sitekey)
 
     if (this.cacheEntries >= CombinedMatcher.maxCacheEntries) {
       this.resultCache = Object.create(null)
@@ -335,4 +335,4 @@ CombinedMatcher.prototype = {
  * Shared CombinedMatcher instance that should usually be used.
  * @type CombinedMatcher
  */
-let _defaultMatcher = (exports.defaultMatcher = new CombinedMatcher())
+const _defaultMatcher = (exports.defaultMatcher = new CombinedMatcher())

@@ -23,7 +23,7 @@ export class SubMatcher extends Matcher {
     let resLength = 0
     for (let candidate of candidates) {
       candidate = candidate.substr(1)
-      let count = this.filterByKeyword.has(candidate) ? this.filterByKeyword.get(candidate).length : 0
+      const count = this.filterByKeyword.has(candidate) ? this.filterByKeyword.get(candidate).length : 0
       if (count < resCount || (count === resCount && candidate.length > resLength)) {
         res = candidate
         resCount = count

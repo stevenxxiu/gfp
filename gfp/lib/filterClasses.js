@@ -19,7 +19,7 @@
  * @fileOverview Definition of Filter class and its subclasses.
  */
 
-let { FilterNotifier } = require('./filterNotifier')
+const { FilterNotifier } = require('./filterNotifier')
 
 /**
  * Abstract base class for filters
@@ -107,7 +107,7 @@ Filter.fromText = function (text) {
  * @return {Filter} filter or null if the filter couldn't be created
  */
 Filter.fromObject = function (obj) {
-  let ret = Filter.fromText(obj.text)
+  const ret = Filter.fromText(obj.text)
   if (ret instanceof ActiveFilter) {
     if ('disabled' in obj) ret._disabled = obj.disabled === 'true'
     if ('hitCount' in obj) ret._hitCount = parseInt(obj.hitCount) || 0
@@ -131,7 +131,7 @@ Filter.normalize = function (/**String*/ text /**String*/) {
     return text.trim()
   } else if (Filter.elemhideRegExp.test(text)) {
     // Special treatment for element hiding filters, right side is allowed to contain spaces
-    let [, domain, separator, selector] = /^(.*?)(#@?#?)(.*)$/.exec(text)
+    const [, domain, separator, selector] = /^(.*?)(#@?#?)(.*)$/.exec(text)
     return domain.replace(/\s/g, '') + separator + selector.trim()
   } else return text.replace(/\s/g, '')
 }
@@ -216,7 +216,7 @@ ActiveFilter.prototype = {
   },
   set disabled(value) {
     if (value !== this._disabled) {
-      let oldValue = this._disabled
+      const oldValue = this._disabled
       this._disabled = value
       FilterNotifier.triggerListeners('filter.disabled', this, value, oldValue)
     }
@@ -231,7 +231,7 @@ ActiveFilter.prototype = {
   },
   set hitCount(value) {
     if (value !== this._hitCount) {
-      let oldValue = this._hitCount
+      const oldValue = this._hitCount
       this._hitCount = value
       FilterNotifier.triggerListeners('filter.hitCount', this, value, oldValue)
     }
@@ -246,7 +246,7 @@ ActiveFilter.prototype = {
   },
   set lastHit(value) {
     if (value !== this._lastHit) {
-      let oldValue = this._lastHit
+      const oldValue = this._lastHit
       this._lastHit = value
       FilterNotifier.triggerListeners('filter.lastHit', this, value, oldValue)
     }
@@ -287,7 +287,7 @@ ActiveFilter.prototype = {
   get domains() {
     // Despite this property being cached, the getter is called
     // several times on Safari, due to WebKit bug 132872
-    let prop = Object.getOwnPropertyDescriptor(this, 'domains')
+    const prop = Object.getOwnPropertyDescriptor(this, 'domains')
     if (prop) return prop.value
 
     let domains = null
@@ -298,7 +298,7 @@ ActiveFilter.prototype = {
         // RegExpFilter already have uppercase domains
         source = source.toUpperCase()
       }
-      let list = source.split(this.domainSeparator)
+      const list = source.split(this.domainSeparator)
       if (list.length === 1 && list[0][0] !== '~') {
         // Fast track for the common one-domain scenario
         domains = { __proto__: null, '': false }
@@ -363,7 +363,7 @@ ActiveFilter.prototype = {
     while (true) {
       if (docDomain in this.domains) return this.domains[docDomain]
 
-      let nextDot = docDomain.indexOf('.')
+      const nextDot = docDomain.indexOf('.')
       if (nextDot < 0) break
       docDomain = docDomain.substr(nextDot + 1)
     }
@@ -379,7 +379,7 @@ ActiveFilter.prototype = {
     if (this.ignoreTrailingDot) docDomain = docDomain.replace(/\.+$/, '')
     docDomain = docDomain.toUpperCase()
 
-    for (let domain in this.domains)
+    for (const domain in this.domains)
       if (
         Object.prototype.hasOwnProperty.call(this.domains, domain) &&
         this.domains[domain] &&
@@ -426,7 +426,7 @@ function RegExpFilter(text, regexpSource, contentType, matchCase, domains, third
 
   if (regexpSource.length >= 2 && regexpSource[0] === '/' && regexpSource[regexpSource.length - 1] === '/') {
     // The filter is a regular expression - convert it immediately to catch syntax errors
-    let regexp = new RegExp(regexpSource.substr(1, regexpSource.length - 2), this.matchCase ? '' : 'i')
+    const regexp = new RegExp(regexpSource.substr(1, regexpSource.length - 2), this.matchCase ? '' : 'i')
     Object.defineProperty(this, 'regexp', { value: regexp })
   } else {
     // No need to convert this filter to regular expression yet, do it on demand
@@ -466,11 +466,11 @@ RegExpFilter.prototype = {
   get regexp() {
     // Despite this property being cached, the getter is called
     // several times on Safari, due to WebKit bug 132872
-    let prop = Object.getOwnPropertyDescriptor(this, 'regexp')
+    const prop = Object.getOwnPropertyDescriptor(this, 'regexp')
     if (prop) return prop.value
 
     // Remove multiple wildcards
-    let source = this.regexpSource
+    const source = this.regexpSource
       .replace(/\*+/g, '*') // remove multiple wildcards
       .replace(/\^\|$/, '^') // remove anchors following separator placeholder
       .replace(/\W/g, '\\$&') // escape special symbols
@@ -483,7 +483,7 @@ RegExpFilter.prototype = {
       .replace(/^(\.\*)/, '') // remove leading wildcards
       .replace(/(\.\*)$/, '') // remove trailing wildcards
 
-    let regexp = new RegExp(source, this.matchCase ? '' : 'i')
+    const regexp = new RegExp(source, this.matchCase ? '' : 'i')
     Object.defineProperty(this, 'regexp', { value: regexp })
     return regexp
   },
@@ -517,7 +517,7 @@ RegExpFilter.prototype = {
   get sitekeys() {
     // Despite this property being cached, the getter is called
     // several times on Safari, due to WebKit bug 132872
-    let prop = Object.getOwnPropertyDescriptor(this, 'sitekeys')
+    const prop = Object.getOwnPropertyDescriptor(this, 'sitekeys')
     if (prop) return prop.value
 
     let sitekeys = null
@@ -567,7 +567,7 @@ Object.defineProperty(RegExpFilter.prototype, '0', {
 /* eslint-disable sonarjs/cognitive-complexity */
 RegExpFilter.fromText = function (text) {
   let blocking = true
-  let origText = text
+  const origText = text
   if (text.indexOf('@@') === 0) {
     blocking = false
     text = text.substr(2)
@@ -580,7 +580,7 @@ RegExpFilter.fromText = function (text) {
   let thirdParty = null
   let collapse = null
   let options
-  let match = text.indexOf('$') >= 0 ? Filter.optionsRegExp.exec(text) : null
+  const match = text.indexOf('$') >= 0 ? Filter.optionsRegExp.exec(text) : null
   if (match) {
     options = match[1].toUpperCase().split(',')
     text = match.input.substr(0, match.index)

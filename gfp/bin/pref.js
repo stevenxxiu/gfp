@@ -7,7 +7,7 @@ import { pad } from 'gfp/utils'
 
 function main() {
   window.store = (() => {
-    let filters = {
+    const filters = {
       'slow filter': {},
       '@@whitelist filter ': {},
       ' fast filter ': {},
@@ -23,7 +23,7 @@ function main() {
     if (text === '') {
       return
     }
-    let style = document.createElement('style')
+    const style = document.createElement('style')
     style.textContent = text
     document.head.appendChild(style)
   }
@@ -32,11 +32,11 @@ function main() {
   window.GM_registerMenuCommand = (name, cb) => $(cb)
   window.GM_getValue = (name, value) => (name in window.store ? window.store[name] : value)
   window.GM_setValue = (name, value) => (window.store[name] = value)
-  let config = new Config()
-  let searchGui = { config: config, filterResults: () => {} }
+  const config = new Config()
+  const searchGui = { config: config, filterResults: () => {} }
   new Pref(searchGui)
   $(() => {
-    let controls = $(`<div style="text-align: center; position: absolute; left: 0; right: 0; bottom: 80px;">
+    const controls = $(`<div style="text-align: center; position: absolute; left: 0; right: 0; bottom: 80px;">
       <div style="display: inline-block;">
         <button class="inc-hit-count">Increase hit count</button>
         <button class="add-filter">Add filter</button>
@@ -48,7 +48,7 @@ function main() {
       $(this).removeClass('ui-state-focus')
     })
     controls.find('.inc-hit-count').click(() => {
-      let filter = config.filters._filters[1]
+      const filter = config.filters._filters[1]
       filter.hitCount++
       config.filters.update(filter)
     })
