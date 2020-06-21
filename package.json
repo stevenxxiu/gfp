@@ -10,6 +10,7 @@
     "babel-loader": "^8.1.0",
     "babel-plugin-module-resolver": "^4.0.0",
     "commitlint": "^8.3.5",
+    "conventional-changelog-conventionalcommits": "^4.3.0",
     "css-loader": "^3.5.3",
     "eslint": "^7.1.0",
     "eslint-config-prettier": "^6.11.0",

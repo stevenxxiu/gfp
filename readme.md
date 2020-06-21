@@ -10,7 +10,7 @@ To setup the tools used for development, run:
 
     $ cd gfp
     $ npm install
-    $ pre-commit install
+    $ pre-commit install --hook-type pre-commit --hook-type commit-msg
 
 ---
 
