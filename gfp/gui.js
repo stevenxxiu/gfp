@@ -132,9 +132,9 @@ export class SearchGui {
         this.toggleResult(nodeData, showTitle, showLink)
       }
       if (showTitle) {
-        nodeData.node.removeChild(showTitle)
+        showTitle.remove()
       }
-      nodeData.node.removeChild(showLink)
+      showLink.remove()
     }
   }
 
@@ -160,7 +160,7 @@ export class SearchGui {
       }
     }
     nodeData.undo = () => {
-      nodeData.linkArea.removeChild(addLink)
+      addLink.remove()
     }
   }
 
