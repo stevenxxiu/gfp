@@ -42,7 +42,7 @@ class CommonData extends NodeData {
     return cache(this, 'linkArea', linkArea)
   }
   get url() {
-    return cache(this, 'url', this.node.querySelector('.rc > div:first-child > a').href)
+    return cache(this, 'url', this.node.querySelector('div[data-ved] > div:first-child > a').href)
   }
   get title() {
     return cache(this, 'title', this.node.querySelector('h3').textContent)
@@ -127,7 +127,7 @@ class FeaturedSnippetData extends CommonData {
 
 class TextData extends CommonData {
   get summary() {
-    return cache(this, 'summary', this.node.querySelector('.rc > div:nth-child(2)').textContent)
+    return cache(this, 'summary', this.node.querySelector('div[data-ved] > div:nth-child(2)').textContent)
   }
 }
 
