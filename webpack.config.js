@@ -1,7 +1,6 @@
 'use strict'
 const fs = require('fs')
 const path = require('path')
-const postcssPresetEnv = require('postcss-preset-env')
 const webpack = require('webpack')
 const env = (process.env.NODE_ENV || 'script').trim()
 
@@ -27,8 +26,9 @@ module.exports = {
           {
             loader: 'postcss-loader',
             options: {
-              ident: 'postcss',
-              plugins: () => [postcssPresetEnv({ browsers: 'last 2 versions' })],
+              postcssOptions: {
+                plugins: [['postcss-preset-env', { browsers: 'last 2 versions' }]],
+              },
             },
           },
           { loader: 'sass-loader' },
