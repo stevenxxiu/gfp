@@ -23,7 +23,7 @@ export class ResultsData extends NodeData {
       }
     }
     for (const child of this.node.querySelectorAll('g-inner-card')) {
-      yield new NewsVideoData(child)
+      yield new NewsData(child)
     }
   }
 }
@@ -73,9 +73,9 @@ class MapContainerData extends NodeData {
 
 class MapData extends CommonData {}
 
-class NewsVideoData extends NodeData {
+class NewsData extends NodeData {
   get linkArea() {
-    const query = this.node.querySelector('cite, span[style]')
+    const query = this.node.querySelector('span[tabindex="-1"] + div > p > span')
     if (query == null) {
       // drawing hasn't finished
       return null
