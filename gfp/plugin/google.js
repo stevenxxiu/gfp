@@ -25,6 +25,9 @@ export class ResultsData extends NodeData {
     for (const child of this.node.querySelectorAll('g-inner-card')) {
       yield new NewsData(child)
     }
+    for (const child of this.node.querySelectorAll('div[role="heading"] + div > div > div[data-ved]')) {
+      yield new VideoData(child)
+    }
   }
 }
 
@@ -60,6 +63,18 @@ class ImageContainerData extends NodeData {
 class ImageData extends NodeData {
   get url() {
     return cache(this, 'url', this.node.href)
+  }
+}
+
+class VideoData extends NodeData {
+  get linkArea() {
+    return cache(this, 'linkArea', this.node.querySelector('span + div > span'))
+  }
+  get url() {
+    return cache(this, 'url', this.node.querySelector('a[data-ved]').href)
+  }
+  get title() {
+    return cache(this, 'title', this.node.querySelector('div[role="heading"]').textContent)
   }
 }
 
