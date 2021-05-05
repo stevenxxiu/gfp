@@ -194,6 +194,9 @@ export class SearchGui {
     }
     let filtered = !!nodeData.children.length
     for (const childData of nodeData.children) {
+      if (childData.node.querySelector('a.filter-add')) {
+        continue
+      }
       if (!this._filterResults(childData)) {
         filtered = false
       }
