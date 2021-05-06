@@ -22,7 +22,7 @@ export class ResultsData extends NodeData {
         yield new TextData(child)
       }
     }
-    for (const child of this.node.querySelectorAll('g-inner-card')) {
+    for (const child of this.node.querySelectorAll('g-inner-card > div')) {
       yield new NewsData(child)
     }
     for (const child of this.node.querySelectorAll('div[role="heading"] + div > div > div[data-ved]')) {
