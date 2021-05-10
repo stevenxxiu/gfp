@@ -46,6 +46,9 @@ module.exports = {
       },
     ],
   },
+  output: {
+    publicPath: '/',
+  },
   plugins: [
     new webpack.BannerPlugin({
       banner: env !== 'script' ? '' : fs.readFileSync('gfp/header.js', 'utf-8'),
