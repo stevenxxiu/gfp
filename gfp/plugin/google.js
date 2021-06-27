@@ -45,7 +45,7 @@ class CommonData extends NodeData {
     return cache(this, 'linkArea', linkArea)
   }
   get url() {
-    return cache(this, 'url', this.node.querySelector('div[data-ved] > div:first-child > div:first-child > a').href)
+    return cache(this, 'url', this.node.querySelector('a[data-ved]').href)
   }
   get title() {
     return cache(this, 'title', this.node.querySelector('h3').textContent)
