@@ -17,7 +17,7 @@ export function cache(obj, prop, value) {
 }
 
 export function bisect(a, x, comparer, lo = 0, hi = null) {
-  // ported from the python standard library
+  // Ported from the *Python* standard library
   if (lo < 0) {
     throw 'lo must be non-negative'
   }
@@ -47,7 +47,7 @@ export function indexOfSorted(xs, ys, comparer) {
 }
 
 export function popMany(xs, is) {
-  // O(n) time, mask is not'ed for speed
+  // $O(n)$ time. Mask is not'ed for speed.
   const mask = new Array(xs.length)
   for (const i of is) {
     mask[i] = true

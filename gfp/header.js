@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Google Search Filter Plus
-// @description Filters google search results
+// @description Filters *Google* search results
 // @namespace   smk
 // @license     MPL 1.1; http://www.mozilla.org/MPL/MPL-1.1.html
 // @include     http://www.google.tld/

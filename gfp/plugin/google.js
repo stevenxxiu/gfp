@@ -9,7 +9,7 @@ export class ResultsData extends NodeData {
         child.classList.contains('kno-kp') ||
         child.classList.contains('g-blk')
       ) {
-        // contains other .g elements, skip so we don't have duplicate links
+        // Contains other `.g` elements. Skip so we don't have duplicate links.
       } else if (child.id === 'imagebox_bigimages') {
         yield new ImageContainerData(child)
       } else if (child.id === 'lclbox') {
@@ -88,7 +88,7 @@ class NewsData extends NodeData {
   get linkArea() {
     const query = this.node.querySelector('span[tabindex="-1"] + div > p > span')
     if (query == null) {
-      // drawing hasn't finished
+      // Drawing hasn't finished
       return null
     }
     return cache(this, 'linkArea', query.parentNode)

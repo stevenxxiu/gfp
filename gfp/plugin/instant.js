@@ -8,7 +8,7 @@ export default function (searchGui, _config) {
       for (const addedNode of mutation.addedNodes) {
         const node = addedNode.querySelector && addedNode.querySelector(':scope > #ires')
         if (node) {
-          // all results have finished loading
+          // All results have finished loading
           searchGui.nodeData.children.length = 0
           searchGui.filterResults(node)
         }

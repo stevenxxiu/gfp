@@ -1,5 +1,5 @@
 function mutationObserver(mutations, searchGui) {
-  // all results have finished loading this includes google's own nodes that load later too, such as news items
+  // All results have finished loading. This includes *Google*'s own nodes that load later too, such as news items.
   const res = []
   for (const mutation of mutations) {
     for (const addedNode of mutation.addedNodes) {
@@ -20,7 +20,7 @@ function mutationObserver(mutations, searchGui) {
           if (node.matches(selector)) {
             matchedNodes.push(node)
           }
-          // call `querySelectorAll` as well, as `node` can be a results container node
+          // Call `querySelectorAll` as well, as `node` can be a results container node
           Array.prototype.push.apply(matchedNodes, node.querySelectorAll(selector))
         }
         return matchedNodes

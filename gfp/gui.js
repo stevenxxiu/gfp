@@ -8,7 +8,7 @@ export class NodeData {
   }
 
   act(action, filter) {
-    // action: function which modifies the node
+    // Action: function which modifies the node
     if (this.action === action) {
       this.redo(filter)
       return true
@@ -21,8 +21,8 @@ export class NodeData {
   }
 
   *getChildren() {}
-  redo() {} // re-apply action with different arguments
-  undo() {} // undo action
+  redo() {} // Re-apply action with different arguments
+  undo() {} // Undo action
 }
 
 NodeData.attrs = ['url', 'title', 'summary']
@@ -62,19 +62,19 @@ export class SearchGui {
     GM_addStyle(guiStyle.toString())
   }
 
+  /**
+   * Create once and clone, to improve performance.
+   */
   createNodes() {
-    /**
-    Create once and clone to improve performance.
-    */
-    // add filter link
+    // Add filter link
     this.addLink = document.createElement('a')
     this.addLink.textContent = 'Filter'
     this.addLink.setAttribute('href', '#')
     this.addLink.classList.add('filter-add')
-    // hidden result title
+    // Hidden result title
     this.showTitle = document.createElement('span')
     this.showTitle.classList.add('show-title')
-    // hidden result 'show' link
+    // Hidden result 'show' link
     this.showLink = document.createElement('a')
     this.showLink.textContent = 'show'
     this.showLink.setAttribute('href', '#')
@@ -175,7 +175,7 @@ export class SearchGui {
   }
 
   _filterResults(nodeData) {
-    // store all children so we can re-filter
+    // Store all children so we can re-filter
     if (nodeData.children === undefined) {
       nodeData.children = Array.from(nodeData.getChildren())
     }
@@ -222,7 +222,7 @@ export class SearchGui {
     }
     this.config.filters.observe(observer)
     if (node) {
-      // only need to filter the new node
+      // Only need to filter the new node
       const nodeData = new this.ResultsData(node)
       this.nodeData.children.push(nodeData)
       this._filterResults(nodeData)

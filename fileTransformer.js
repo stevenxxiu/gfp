@@ -1,4 +1,4 @@
-// for Jest
+// For *Jest*
 const path = require('path')
 
 module.exports = {

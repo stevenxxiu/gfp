@@ -130,7 +130,7 @@ class DataView {
       if (call) {
         this.config.filters.remove(is.map((i) => this.filters[i]))
       } else {
-        // use unique comparer for speed
+        // Use a unique comparer for speed
         const comparer = (x, y) => (x['text'] > y['text'] ? 1 : x['text'] < y['text'] ? -1 : 0)
         is = indexOfSorted(this.filters.sort(comparer), filters.sort(comparer), comparer)
         this.filters.sort(this.comparer)
@@ -153,7 +153,7 @@ class DataView {
   update(filter, i, call = true) {
     this._editOp(call, () => {
       if (call) {
-        // remove & add since matcher doesn't support updates
+        // Remove and re-add, since matcher doesn't support updates
         this.config.filters.remove([this.filters[i]])
         this.config.filters.add(filter)
       } else {
@@ -333,7 +333,7 @@ class PrefDialog {
             `<span class="${value.startsWith('@@') ? 'whitelist' : 'blocking'}-filter">${value}</span>`,
           editor: Slick.Editors.Text,
           validator: (text) => {
-            // spaces only don't count as being empty, since they can exist in urls
+            // Spaces only don't count as being empty, since they can exist in urls
             if (!text) return { valid: false, msg: 'Empty filter' }
             if (Filter.fromText(text) instanceof InvalidFilter) return { valid: false, msg: 'Invalid filter' }
             if (Array.from(this.dataView.getValue()).some((filter) => filter.text === text)) {
@@ -343,7 +343,7 @@ class PrefDialog {
           },
         },
         {
-          // use css for the image since there can be many slow filters
+          // Use CSS for the image, since there can be many slow filters
           id: 'slow',
           field: 'slow',
           name: '!',

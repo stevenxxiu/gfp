@@ -37,7 +37,7 @@ export default function (searchGui, config) {
     for (const mutation of mutations) {
       for (const addedNode of mutation.addedNodes) {
         if (addedNode.classList && addedNode.classList.contains('gcsc-branding')) {
-          // all results have finished loading
+          // All results have finished loading
           searchGui.nodeData.children.length = 0
           searchGui.filterResults(document.querySelector('.gsc-results'))
         }

@@ -34,8 +34,8 @@ export class SubMatcher extends Matcher {
   }
 
   add(filter) {
-    // Duplicates are rare and not checked for efficiency, otherwise we need to store sub filter text maps, and multiple
-    // parents per sub filter.
+    // Duplicates are rare and not checked for efficiency. Otherwise we need to store sub filter text maps, and
+    // multiple parents per sub filter.
     const keyword = this.findKeyword(filter)
     const prevEntry = this.filterByKeyword.get(keyword)
     if (prevEntry === undefined) {
@@ -48,7 +48,7 @@ export class SubMatcher extends Matcher {
   }
 
   remove(filter) {
-    // only used by pref, doesn't need to be efficient
+    // Only used by `Pref`. Doesn't need to be efficient.
     const candidates = this.constructor._findCandidates(filter) || ['']
     for (let candidate of candidates) {
       candidate = candidate.substr(1)
@@ -160,8 +160,8 @@ export class MultiMatcher {
   }
 
   matchesAny(data, attrs) {
-    // for each filter, nextNullNum counts how many subfilters there are left until the next non-null subfilter
-    // {filter: nextNullNum}
+    // For each filter, `nextNullNum` counts how many subfilters there are left until the next non-`null` subfilter.
+    // `{filter: nextNullNum}`.
     let [prevFilters, curFilters] = [new Map(), new Map()]
     for (let i = 0; i < this.n; i++) {
       for (const subFilter of this.matchers[i].iterMatches(data[attrs[i]], prevFilters)) {
@@ -171,7 +171,7 @@ export class MultiMatcher {
         curFilters.set(subFilter.parent, subFilter.parent.filters[subFilter.dataIndex + 1].index - i)
       }
       if (i !== this.n - 1) {
-        // include null subFilters whose parents have so far matched
+        // Include `null` `subFilter`s whose parents have so far matched
         for (const [filter, nextNullNum] of prevFilters.entries()) {
           if (nextNullNum > 0) {
             curFilters.set(filter, nextNullNum - 1)
@@ -186,7 +186,7 @@ export class MultiMatcher {
 
 export class CombinedMultiMatcher {
   constructor(n) {
-    // caching is not required since we have one instance per tab, and past filter results are easily accessible
+    // Caching is not required, since we have one instance per tab, and past filter results are easily accessible.
     this.blacklist = new MultiMatcher(n)
     this.whitelist = new MultiMatcher(n)
   }

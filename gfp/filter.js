@@ -10,7 +10,7 @@ export class RegExpFilter extends RegExpFilter__ {
     if (collapse) {
       this.collapse = collapse
     }
-    // convert regex filters immediately to catch syntax errors, normal filters on-demand
+    // Convert regex filters immediately to catch syntax errors. Normal filters on-demand.
     if (regexpSource.length >= 2 && regexpSource.startsWith('/') && regexpSource.endsWith('/')) {
       const regexp = new RegExp(regexpSource.substr(1, regexpSource.length - 2), this.matchCase ? '' : 'i')
       Object.defineProperty(this, 'regexp', { value: regexp })
@@ -24,7 +24,7 @@ export class RegExpFilter extends RegExpFilter__ {
   }
 
   static fromParts(text, optionsStr = '') {
-    // text is not stored to save memory
+    // Text is not stored to save memory
     let matchCase = false
     let collapse = false
     const options = optionsStr.toUpperCase().split(',')
@@ -52,9 +52,9 @@ export class RegExpFilter extends RegExpFilter__ {
 
 RegExpFilter.prototype.matchCase = false
 RegExpFilter.prototype.collapse = false
-// index to all subfilters
+// Index to all subfilters
 RegExpFilter.prototype.index = 0
-// index to all non-null subfilters
+// Index to all non-`null` subfilters
 RegExpFilter.prototype.dataIndex = 0
 
 const ActiveFilter_ = Object.assign(new Function(), ActiveFilter, { prototype: RegExpFilter_.prototype })
