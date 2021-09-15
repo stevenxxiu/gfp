@@ -33,12 +33,8 @@ export class ResultsData extends NodeData {
 
 class CommonData extends NodeData {
   get linkArea() {
-    // query in order of preference
-    let linkArea =
-      this.node.querySelector('a.fl[href^="https://translate."]') || // "Translate this page"
-      this.node.querySelector('.action-menu') || // after the action menu
-      this.node.querySelector('span.b') || // after the bold "PDF" text
-      this.node.querySelector('cite') // after the title
+    // *About this result* breadcrumb
+    let linkArea = this.node.querySelector('g-popup div[aria-haspopup="true"]')
     if (linkArea) {
       linkArea = linkArea.parentNode
     }
