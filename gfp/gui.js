@@ -209,11 +209,10 @@ export class SearchGui {
     return filtered
   }
 
+  /**
+   * @param node Used when additional search results pop up.
+   */
   filterResults(node = null) {
-    /**
-    args:
-      node: Used when additional search results pop up.
-    */
     let matched = false
     const observer = (type, _filter) => {
       if (type === 'update') {

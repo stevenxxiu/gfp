@@ -35,12 +35,12 @@ export default class Pref {
   }
 }
 
+/**
+ * Supports filtering & sorting.
+ *
+ * `config.filters` is used as the actual data source.
+ */
 class DataView {
-  /**
-  Supports filtering & sorting.
-  config.filters is used as the actual data source.
-  */
-
   constructor(grid, comparer, filterer, searchGui) {
     this.grid = grid
     this.comparer = comparer

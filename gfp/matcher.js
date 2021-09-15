@@ -96,11 +96,12 @@ export class SubMatcher extends Matcher {
     }
   }
 
+  /**
+   * @param data
+   * @param parents All parent filters matched so far, excluding the ones whose `subFilter`s have so far been `null`.
+   * @returns {Generator<*, void, *>}
+   */
   *iterMatches(data, parents) {
-    /**
-    args:
-      parents: All parent filters matched so far, excluding the ones whose subFilters have so far been null.
-    */
     if (data === null) {
       return
     }
