@@ -4,12 +4,8 @@ import { cache } from 'gfp/utils'
 export class ResultsData extends NodeData {
   *getChildren() {
     for (const child of this.node.querySelectorAll('.g')) {
-      if (
-        child.classList.contains('obcontainer') ||
-        child.classList.contains('kno-kp') ||
-        child.classList.contains('g-blk')
-      ) {
-        // Contains other `.g` elements. Skip so we don't have duplicate links.
+      if (child.querySelector('.g')) {
+        // Contains descendant `.g` elements. Skip so we don't have duplicate filter links.
       } else if (child.id === 'imagebox_bigimages') {
         yield new ImageContainerData(child)
       } else if (child.id === 'lclbox') {
