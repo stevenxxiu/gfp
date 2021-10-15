@@ -36,8 +36,7 @@ module.exports = {
       },
       {
         test: /\.png$/,
-        loader: 'url-loader',
-        options: { mimetype: 'img/png', limit: 10000, esModule: false },
+        type: 'asset/inline',
       },
       {
         test: /\.js$/,
