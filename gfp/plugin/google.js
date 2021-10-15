@@ -29,10 +29,14 @@ export class ResultsData extends NodeData {
 
 class CommonData extends NodeData {
   get linkArea() {
-    // *About this result* breadcrumb
-    let linkArea = this.node.querySelector('g-popup div[aria-haspopup="true"]')
-    if (linkArea) {
-      linkArea = linkArea.parentNode
+    // Right of the result's link
+    let linkArea
+    for (const selector of ['g-popup', 'div > a.fl', 'div.action-menu', 'cite']) {
+      linkArea = this.node.querySelector(selector)
+      if (linkArea) {
+        linkArea = linkArea.parentNode
+        break
+      }
     }
     return cache(this, 'linkArea', linkArea)
   }
