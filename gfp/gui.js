@@ -7,8 +7,12 @@ export class NodeData {
     this.node = node
   }
 
+  /**
+   * @param action Function which modifies the node.
+   * @param filter
+   * @returns {boolean} Whether we re-did the previous action.
+   */
   act(action, filter) {
-    // Action: function which modifies the node
     if (this.action === action) {
       this.redo(filter)
       return true
@@ -98,6 +102,7 @@ export class SearchGui {
   }
 
   hideResult(nodeData, filter = null) {
+    // Don't hide the node again if it's already hidden
     if (!nodeData.node || nodeData.act(this.hideResult, filter)) {
       return
     }
@@ -139,6 +144,7 @@ export class SearchGui {
   }
 
   addFilterLink(nodeData, filter = null) {
+    // Don't add the filter link again if it's already there
     if (!nodeData.node || nodeData.act(this.addFilterLink, filter)) {
       return
     }
