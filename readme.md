@@ -11,6 +11,10 @@ To setup the project for development, run:
     $ cd gfp/
     $ npm install
     $ pre-commit install --hook-type pre-commit --hook-type commit-msg
+    $ pre-commit run --all-files
+    $ PC_DIR=~/.cache/pre-commit/repoxxxxxxxx/node_env-system/lib/node_modules
+    $ ln --symbolic $PC_DIR/@babel/eslint-parser/ node_modules/@babel/
+    $ ln --symbolic $PC_DIR/eslint/ $PC_DIR/eslint-*/ node_modules/
 
 To lint and format files, run:
 
