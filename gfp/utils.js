@@ -1,9 +1,9 @@
 export function addStyleResolve(name) {
   GM_addStyle(
-    GM_getResourceText(name).replace(
-      /url\("?([^":]+)"?\)/g,
-      (match, url) => `url("${GM_getResourceURL(`${name}/${url}`)}")`
-    )
+    GM_getResourceText(name).replace(/url\("?([^":]+)"?\)/g, (match, url) => {
+      const resourceUrl = GM_getResourceURL(`${name}/${url}`)
+      return `url("${resourceUrl}")`
+    })
   )
 }
 

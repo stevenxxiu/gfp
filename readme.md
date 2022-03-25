@@ -1,16 +1,20 @@
 # Google Search Filter Plus
-Userscript to filter Google search results.
+Userscript to filter *Google* search results.
 
 ## Development Setup
-The project is developed in PyCharm.
+The project is developed in *PyCharm*.
 
 ---
 
-To setup the tools used for development, run:
+To setup the project for development, run:
 
-    $ cd gfp
+    $ cd gfp/
     $ npm install
     $ pre-commit install --hook-type pre-commit --hook-type commit-msg
+
+To lint and format files, run:
+
+    $ pre-commit run --all-files
 
 ---
 
